@@ -48,7 +48,7 @@ svg{display:block}
 .brand svg{width:44px;height:44px;flex:none}
 .brand h1{font-size:clamp(26px,3.4vw,38px);font-weight:900;letter-spacing:.06em;line-height:1}
 .brand small{font-family:var(--f-num);font-size:12px;letter-spacing:.42em;color:var(--ink);font-weight:600;margin-left:6px}
-.homelink{font-size:12px;font-weight:700;color:var(--muted);text-decoration:none;border:1.5px solid var(--line2);border-radius:999px;padding:4px 10px;background:var(--card)}
+.homelink{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:900;color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);border-radius:12px;padding:7px 12px;background:var(--card)}.homelink svg{width:18px;height:18px}
 .homelink:hover{color:var(--ink);border-color:var(--ink)}
 .vsep{width:1.5px;align-self:stretch;background:var(--line2);margin-block:6px}
 .steps{display:flex;align-items:center;flex:1;min-width:0;justify-content:center}
@@ -283,7 +283,7 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 <body>
 <div class="wrap">
   <header class="top">
-    <a class="homelink" href="../../">← 大廳</a>
+    <a class="homelink" href="../../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>大廳</a>
     <div class="brand"><svg viewBox="0 0 56 48" aria-hidden="true"><path d="M8 24 L15 12 H29 L36 24 L29 36 H15 Z" fill="none" stroke="#1E5641" stroke-width="6" stroke-linejoin="round"/><path d="M20 24 L27 12 H41 L48 24 L41 36 H27 Z" fill="none" stroke="#E9643B" stroke-width="6" stroke-linejoin="round" stroke-dasharray="40 6"/></svg><h1>控股風雲</h1><small>PROXY WAR</small></div>
     <span class="vsep"></span>
     <nav class="steps" id="steps" aria-label="季度進度"></nav>
@@ -304,6 +304,7 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 <div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
 <script>
 'use strict';
+const LOBBY='../../';
 /* ================= constants ================= */
 const TRACK=[0,2,3,4,5,6,7,8,9,10,12,14,16,18,20,23,26,30,35,40,45,50];
 const MAXI=TRACK.length-1;
@@ -563,7 +564,7 @@ function endGame(){
    <div class="tablewrap"><table class="res"><thead><tr><th>玩家</th><th>現金</th><th>持股市值</th><th>控股溢價</th><th>總身價</th></tr></thead><tbody>
    ${rows.map((r,k)=>`<tr><td>${k+1}. ${pn(r.i)}</td><td>$${r.cash}</td><td>$${r.stock}</td><td>$${r.ctrl}</td><td><b>$${r.total}</b></td></tr>`).join('')}
    </tbody></table></div>
-   <div class="acts"><button class="btn" data-m="setup">更改設定</button><button class="btn primary" data-m="again">再來一局</button></div>`,
+   <div class="acts">${LOBBY?`<a class="btn ghost" href="${LOBBY}">← 回大廳</a>`:''}<button class="btn" data-m="setup">更改設定</button><button class="btn primary" data-m="again">再來一局</button></div>`,
    m=>{if(m==='again'){closeModal();setupGame(S.cfg);}else showSetup();});
 }
 
@@ -619,7 +620,7 @@ function showSetup(){
    <div class="seats">${seats}</div>
    <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===setupCfg.speed?'on':''}">${k}</button>`).join('')}</div></div>
    <p class="note">多位人類玩家可共用同一台裝置輪流操作（熱座模式），系統會在換人時遮住內線。</p>
-   <div class="acts"><button class="btn" data-m="rules">先看規則</button>${sv&&sv.phase==='action'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+   <div class="acts">${LOBBY?`<a class="btn ghost" href="${LOBBY}">← 回大廳</a>`:''}<button class="btn" data-m="rules">先看規則</button>${sv&&sv.phase==='action'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
   (m)=>{
     readSeats();
     if(m.startsWith('n:')){setupCfg.n=+m.slice(2);showSetup();}
