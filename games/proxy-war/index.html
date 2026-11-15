@@ -931,7 +931,7 @@ $('#desk').addEventListener('click',e=>{
    Each remote player's insider card is end-to-end encrypted (ECDH P-256 + AES-GCM),
    so the shared room data never reveals it. Transport: Firebase Realtime Database,
    or a same-browser BroadcastChannel transport for testing (?net=local). */
-const FIREBASE_CONFIG=null;
+const FIREBASE_CONFIG={"apiKey":"AIzaSyDX3vaUkNRwUVzY_0c_rcjlIz_cjlg_mmk","authDomain":"board-games-2c64d.firebaseapp.com","databaseURL":"https://board-games-2c64d-default-rtdb.asia-southeast1.firebasedatabase.app","projectId":"board-games-2c64d","storageBucket":"board-games-2c64d.firebasestorage.app","messagingSenderId":"1038938536228","appId":"1:1038938536228:web:931536e62f82f37fc91bb1"};
 const NET_HOST_KEY='proxywar-net-host', NET_CLIENT_KEY='proxywar-net-client';
 const rid=(n=12)=>Array.from(crypto.getRandomValues(new Uint8Array(n)),b=>'abcdefghijkmnpqrstuvwxyz23456789'[b%32]).join('');
 const b64=u=>btoa(String.fromCharCode(...u));
@@ -966,8 +966,10 @@ function LocalTx(){
 function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('load '+src));document.head.appendChild(s);});}
 async function FirebaseTx(){
   if(!window.firebase){
-    await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js');
-    await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-database-compat.js');
+    const bases=['https://www.gstatic.com/firebasejs/10.12.2/','https://cdn.jsdelivr.net/npm/firebase@10.12.2/'];
+    let lastErr;
+    for(const base of bases){try{await loadScript(base+'firebase-app-compat.js');await loadScript(base+'firebase-database-compat.js');lastErr=null;break;}catch(e){lastErr=e;}}
+    if(lastErr)throw new Error('無法載入連線元件');
   }
   if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
   const db=firebase.database();
