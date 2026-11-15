@@ -530,19 +530,19 @@ function showSetup(){
   clearTimeout(timer);
   const sv=loadSave();
   const n=setupCfg.n;
-  const seats=setupCfg.seats.slice(0,n).map((s,i)=>`<div class="seat" style="--pc:var(--p${i})"><i></i><input id="seat${i}" data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('');
+  const seats=setupCfg.seats.slice(0,n).map((s,i)=>`<div class="seat" style="--pc:var(--p${i})"><i></i><input id="seat${i}" data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('');
   openModal(`<h2>控股風雲</h2><p class="sub">六個季度，五家上市公司，每個人手上都握著一則別人不知道的內線消息。買股、搶董事席、決定配息還是掏空，最後身價最高的人贏。</p>
    <div class="pitch"><div><b>內線推理</b>每季你只看得到一張事件牌，從對手的買賣讀出他們知道什麼。</div><div><b>董事會權力</b>最大股東當 CEO，決定配息、擴張，或乾脆掏空。</div><div><b>控股溢價</b>遊戲結束時，每家公司的 CEO 多拿股價 ×2。</div></div>
-   <div class="field"><span>玩家人數</span><div class="seg">${[2,3,4,5].map(k=>`<button data-m="n${k}" class="${k===n?'on':''}">${k} 人</button>`).join('')}</div></div>
+   <div class="field"><span>玩家人數</span><div class="seg">${[2,3,4,5].map(k=>`<button data-m="n:${k}" class="${k===n?'on':''}">${k} 人</button>`).join('')}</div></div>
    <div class="seats">${seats}</div>
-   <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="s${k}" class="${k===setupCfg.speed?'on':''}">${k}</button>`).join('')}</div></div>
+   <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===setupCfg.speed?'on':''}">${k}</button>`).join('')}</div></div>
    <p class="note">多位人類玩家可共用同一台裝置輪流操作（熱座模式），系統會在換人時遮住內線。</p>
    <div class="acts"><button class="btn" data-m="rules">先看規則</button>${sv&&sv.phase==='action'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
   (m)=>{
     readSeats();
-    if(m[0]==='n'){setupCfg.n=+m.slice(1);showSetup();}
-    else if(m[0]==='h'||m[0]==='a'){setupCfg.seats[+m.slice(1)].ai=m[0]==='a';showSetup();}
-    else if(m[0]==='s'){setupCfg.speed=m.slice(1);SPEED=SPEEDS[setupCfg.speed];showSetup();}
+    if(m.startsWith('n:')){setupCfg.n=+m.slice(2);showSetup();}
+    else if(m.startsWith('h:')||m.startsWith('a:')){setupCfg.seats[+m.slice(2)].ai=m[0]==='a';showSetup();}
+    else if(m.startsWith('sp:')){setupCfg.speed=m.slice(3);SPEED=SPEEDS[setupCfg.speed];showSetup();}
     else if(m==='rules')showRules();
     else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;const hs=humans();S.viewer=hs.length===1?hs[0].id:null;render();proceed();}
     else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];

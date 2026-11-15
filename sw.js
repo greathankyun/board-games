@@ -1,6 +1,6 @@
 // 桌遊大廳 service worker：先用快取、背景更新，讓遊戲離線也能玩。
 // 新增遊戲時把檔案加進 PRECACHE，並把 VERSION 加一。
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = 'board-games-' + VERSION;
 const FONT_CACHE = 'board-games-fonts';
 const PRECACHE = [
@@ -44,7 +44,16 @@ self.addEventListener('fetch', e => {
   }
   if (url.origin !== self.location.origin) return;
 
-  // 同站資源：先回快取，同時到網路抓新版（stale-while-revalidate）
+  // 頁面：網路優先，拿不到才用快取，確保一更新就看得到新版
+  if (req.mode === 'navigate') {
+    e.respondWith(caches.open(CACHE).then(async c => {
+      try { const res = await fetch(req); if (res.ok) c.put(req, res.clone()); return res; }
+      catch (err) { return (await c.match(req, {ignoreSearch: true})) || (await c.match('./index.html')) || Response.error(); }
+    }));
+    return;
+  }
+
+  // 其他同站資源：先回快取，同時到網路抓新版（stale-while-revalidate）
   e.respondWith(caches.open(CACHE).then(async c => {
     const hit = await c.match(req, {ignoreSearch: true});
     const net = fetch(req).then(res => { if (res.ok) c.put(req, res.clone()); return res; }).catch(() => null);
