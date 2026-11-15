@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>控股風雲</title>
+<meta name="description" content="原創股權策略桌遊：內線推理、搶董事會控股權，六季後身價最高者勝。">
+<meta name="theme-color" content="#1D5E56">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="桌遊大廳">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}
+.homelink{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:3px;padding:3px 8px}.homelink:hover{color:var(--ink);border-color:var(--ink)}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: trading-floor board — share certificates on the left, the turn desk + ledger on the right */
+:root{
+  --bg:#E4E9EE; --surface:#F8FAFB; --surface2:#EDF1F5; --ink:#142033; --muted:#5B687B; --line:#C7D0DA;
+  --accent:#1D5E56; --accent-ink:#F4FBFA; --gold:#9C7116; --up:#1C7F46; --down:#BE3A30; --scrim:rgba(14,22,34,.55);
+  --c0:#4655CF; --c1:#CF5426; --c2:#178C79; --c3:#A9801A; --c4:#2A7DBB;
+  --p0:#D2427A; --p1:#7656D0; --p2:#2F9457; --p3:#D7801A; --p4:#1E93BB;
+  --f-display:'Noto Serif TC','Songti TC','PMingLiU',serif;
+  --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1520; --surface:#162030; --surface2:#1D293C; --ink:#E6ECF4; --muted:#93A1B6; --line:#2B3A50;
+  --accent:#4DB2A3; --accent-ink:#0A1917; --gold:#E2B54E; --up:#4CC67E; --down:#F26B5F; --scrim:rgba(3,7,12,.7);
+  --c0:#7B88F0; --c1:#F07C4E; --c2:#3CC1A9; --c3:#D9AE3E; --c4:#5AA9E6;
+  --p0:#EE6D9C; --p1:#A086F2; --p2:#5CC283; --p3:#F2A445; --p4:#4CC0E6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1520; --surface:#162030; --surface2:#1D293C; --ink:#E6ECF4; --muted:#93A1B6; --line:#2B3A50;
+  --accent:#4DB2A3; --accent-ink:#0A1917; --gold:#E2B54E; --up:#4CC67E; --down:#F26B5F; --scrim:rgba(3,7,12,.7);
+  --c0:#7B88F0; --c1:#F07C4E; --c2:#3CC1A9; --c3:#D9AE3E; --c4:#5AA9E6;
+  --p0:#EE6D9C; --p1:#A086F2; --p2:#5CC283; --p3:#F2A445; --p4:#4CC0E6; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 40px}
+h1,h2,h3{text-wrap:balance;margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding-bottom:14px;border-bottom:2px solid var(--ink);margin-bottom:16px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,34px);letter-spacing:.06em;line-height:1}
+.brand span{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+.topr{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.qpips{display:flex;gap:4px;align-items:center}
+.qpip{font-family:var(--f-mono);font-size:11px;padding:3px 6px;border:1px solid var(--line);border-radius:3px;color:var(--muted)}
+.qpip.done{background:var(--surface2);color:var(--muted);text-decoration:line-through}
+.qpip.now{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.phase{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent)}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:4px;cursor:pointer;line-height:1.3}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.ghost{background:transparent}
+.btn.buy{border-color:var(--up);color:var(--up);background:color-mix(in srgb,var(--up) 9%,var(--surface));font-weight:700}
+.btn.sell{border-color:var(--down);color:var(--down);background:color-mix(in srgb,var(--down) 8%,var(--surface));font-weight:700}
+
+/* main grid */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 350px;grid-template-areas:"cos turn" "cos info";grid-template-rows:auto 1fr;gap:16px;align-items:start}
+#cos{grid-area:cos;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;min-width:0}
+#turn{grid-area:turn;min-width:0}
+#info{grid-area:info;min-width:0;display:flex;flex-direction:column;gap:16px}
+@media (max-width:920px){.grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"turn" "cos" "info"}}
+
+/* company certificate */
+.co{--cc:var(--c0);position:relative;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;min-width:0}
+.co::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-radial-gradient(circle at 108% -8%,transparent 0 7px,color-mix(in srgb,var(--cc) 10%,transparent) 7px 8px);
+  -webkit-mask-image:linear-gradient(205deg,#000 0%,transparent 52%);mask-image:linear-gradient(205deg,#000 0%,transparent 52%)}
+.co>*{position:relative}
+.co .band{height:5px;background:var(--cc);margin:0 -14px}
+.co.pick{cursor:pointer}
+.co.pick:hover{border-color:var(--cc)}
+.co.sel{outline:2px solid var(--cc);outline-offset:2px}
+.cohead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tick{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--cc);font-weight:700}
+.sec{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:0 6px;border-radius:999px}
+.co h3{font-family:var(--f-display);font-size:20px;font-weight:900;letter-spacing:.04em}
+.prow{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.price{font-family:var(--f-mono);font-size:32px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.delta{font-family:var(--f-mono);font-size:12px;font-weight:700}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+.spark{width:100%;height:34px;display:block}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:0}
+.stats div{background:var(--surface2);border-radius:4px;padding:4px 8px}
+.stats dt{font-size:10px;color:var(--muted);letter-spacing:.06em}
+.stats dd{margin:0;font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums}
+.ceo{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);min-height:22px;flex-wrap:wrap}
+.who{--pc:var(--p0);display:inline-flex;align-items:center;gap:5px;font-weight:700;color:var(--ink)}
+.who::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--pc);flex:none}
+.crown{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold);border-radius:3px;padding:0 4px}
+.hold{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.cell{height:12px;border-radius:2px;border:1px dashed var(--line)}
+.cell.f{border:none;background:var(--pc)}
+.hlist{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;min-height:18px}
+.hlist .who{font-weight:500}
+.trade{border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.qty{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.qty .btn{padding:2px 10px}
+.qty b{font-family:var(--f-mono);font-size:16px;color:var(--ink);min-width:1.5em;text-align:center}
+.tbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tbtns .btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left}
+.tbtns small{font-weight:400;font-size:11px;opacity:.9}
+.note{font-size:11px;color:var(--muted)}
+
+/* side panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px}
+.panel h2{font-size:12px;letter-spacing:.14em;color:var(--muted);font-weight:700;margin-bottom:10px}
+.turnhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.turnhead .who{font-size:18px;font-family:var(--f-display)}
+.turnhead .who::before{width:12px;height:12px}
+.actn{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted);margin:0 0 10px}
+.thinking{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.dots::after{content:"…";animation:blink 1s steps(3) infinite}
+@keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none}}
+.insider{border:1.5px dashed var(--gold);border-radius:6px;padding:10px 12px;background:color-mix(in srgb,var(--gold) 7%,var(--surface));margin-bottom:10px}
+.insider .lab{font-size:10px;letter-spacing:.2em;color:var(--gold);font-weight:700}
+.insider h4{font-family:var(--f-display);font-size:17px;margin:2px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:12px;font-weight:700;padding:1px 7px;border-radius:3px;background:var(--surface2);font-family:var(--f-body)}
+.chip.up{background:color-mix(in srgb,var(--up) 14%,transparent)}
+.chip.down{background:color-mix(in srgb,var(--down) 14%,transparent)}
+.chip.sp{background:color-mix(in srgb,var(--gold) 16%,transparent);color:var(--ink)}
+.prow2{display:flex;gap:8px;flex-wrap:wrap}
+table.pl{width:100%;border-collapse:collapse;font-size:13px}
+table.pl th{font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:500;text-align:right;padding:0 4px 6px}
+table.pl th:first-child,table.pl td:first-child{text-align:left}
+table.pl td{padding:6px 4px;border-top:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+table.pl td:first-child{font-family:var(--f-body)}
+table.pl tr.cur td{background:var(--surface2)}
+.tag{font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:0 4px;margin-left:4px;font-weight:400}
+.ceos{display:flex;gap:3px;margin-top:2px}
+.ceos i{width:8px;height:8px;border-radius:2px;background:var(--cc)}
+.log{list-style:none;margin:0;padding:0;max-height:280px;overflow:auto;font-size:12.5px;display:flex;flex-direction:column}
+.log li{padding:5px 0;border-top:1px solid var(--line)}
+.log li:first-child{border-top:none}
+.log li.q{font-weight:700;color:var(--accent);letter-spacing:.06em}
+.log li.k{color:var(--gold)}
+
+/* modals */
+.overlay{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--surface);color:var(--ink);border-radius:8px;border:1px solid var(--line);width:min(620px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal h2{font-family:var(--f-display);font-size:24px;font-weight:900;margin-bottom:6px;letter-spacing:.03em}
+.modal .sub{color:var(--muted);margin:0 0 16px}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;width:100%;padding:12px 14px}
+.opt b{font-size:15px}
+.opt span{font-size:12px;color:var(--muted)}
+.evlist{display:grid;gap:8px}
+.ev{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--surface2);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.ev h4{font-family:var(--f-display);font-size:16px;margin:0 0 4px}
+.ev .kn{font-size:11px;color:var(--muted)}
+.ev.hidden-card{border-style:dashed}
+table.res{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+table.res th{font-size:11px;color:var(--muted);text-align:right;font-weight:500;padding:4px}
+table.res td{text-align:right;padding:6px 4px;border-top:1px solid var(--line);font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+table.res th:first-child,table.res td:first-child{text-align:left;font-family:var(--f-body)}
+.tablewrap{overflow-x:auto}
+.seats{display:flex;flex-direction:column;gap:8px}
+.seat{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:10px;align-items:center}
+.seat i{width:12px;height:12px;border-radius:50%;background:var(--pc)}
+.seat input{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink);min-width:0;width:100%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{border:none;background:transparent;color:var(--muted);padding:6px 10px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;flex-wrap:wrap}
+.field>span{font-weight:700}
+.rules{font-size:14px;line-height:1.75}
+.rules h3{font-family:var(--f-display);font-size:17px;margin:18px 0 6px}
+.rules p,.rules li{max-width:62ch}
+.rules ol,.rules ul{padding-left:1.3em;margin:6px 0}
+.trackline{display:flex;flex-wrap:wrap;gap:3px;font-family:var(--f-mono);font-size:11px}
+.trackline span{border:1px solid var(--line);padding:0 4px;border-radius:2px}
+.win{font-family:var(--f-display);font-size:30px;font-weight:900;color:var(--gold)}
+.pitch{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:0 0 16px}
+.pitch div{background:var(--surface2);border-radius:6px;padding:10px;font-size:12px;color:var(--muted)}
+.pitch b{display:block;color:var(--ink);font-size:13px;margin-bottom:2px}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><a class="homelink" href="../../">← 大廳</a><h1>控股風雲</h1><span>Proxy War · 股權策略桌遊</span></div>
+    <div class="topr">
+      <div class="qpips" id="qpips"></div>
+      <span class="phase" id="phase"></span>
+      <button class="btn ghost" id="btnRules" type="button">規則</button>
+      <button class="btn ghost" id="btnNew" type="button">新遊戲</button>
+    </div>
+  </header>
+  <main class="grid">
+    <section id="cos" aria-label="上市公司"></section>
+    <aside id="turn"></aside>
+    <aside id="info">
+      <div class="panel"><h2>玩家身價</h2><div class="tablewrap" id="players"></div></div>
+      <div class="panel"><h2>市場紀錄</h2><ul class="log" id="log"></ul></div>
+    </aside>
+  </main>
+</div>
+<div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+
+<script>
+'use strict';
+/* ================= constants ================= */
+const TRACK=[0,2,3,4,5,6,7,8,9,10,12,14,16,18,20,23,26,30,35,40,45,50];
+const MAXI=TRACK.length-1;
+const COMPS=[
+  {name:'星核科技',sec:'科技',tick:'STAR'},
+  {name:'赤嶺能源',sec:'能源',tick:'REDR'},
+  {name:'青嵐生技',sec:'生技',tick:'AZUR'},
+  {name:'金庭金控',sec:'金融',tick:'GOLD'},
+  {name:'遠帆航運',sec:'航運',tick:'SAIL'},
+];
+const NC=COMPS.length, SHARES=10, START_CASH=80, QUARTERS=6, APQ=2,
+      EXPAND_COST=15, EXPAND_STEPS=2, EMB_STEPS=3, AUDIT_STEPS=4, START_TRE=10, RELIST_IDX=4, MAX_BUY=3, CEO_MIN=2, CTRL_MULT=2;
+const EVT=[
+  {n:'AI 晶片訂單爆量',fx:[[0,3]]},
+  {n:'雲端服務大當機',fx:[[0,-3]]},
+  {n:'半導體出口管制',fx:[[0,-2],[4,-1]]},
+  {n:'旗艦手機熱賣',fx:[[0,2],[3,1]]},
+  {n:'科技股泡沫疑慮',fx:[[0,-2],[3,-1]]},
+  {n:'油價飆漲',fx:[[1,3],[4,-2]]},
+  {n:'油價崩跌',fx:[[1,-3],[4,2]]},
+  {n:'綠能補貼三讀通過',fx:[[1,2],[0,1]]},
+  {n:'煉油廠大火',fx:[[1,-2]]},
+  {n:'新藥三期解盲成功',fx:[[2,4]]},
+  {n:'臨床試驗喊卡',fx:[[2,-4]]},
+  {n:'藥價給付調降',fx:[[2,-2],[3,-1]]},
+  {n:'新型流感爆發',fx:[[2,3],[4,-2]]},
+  {n:'生技併購傳聞',fx:[[2,2],[3,1]]},
+  {n:'央行升息一碼',fx:[[3,2],[0,-1]]},
+  {n:'央行降息救市',fx:[[3,-2],[0,1],[1,1]]},
+  {n:'銀行呆帳爆雷',fx:[[3,-3]]},
+  {n:'數位銀行執照核發',fx:[[3,2]]},
+  {n:'貨櫃運價狂飆',fx:[[4,3]]},
+  {n:'運河封鎖',fx:[[4,2],[1,1]]},
+  {n:'港口大罷工',fx:[[4,-3]]},
+  {n:'全球景氣復甦',fx:[[4,1],[1,1],[3,1]]},
+  {n:'外資大舉匯入',t:'all',v:1},
+  {n:'股災恐慌蔓延',t:'all',v:-1},
+  {n:'金管會監管風暴',t:'audit'},
+  {n:'檢調搜索掏空案',t:'audit'},
+  {n:'落後補漲',t:'low',v:3},
+  {n:'高檔獲利了結',t:'high',v:-2},
+  {n:'平靜無波的一季',fx:[]},
+  {n:'星核發放特別股息',t:'bonus',c:0,v:2},
+  {n:'金庭發放特別股息',t:'bonus',c:3,v:3},
+  {n:'遠帆發放特別股息',t:'bonus',c:4,v:2},
+];
+const AI_NAMES=['禿鷹','老狐狸','散戶阿明','霸總'];
+const SPEEDS={快:300,中:750,慢:1300};
+const SAVE_KEY='proxywar-save-v1';
+
+/* ================= state ================= */
+let S=null, UI={sel:null,qty:1}, timer=null, SPEED=750;
+let setupCfg={n:4,seats:[{name:'你',ai:false},{name:AI_NAMES[0],ai:true},{name:AI_NAMES[1],ai:true},{name:AI_NAMES[2],ai:true},{name:AI_NAMES[3],ai:true}],speed:'中'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const NP=()=>S.players.length;
+const humans=()=>S.players.filter(p=>!p.ai);
+const price=(st,c)=>TRACK[st.comps[c].idx];
+const curP=()=>(S.start+S.acts)%NP();
+const pn=i=>`<span class="who" style="--pc:var(--p${i})">${esc(S.players[i].name)}</span>`;
+const cn=c=>`<b style="color:var(--c${c})">${COMPS[c].name}</b>`;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function draw(){if(!S.deck.length)S.deck=shuffle(EVT.map((_,i)=>i));return S.deck.pop();}
+function log(html,cls=''){S.log.unshift({h:html,c:cls});if(S.log.length>120)S.log.length=120;}
+function clone(st){return {players:st.players.map(p=>({cash:p.cash,sh:p.sh.slice(),tr:{...p.tr},insider:p.insider})),comps:st.comps.map(c=>({idx:c.idx,pool:c.pool,tre:c.tre,ceo:c.ceo,emb:c.emb})),events:st.events,q:st.q,belief:st.belief};}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+function loadSave(){try{const s=localStorage.getItem(SAVE_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+
+/* ================= core rules (pure on st) ================= */
+function move(st,c,d,canBankrupt){
+  const C=st.comps[c];let ni=C.idx+d;
+  if(ni>MAXI)ni=MAXI;
+  if(ni<=0){ if(canBankrupt){C.idx=0;return true;} ni=1; }
+  C.idx=ni;return false;
+}
+function updCEO(st,c){
+  const C=st.comps[c];let mx=0;
+  st.players.forEach(p=>{if(p.sh[c]>mx)mx=p.sh[c];});
+  if(mx<CEO_MIN){C.ceo=null;return;}
+  const tied=st.players.map((p,i)=>p.sh[c]===mx?i:-1).filter(i=>i>=0);
+  if(tied.length===1)C.ceo=tied[0];
+  else C.ceo=tied.includes(C.ceo)?C.ceo:null;
+}
+function canBuy(st,pi,c,n){const p=st.players[pi],C=st.comps[c];return n>=1&&n<=MAX_BUY&&C.pool>=n&&p.cash>=TRACK[C.idx]*n&&p.tr[c]!=='s';}
+function canSell(st,pi,c,n){const p=st.players[pi];return n>=1&&p.sh[c]>=n&&p.tr[c]!=='b';}
+function opBuy(st,pi,c,n){const p=st.players[pi],C=st.comps[c],cost=TRACK[C.idx]*n;p.cash-=cost;C.tre+=cost;C.pool-=n;p.sh[c]+=n;p.tr[c]='b';move(st,c,1,false);updCEO(st,c);return cost;}
+function opSell(st,pi,c,n){const p=st.players[pi],C=st.comps[c],gain=TRACK[C.idx]*n;p.cash+=gain;C.pool+=n;p.sh[c]-=n;p.tr[c]='s';move(st,c,-Math.ceil(n/2),false);updCEO(st,c);return gain;}
+function divPer(st,c){const C=st.comps[c],iss=SHARES-C.pool;return iss>0?Math.floor(C.tre/iss):0;}
+function boardOK(st,c,ch){const C=st.comps[c];
+  if(ch==='div')return divPer(st,c)>=1;
+  if(ch==='exp')return C.tre>=EXPAND_COST&&C.idx<MAXI;
+  if(ch==='emb')return C.tre>0;
+  return true;}
+function opBoard(st,c,ch){const C=st.comps[c];
+  if(ch==='div'){const per=divPer(st,c);st.players.forEach(p=>{p.cash+=p.sh[c]*per;});C.tre-=per*(SHARES-C.pool);return per;}
+  if(ch==='exp'){C.tre-=EXPAND_COST;move(st,c,EXPAND_STEPS,false);return 0;}
+  if(ch==='emb'){const t=C.tre;st.players[C.ceo].cash+=t;C.tre=0;move(st,c,-EMB_STEPS,false);C.emb=true;return t;}
+  return 0;}
+function bankrupt(st,c){st.players.forEach(p=>{p.sh[c]=0;});const C=st.comps[c];C.pool=SHARES;C.tre=START_TRE;C.idx=RELIST_IDX;C.ceo=null;}
+function extremes(st,hi){let best=hi?-1:99;st.comps.forEach(C=>{if(hi?C.idx>best:C.idx<best)best=C.idx;});return st.comps.map((C,i)=>C.idx===best?i:-1).filter(i=>i>=0);}
+function applyEvent(st,ev,onBk){
+  const hit=(c,d)=>{if(move(st,c,d,true)){bankrupt(st,c);onBk&&onBk(c);}};
+  if(ev.fx)ev.fx.forEach(([c,d])=>hit(c,d));
+  else if(ev.t==='all')for(let c=0;c<NC;c++)hit(c,ev.v);
+  else if(ev.t==='audit')st.comps.forEach((C,c)=>{if(C.emb)hit(c,-AUDIT_STEPS);});
+  else if(ev.t==='low')extremes(st,false).forEach(c=>hit(c,ev.v));
+  else if(ev.t==='high')extremes(st,true).forEach(c=>hit(c,ev.v));
+  else if(ev.t==='bonus')st.players.forEach(p=>{p.cash+=p.sh[ev.c]*ev.v;});
+}
+function worthOf(st,pi){const p=st.players[pi];let cash=p.cash,stock=0,ctrl=0;
+  for(let c=0;c<NC;c++){const pr=price(st,c);stock+=p.sh[c]*pr;if(st.comps[c].ceo===pi)ctrl+=CTRL_MULT*pr;}
+  return {cash,stock,ctrl,total:cash+stock+ctrl};}
+
+/* ================= event text ================= */
+function evChips(ev){
+  const ch=(t,cls)=>`<span class="chip ${cls}">${t}</span>`;
+  if(ev.fx){if(!ev.fx.length)return ch('無影響','');return ev.fx.map(([c,d])=>ch(`${COMPS[c].sec} ${d>0?'▲':'▼'}${Math.abs(d)}`,d>0?'up':'down')).join('');}
+  if(ev.t==='all')return ch(`全部公司 ${ev.v>0?'▲':'▼'}${Math.abs(ev.v)}`,ev.v>0?'up':'down');
+  if(ev.t==='audit')return ch(`本季被掏空的公司 ▼${AUDIT_STEPS}`,'sp');
+  if(ev.t==='low')return ch(`股價最低的公司 ▲${ev.v}`,'sp');
+  if(ev.t==='high')return ch(`股價最高的公司 ▼${Math.abs(ev.v)}`,'sp');
+  if(ev.t==='bonus')return ch(`${COMPS[ev.c].sec}股東 每股領 $${ev.v}`,'sp');
+  return '';
+}
+function insiderHTML(pi){
+  const ev=EVT[S.events[S.players[pi].insider]];
+  return `<div class="insider"><div class="lab">機密 · 只有 ${esc(S.players[pi].name)} 知道</div><h4>${ev.n}</h4><div class="chips">${evChips(ev)}</div><div class="note" style="margin-top:6px">季末與其他 ${S.events.length-1} 張事件牌一起生效（▲▼ 單位為股價格數）</div></div>`;
+}
+
+/* ================= AI ================= */
+function interp(fi){fi=Math.max(0,Math.min(MAXI,fi));const a=Math.floor(fi),b=Math.min(MAXI,a+1);return TRACK[a]+(TRACK[b]-TRACK[a])*(fi-a);}
+function expShift(viewer,st,c){
+  let s=st.belief[viewer][c],b=0;
+  const ev=EVT[st.events[st.players[viewer].insider]];
+  if(ev.fx)ev.fx.forEach(([cc,d])=>{if(cc===c)s+=d;});
+  else if(ev.t==='all')s+=ev.v;
+  else if(ev.t==='audit'){if(st.comps[c].emb)s-=AUDIT_STEPS;}
+  else if(ev.t==='low'){if(extremes(st,false).includes(c))s+=ev.v;}
+  else if(ev.t==='high'){if(extremes(st,true).includes(c))s+=ev.v;}
+  else if(ev.t==='bonus'){if(ev.c===c)b+=ev.v;}
+  return {s,b};
+}
+function aiWorth(st,pi,viewer){
+  const p=st.players[pi];let v=p.cash;const w=0.25+0.75*(st.q/QUARTERS);
+  for(let c=0;c<NC;c++){const e=expShift(viewer,st,c);const sv=interp(Math.max(0.6,st.comps[c].idx+e.s))+e.b;
+    v+=p.sh[c]*sv;
+    if(st.comps[c].ceo===pi)v+=w*CTRL_MULT*sv+0.3*st.comps[c].tre;}
+  return v;
+}
+function aiScore(st,pi){let best=0;for(let j=0;j<st.players.length;j++)if(j!==pi)best=Math.max(best,aiWorth(st,j,pi));return aiWorth(st,pi,pi)-0.3*best;}
+function aiAction(pi){
+  const base=clone(S);base.belief=S.belief;
+  const cands=[{k:'pass',sc:aiScore(base,pi)+0.5}];
+  for(let c=0;c<NC;c++){
+    for(let n=1;n<=MAX_BUY;n++)if(canBuy(base,pi,c,n)){const st=clone(base);opBuy(st,pi,c,n);cands.push({k:'buy',c,n,sc:aiScore(st,pi)});}
+    for(let n=1;n<=S.players[pi].sh[c];n++)if(canSell(base,pi,c,n)){const st=clone(base);opSell(st,pi,c,n);cands.push({k:'sell',c,n,sc:aiScore(st,pi)});}
+  }
+  cands.forEach(o=>o.sc+=(Math.random()-.5)*3);
+  cands.sort((a,b)=>b.sc-a.sc);
+  const o=cands[0];
+  if(o.k==='buy')doBuy(pi,o.c,o.n);else if(o.k==='sell')doSell(pi,o.c,o.n);else doPass(pi);
+}
+function aiBoard(pi,c){
+  const ev=EVT[S.events[S.players[pi].insider]];
+  let best='hold',bs=-1e9;
+  ['hold','div','exp','emb'].forEach(ch=>{
+    if(!boardOK(S,c,ch))return;
+    const st=clone(S);opBoard(st,c,ch);
+    if(ch==='emb'){const pen=ev.t==='audit'?AUDIT_STEPS:0.7;st.comps[c].idx=Math.max(0.6,st.comps[c].idx-pen);st.comps[c].emb=false;}
+    const sc=aiScore(st,pi)+(Math.random()-.5)*1.5+(ch==='hold'?0.3:0);
+    if(sc>bs){bs=sc;best=ch;}
+  });
+  return best;
+}
+
+/* ================= game flow ================= */
+function setupGame(cfg){
+  clearTimeout(timer);
+  S={players:cfg.map((p,i)=>({id:i,name:p.name,ai:p.ai,cash:START_CASH,sh:Array(NC).fill(0),tr:{},insider:0})),
+     comps:COMPS.map(()=>({idx:6+(Math.random()*4|0),pool:SHARES,tre:START_TRE,ceo:null,emb:false,hist:[],qStart:0})),
+     q:1,start:Math.random()*cfg.length|0,acts:0,phase:'idle',events:[],deck:[],log:[],belief:cfg.map(()=>Array(NC).fill(0)),bi:0,viewer:null,cfg};
+  S.comps.forEach(C=>C.hist.push(TRACK[C.idx]));
+  const hs=humans();S.viewer=hs.length===1?hs[0].id:null;
+  log(`新局開始：${S.players.length} 位玩家，每人起始資金 $${START_CASH}，共 ${QUARTERS} 季。`,'q');
+  startQuarter();
+}
+function startQuarter(){
+  S.phase='action';S.acts=0;S.events=[];
+  for(let i=0;i<=NP();i++)S.events.push(draw());
+  S.players.forEach((p,i)=>{p.insider=i;p.tr={};});
+  S.comps.forEach(C=>{C.emb=false;C.qStart=C.idx;});
+  S.belief=S.players.map(()=>Array(NC).fill(0));
+  log(`第 ${S.q} 季開盤，起始玩家 ${pn(S.start)}`,'q');
+  const hs=humans();
+  render();
+  if(hs.length===1)quarterModal(true);
+  else if(hs.length>1)quarterModal(false);
+  else proceed();
+}
+function proceed(){
+  clearTimeout(timer);
+  if(S.phase!=='action')return;
+  if(S.acts>=NP()*APQ){beginBoard();return;}
+  const pi=curP();UI.sel=null;UI.qty=1;
+  save();
+  const p=S.players[pi], multi=humans().length>1;
+  if(p.ai){ if(multi)S.viewer=null; render(); timer=setTimeout(()=>aiAction(pi),SPEED); }
+  else if(multi&&S.viewer!==pi){ S.viewer=null; render(); handoff(pi,'輪到你交易',()=>{S.viewer=pi;render();}); }
+  else render();
+}
+function beliefUpd(pi,c,amt){S.players.forEach((p,j)=>{if(j!==pi&&p.ai)S.belief[j][c]=Math.max(-2,Math.min(2,S.belief[j][c]+amt));});}
+function ceoNote(c,before){const now=S.comps[c].ceo;if(now!==before){if(now==null)log(`${cn(c)} CEO 從缺（平手或持股不足）`,'k');else log(`${pn(now)} 入主 ${cn(c)}，成為 CEO`,'k');}}
+function doBuy(pi,c,n){const b=price(S,c),cb=S.comps[c].ceo;const cost=opBuy(S,pi,c,n);
+  log(`${pn(pi)} 買進 ${cn(c)} ${n} 股，付 $${cost}，股價 $${b}→$${price(S,c)}`);ceoNote(c,cb);beliefUpd(pi,c,0.35*n);S.acts++;proceed();}
+function doSell(pi,c,n){const b=price(S,c),cb=S.comps[c].ceo;const g=opSell(S,pi,c,n);
+  log(`${pn(pi)} 賣出 ${cn(c)} ${n} 股，得 $${g}，股價 $${b}→$${price(S,c)}`);ceoNote(c,cb);beliefUpd(pi,c,-0.25*n);S.acts++;proceed();}
+function doPass(pi){log(`${pn(pi)} 按兵不動`);S.acts++;proceed();}
+
+function beginBoard(){
+  S.phase='board';S.bi=0;if(humans().length>1)S.viewer=null;
+  log('董事會召開：各公司 CEO 決定公司動向','q');render();
+  timer=setTimeout(boardStep,SPEED*0.6);
+}
+const BOARD_NAMES={hold:'按兵不動',div:'配息',exp:'擴張',emb:'掏空'};
+function applyBoard(c,ch){
+  const C=S.comps[c],pi=C.ceo,b=price(S,c);const r=opBoard(S,c,ch);
+  if(ch==='div')log(`${pn(pi)} 讓 ${cn(c)} 配息每股 $${r}`);
+  else if(ch==='exp')log(`${pn(pi)} 讓 ${cn(c)} 擴張，花費 $${EXPAND_COST}，股價 $${b}→$${price(S,c)}`);
+  else if(ch==='emb')log(`${pn(pi)} 掏空 ${cn(c)}！帶走 $${r}，股價 $${b}→$${price(S,c)}`,'k');
+  else log(`${pn(pi)} 讓 ${cn(c)} 按兵不動，金庫保留 $${C.tre}`);
+}
+function boardStep(){
+  clearTimeout(timer);
+  if(S.bi>=NC){beginSettle();return;}
+  const c=S.bi,C=S.comps[c];render();
+  if(C.ceo==null){log(`${cn(c)} 沒有 CEO，本季不動作`);S.bi++;timer=setTimeout(boardStep,SPEED*0.4);return;}
+  const pi=C.ceo;
+  if(S.players[pi].ai){timer=setTimeout(()=>{applyBoard(c,aiBoard(pi,c));S.bi++;boardStep();},SPEED);}
+  else{const go=()=>{S.viewer=pi;render();boardModal(pi,c);};
+    if(humans().length>1&&S.viewer!==pi){S.viewer=null;render();handoff(pi,`你是 ${COMPS[c].name} 的 CEO`,go);}else go();}
+}
+function beginSettle(){
+  S.phase='settle';const before=S.comps.map(C=>C.idx);const bks=[];
+  S.events.forEach(ei=>applyEvent(S,EVT[ei],c=>bks.push(c)));
+  bks.forEach(c=>log(`${cn(c)} 股價歸零破產！所有持股作廢，以 $${TRACK[RELIST_IDX]} 重新上市`,'k'));
+  S.comps.forEach(C=>C.hist.push(TRACK[C.idx]));
+  log(`第 ${S.q} 季結算完成`,'q');
+  render();settleModal(before,bks);
+}
+function endQuarter(){
+  closeModal();S.q++;S.start=(S.start+1)%NP();
+  if(S.q>QUARTERS)endGame();else startQuarter();
+}
+function endGame(){
+  S.phase='end';clearSave();render();
+  const rows=S.players.map((p,i)=>({i,...worthOf(S,i)})).sort((a,b)=>b.total-a.total);
+  const w=rows[0];
+  openModal(`<h2>最終結算</h2><p class="sub">六季結束。控股溢價：每家公司的 CEO 額外獲得該公司股價 ×${CTRL_MULT}。</p>
+   <div class="win">${esc(S.players[w.i].name)} 勝出</div>
+   <div class="tablewrap"><table class="res"><thead><tr><th>玩家</th><th>現金</th><th>持股市值</th><th>控股溢價</th><th>總身價</th></tr></thead><tbody>
+   ${rows.map((r,k)=>`<tr><td>${k+1}. ${pn(r.i)}</td><td>$${r.cash}</td><td>$${r.stock}</td><td>$${r.ctrl}</td><td><b>$${r.total}</b></td></tr>`).join('')}
+   </tbody></table></div>
+   <div class="acts"><button class="btn" data-m="setup">更改設定</button><button class="btn primary" data-m="again">再來一局</button></div>`,
+   m=>{if(m==='again'){closeModal();setupGame(S.cfg);}else showSetup();});
+}
+
+/* ================= modals ================= */
+let modalCb=null;
+function openModal(html,cb){$('#modal').innerHTML=html;$('#overlay').hidden=false;modalCb=cb;const f=$('#modal .primary');f&&f.focus({preventScroll:true});}
+function closeModal(){$('#overlay').hidden=true;$('#modal').innerHTML='';modalCb=null;}
+$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b&&!b.disabled&&modalCb)modalCb(b.dataset.m,b);});
+function handoff(pi,why,cb){
+  openModal(`<h2>請把裝置交給 ${esc(S.players[pi].name)}</h2><p class="sub">${why}。其他玩家請別偷看，接下來會顯示 ${esc(S.players[pi].name)} 的內線消息。</p>
+   <div class="acts"><button class="btn primary" data-m="go">我是 ${esc(S.players[pi].name)}，開始</button></div>`,()=>{closeModal();cb();});
+}
+function quarterModal(single){
+  const ins=single?insiderHTML(S.viewer):'';
+  openModal(`<h2>第 ${S.q} 季</h2><p class="sub">本季共有 ${S.events.length} 張事件牌，每位玩家祕密看到其中一張，最後一張無人知曉。季末全部公開並生效。${single?'':'每位玩家會在輪到自己時看到內線。'}</p>${ins}
+   <div class="acts"><button class="btn primary" data-m="go">開盤</button></div>`,()=>{closeModal();proceed();});
+}
+function boardModal(pi,c){
+  const C=S.comps[c],pr=price(S,c),me=S.players[pi];
+  const opt=(k,title,desc)=>{const ok=boardOK(S,c,k);return `<button class="btn opt" data-m="${k}" ${ok?'':'disabled'}><div><b>${title}</b><br><span>${desc}</span></div><span class="mono">${ok?'選擇':'不可用'}</span></button>`;};
+  const per=divPer(S,c);
+  const ex=TRACK[Math.min(MAXI,C.idx+EXPAND_STEPS)],em=TRACK[Math.max(1,C.idx-EMB_STEPS)];
+  openModal(`<h2>${COMPS[c].name} 董事會</h2><p class="sub">${esc(me.name)}，你持有 ${me.sh[c]} 股，是 CEO。公司金庫 $${C.tre}，目前股價 $${pr}，已發行 ${SHARES-C.pool} 股。</p>
+   ${S.viewer===pi?insiderHTML(pi):''}
+   <div class="opts">
+    ${opt('div','配息',per>=1?`每股 $${per}，你拿 $${per*me.sh[c]}，其他股東也按持股領取`:'金庫不足以每股配 $1')}
+    ${opt('exp','擴張',`金庫付 $${EXPAND_COST}，股價 $${pr}→$${ex}，所有股東受惠`)}
+    ${opt('emb','掏空',`金庫 $${C.tre} 全進你口袋，股價 $${pr}→$${em}。小心監管風暴（再跌 ${AUDIT_STEPS} 格）`)}
+    ${opt('hold','按兵不動','金庫留著，下季再說')}
+   </div>`,k=>{closeModal();applyBoard(c,k);S.bi++;boardStep();});
+}
+function settleModal(before,bks){
+  const knower=i=>{const who=S.players.filter(p=>p.insider===i);return who.length?`內線持有者：${who.map(p=>esc(p.name)).join('、')}`:'無人知曉的暗牌';};
+  const rows=S.comps.map((C,c)=>{const a=TRACK[C.qStart],m=TRACK[before[c]],z=TRACK[C.idx];const d=z-a;
+    return `<tr><td>${cn(c)}${bks.includes(c)?' <span class="chip down">破產重整</span>':''}</td><td>$${a}</td><td>$${m}</td><td><b>$${z}</b></td><td class="${d>0?'up':d<0?'down':'flat'}">${d>0?'+':''}${d}</td></tr>`;}).join('');
+  const last=S.q>=QUARTERS;
+  openModal(`<h2>第 ${S.q} 季 · 揭牌結算</h2><p class="sub">所有事件牌依序生效。對照一下：誰早就知道？他們剛才怎麼交易？</p>
+   <div class="evlist">${S.events.map((ei,i)=>{const ev=EVT[ei];return `<div class="ev ${i===S.events.length-1?'hidden-card':''}"><div><h4>${ev.n}</h4><div class="chips">${evChips(ev)}</div></div><div class="kn">${knower(i)}</div></div>`;}).join('')}</div>
+   <div class="tablewrap"><table class="res"><thead><tr><th>公司</th><th>季初</th><th>董事會後</th><th>結算後</th><th>本季漲跌</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <div class="acts"><button class="btn primary" data-m="next">${last?'查看最終結算':'進入第 '+(S.q+1)+' 季'}</button></div>`,()=>endQuarter());
+  if(!humans().length)timer=setTimeout(()=>{if(S.phase==='settle')endQuarter();},SPEED*3);
+}
+
+/* ================= setup ================= */
+function showSetup(){
+  clearTimeout(timer);
+  const sv=loadSave();
+  const n=setupCfg.n;
+  const seats=setupCfg.seats.slice(0,n).map((s,i)=>`<div class="seat" style="--pc:var(--p${i})"><i></i><input id="seat${i}" data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('');
+  openModal(`<h2>控股風雲</h2><p class="sub">六個季度，五家上市公司，每個人手上都握著一則別人不知道的內線消息。買股、搶董事席、決定配息還是掏空，最後身價最高的人贏。</p>
+   <div class="pitch"><div><b>內線推理</b>每季你只看得到一張事件牌，從對手的買賣讀出他們知道什麼。</div><div><b>董事會權力</b>最大股東當 CEO，決定配息、擴張，或乾脆掏空。</div><div><b>控股溢價</b>遊戲結束時，每家公司的 CEO 多拿股價 ×2。</div></div>
+   <div class="field"><span>玩家人數</span><div class="seg">${[2,3,4,5].map(k=>`<button data-m="n${k}" class="${k===n?'on':''}">${k} 人</button>`).join('')}</div></div>
+   <div class="seats">${seats}</div>
+   <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="s${k}" class="${k===setupCfg.speed?'on':''}">${k}</button>`).join('')}</div></div>
+   <p class="note">多位人類玩家可共用同一台裝置輪流操作（熱座模式），系統會在換人時遮住內線。</p>
+   <div class="acts"><button class="btn" data-m="rules">先看規則</button>${sv&&sv.phase==='action'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+  (m)=>{
+    readSeats();
+    if(m[0]==='n'){setupCfg.n=+m.slice(1);showSetup();}
+    else if(m[0]==='h'||m[0]==='a'){setupCfg.seats[+m.slice(1)].ai=m[0]==='a';showSetup();}
+    else if(m[0]==='s'){setupCfg.speed=m.slice(1);SPEED=SPEEDS[setupCfg.speed];showSetup();}
+    else if(m==='rules')showRules();
+    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;const hs=humans();S.viewer=hs.length===1?hs[0].id:null;render();proceed();}
+    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];
+      const cfg=setupCfg.seats.slice(0,setupCfg.n).map((s,i)=>({name:(s.name||'').trim()||(s.ai?AI_NAMES[i%4]:'玩家'+(i+1)),ai:s.ai}));
+      setupGame(cfg);}
+  });
+}
+function readSeats(){document.querySelectorAll('[data-seat]').forEach(inp=>{setupCfg.seats[+inp.dataset.seat].name=inp.value;});}
+
+/* ================= rules ================= */
+function showRules(){
+  $('#rulesModal').innerHTML=`<h2>遊戲規則</h2><div class="rules">
+  <p><b>目標：</b>${QUARTERS} 季結束後，總身價最高者獲勝。總身價 = 現金 + 持股市值 + 控股溢價（你擔任 CEO 的每家公司，額外計算該公司股價 ×${CTRL_MULT}）。</p>
+  <h3>配置</h3>
+  <ul><li>5 家公司，每家 ${SHARES} 股，一開始全部未發行，公司金庫各有 $${START_TRE}。</li>
+  <li>每位玩家起始現金 $${START_CASH}。所有人的現金與持股都公開。</li>
+  <li>股價沿著固定的股價軌移動，▲▼ 的數字代表移動幾格：</li></ul>
+  <div class="trackline">${TRACK.map(v=>`<span>$${v}</span>`).join('')}</div>
+  <h3>每季流程</h3>
+  <ol>
+   <li><b>內線消息：</b>翻出「玩家人數 + 1」張事件牌。每位玩家祕密看其中一張，剩下一張是誰都不知道的暗牌。</li>
+   <li><b>交易：</b>從起始玩家開始輪流，每季每人共 ${APQ} 次行動，每次行動擇一：
+     <ul><li><b>買進</b>同一家公司 1–${MAX_BUY} 股，以現價向公司購買未發行股份，錢進入公司金庫，之後股價上漲 1 格。</li>
+     <li><b>賣出</b>同一家公司任意股數，以現價賣回給市場，股份回到未發行，之後股價下跌「股數 ÷ 2（無條件進位）」格，最低跌到 $2。</li>
+     <li><b>按兵不動。</b></li></ul>
+     同一季內，同一家公司你只能買或只能賣，不能兩者都做。</li>
+   <li><b>董事會：</b>每家公司持股最多（至少 ${CEO_MIN} 股）的玩家就是 CEO；持股平手時由現任 CEO 續任，否則從缺。CEO 為公司選一項：
+     <ul><li><b>配息：</b>金庫平均分給每一股已發行股份（取整數，零頭留在金庫）。</li>
+     <li><b>擴張：</b>金庫支付 $${EXPAND_COST}，股價上漲 ${EXPAND_STEPS} 格。</li>
+     <li><b>掏空：</b>金庫全部進入 CEO 個人口袋，股價下跌 ${EMB_STEPS} 格。</li>
+     <li><b>按兵不動：</b>金庫留到下一季。</li></ul></li>
+   <li><b>揭牌結算：</b>公開所有事件牌並依序生效。「監管風暴」類事件會讓本季被掏空的公司再跌 ${AUDIT_STEPS} 格。</li>
+   <li><b>破產：</b>結算時股價跌到 $0，公司破產，所有人的該公司持股作廢，公司以 $${TRACK[RELIST_IDX]} 重新上市，10 股全部未發行。</li>
+   <li>起始玩家順時針輪替，進入下一季。</li>
+  </ol>
+  <h3>致勝心法</h3>
+  <ul><li>每個人只知道一張牌。對手突然大買某家公司？他可能看到了利多。</li>
+  <li>買股會推高股價，也會讓其他股東跟著賺。進場時機與控股權常常要二選一。</li>
+  <li>當 CEO 才能動用金庫，但掏空會重傷你自己的持股，還可能撞上監管風暴。</li>
+  <li>別人買你當 CEO 的公司，錢是進到你控制的金庫裡。</li>
+  <li>最後一季的控股溢價很肥：股價 $20 的公司，CEO 等於多拿兩股。</li></ul>
+  </div><div class="acts"><button class="btn primary" id="closeRules">知道了</button></div>`;
+  $('#rulesOv').hidden=false;$('#closeRules').focus({preventScroll:true});
+}
+$('#rulesOv').addEventListener('click',e=>{if(e.target.id==='closeRules'||e.target.id==='rulesOv')$('#rulesOv').hidden=true;});
+$('#btnRules').addEventListener('click',showRules);
+$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();resumeAfterModal();}});}else showSetup();});
+function resumeAfterModal(){if(!S)return;if(S.phase==='action')proceed();else if(S.phase==='board')boardStep();else if(S.phase==='settle')beginSettleModalAgain();}
+function beginSettleModalAgain(){settleModal(S.comps.map(C=>C.idx),[]);}
+
+/* ================= render ================= */
+function spark(c){
+  const C=S.comps[c];const pts=C.hist.slice();if(S.phase!=='settle'&&S.phase!=='end'&&TRACK[C.idx]!==pts[pts.length-1]||pts.length===1)pts.push(TRACK[C.idx]);
+  const max=Math.max(20,...pts),n=Math.max(QUARTERS+1,pts.length)-1;
+  const xy=pts.map((v,i)=>[(i/n)*100,32-(v/max)*28]);
+  const line=xy.map(p=>p.map(x=>x.toFixed(1)).join(',')).join(' ');
+  const area=`0,34 ${line} ${xy[xy.length-1][0].toFixed(1)},34`;
+  const e=xy[xy.length-1];
+  return `<svg class="spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true"><polygon points="${area}" fill="var(--c${c})" fill-opacity=".12"/><polyline points="${line}" fill="none" stroke="var(--c${c})" stroke-width="1.6" vector-effect="non-scaling-stroke"/><circle cx="${e[0]}" cy="${e[1]}" r="1.8" fill="var(--c${c})"/></svg>`;
+}
+function myTurn(){return S&&S.phase==='action'&&!S.players[curP()].ai&&S.viewer===curP()&&$('#overlay').hidden;}
+function render(){
+  if(!S)return;
+  $('#qpips').innerHTML=Array.from({length:QUARTERS},(_,i)=>`<span class="qpip ${i+1<S.q?'done':i+1===S.q?'now':''}">Q${i+1}</span>`).join('');
+  $('#phase').textContent={action:'交易中',board:'董事會',settle:'揭牌結算',end:'遊戲結束',idle:''}[S.phase]||'';
+  const mine=myTurn(),pi=S.phase==='action'?curP():-1;
+  $('#cos').innerHTML=S.comps.map((C,c)=>{
+    const pr=TRACK[C.idx],d=pr-TRACK[C.qStart];
+    const cells=[];S.players.forEach((p,i)=>{for(let k=0;k<p.sh[c];k++)cells.push(`<span class="cell f" style="--pc:var(--p${i})"></span>`);});
+    while(cells.length<SHARES)cells.push('<span class="cell"></span>');
+    const holders=S.players.map((p,i)=>p.sh[c]?`<span class="who" style="--pc:var(--p${i})">${esc(p.name)} ${p.sh[c]}</span>`:'').join('');
+    const sel=mine&&UI.sel===c;
+    let trade='';
+    if(sel){
+      const me=S.players[pi],q=UI.qty;
+      const bq=Math.min(q,MAX_BUY),sq=Math.min(q,me.sh[c]);
+      const okB=canBuy(S,pi,c,bq),okS=sq>=1&&canSell(S,pi,c,sq);
+      let pvB='',pvS='';
+      if(okB){const st=clone(S);opBuy(st,pi,c,bq);pvB=`股價→$${price(st,c)}，持 ${st.players[pi].sh[c]} 股${st.comps[c].ceo===pi&&C.ceo!==pi?'，成為 CEO':''}`;}
+      else pvB=me.tr[c]==='s'?'本季已賣過此股':C.pool<bq?`未發行只剩 ${C.pool} 股`:`現金不足（需 $${pr*bq}）`;
+      if(okS){const st=clone(S);opSell(st,pi,c,sq);pvS=`股價→$${price(st,c)}${C.ceo===pi&&st.comps[c].ceo!==pi?'，失去 CEO':''}`;}
+      else pvS=me.sh[c]<1?'你沒有這家公司的股票':'本季已買過此股';
+      trade=`<div class="trade"><div class="qty">股數 <button class="btn" data-q="-1" aria-label="減少">−</button><b>${q}</b><button class="btn" data-q="1" aria-label="增加">+</button><span>買最多 ${MAX_BUY}，賣不限</span></div>
+       <div class="tbtns"><button class="btn buy" data-t="buy" ${okB?'':'disabled'}>買進 ${bq} 股 · $${pr*bq}<small>${pvB}</small></button>
+       <button class="btn sell" data-t="sell" ${okS?'':'disabled'}>賣出 ${Math.max(sq,1)} 股 · +$${pr*Math.max(sq,0)}<small>${pvS}</small></button></div></div>`;
+    }
+    return `<article class="co ${mine?'pick':''} ${sel?'sel':''}" data-c="${c}" style="--cc:var(--c${c})" ${mine?'tabindex="0" role="button" aria-label="選擇 '+COMPS[c].name+'"':''}>
+      <div class="band"></div>
+      <div class="cohead"><span class="tick">${COMPS[c].tick}</span><span class="sec">${COMPS[c].sec}</span></div>
+      <h3>${COMPS[c].name}</h3>
+      <div class="prow"><span class="price">$${pr}</span><span class="delta ${d>0?'up':d<0?'down':'flat'}">本季 ${d>0?'▲ +':d<0?'▼ ':'± '}${d}</span></div>
+      ${spark(c)}
+      <dl class="stats"><div><dt>公司金庫</dt><dd>$${C.tre}</dd></div><div><dt>未發行</dt><dd>${C.pool}/${SHARES}</dd></div><div><dt>每股配息</dt><dd>$${divPer(S,c)}</dd></div></dl>
+      <div class="ceo">CEO ${C.ceo==null?'<span>從缺</span>':pn(C.ceo)+' <span class="crown">控股</span>'}${C.emb?' <span class="chip down">本季遭掏空</span>':''}</div>
+      <div class="hold" aria-hidden="true">${cells.join('')}</div>
+      <div class="hlist">${holders||'<span class="note">尚無股東</span>'}</div>
+      ${trade}
+    </article>`;
+  }).join('');
+  renderTurn();renderPlayers();
+  $('#log').innerHTML=S.log.slice(0,80).map(l=>`<li class="${l.c}">${l.h}</li>`).join('');
+}
+function renderTurn(){
+  let h='';
+  if(S.phase==='action'){
+    const pi=curP(),p=S.players[pi],k=Math.floor(S.acts/NP())+1;
+    h+=`<div class="turnhead">${pn(pi)}<span class="actn">第 ${S.q} 季 · 行動輪 ${k}/${APQ}</span></div>`;
+    if(p.ai){h+=`<p class="thinking">${esc(p.name)} 正在盤算<span class="dots"></span></p>`;}
+    else if(S.viewer===pi){h+=`<p class="hint">點一家公司進行買賣，或按兵不動。</p>`;}
+    else h+=`<p class="hint">等待交接裝置。</p>`;
+    if(S.viewer!=null)h+=insiderHTML(S.viewer);
+    if(myTurn())h+=`<div class="prow2"><button class="btn" id="btnPass">按兵不動</button></div>`;
+  }else if(S.phase==='board'){
+    const c=Math.min(S.bi,NC-1);
+    h+=`<div class="turnhead"><b>董事會</b><span class="actn">${COMPS[c].name}</span></div><p class="thinking">CEO 正在決定公司動向<span class="dots"></span></p>`;
+    if(S.viewer!=null)h+=insiderHTML(S.viewer);
+  }else if(S.phase==='settle'){h+=`<div class="turnhead"><b>揭牌結算</b></div><p class="hint">所有事件牌已公開。</p>`;}
+  else if(S.phase==='end'){h+=`<div class="turnhead"><b>遊戲結束</b></div><div class="prow2"><button class="btn primary" id="btnAgain">再來一局</button></div>`;}
+  $('#turn').innerHTML=`<div class="panel"><h2>現在</h2>${h}</div>`;
+  const bp=$('#btnPass');if(bp)bp.onclick=()=>{if(myTurn())doPass(curP());};
+  const ba=$('#btnAgain');if(ba)ba.onclick=()=>setupGame(S.cfg);
+}
+function renderPlayers(){
+  const cur=S.phase==='action'?curP():-1;
+  $('#players').innerHTML=`<table class="pl"><thead><tr><th>玩家</th><th>現金</th><th>股票</th><th>總身價</th></tr></thead><tbody>${S.players.map((p,i)=>{const w=worthOf(S,i);
+    const ceos=S.comps.map((C,c)=>C.ceo===i?`<i style="--cc:var(--c${c})" title="${COMPS[c].name} CEO"></i>`:'').join('');
+    return `<tr class="${i===cur?'cur':''}"><td>${pn(i)}${p.ai?'<span class="tag">AI</span>':''}${i===S.start?'<span class="tag">起始</span>':''}<div class="ceos">${ceos}</div></td><td>$${w.cash}</td><td>$${w.stock}</td><td><b>$${w.total}</b></td></tr>`;}).join('')}</tbody></table>
+    <p class="note" style="margin:8px 0 0">總身價含控股溢價（CEO 加計股價 ×${CTRL_MULT}），色塊代表擔任 CEO 的公司。</p>`;
+}
+
+/* ================= input ================= */
+$('#cos').addEventListener('click',e=>{
+  if(!myTurn())return;
+  const q=e.target.closest('[data-q]'),t=e.target.closest('[data-t]'),card=e.target.closest('.co');
+  const pi=curP();
+  if(q){const me=S.players[pi];UI.qty=Math.max(1,Math.min(Math.max(MAX_BUY,me.sh[UI.sel]),UI.qty+(+q.dataset.q)));render();return;}
+  if(t){const c=UI.sel,me=S.players[pi];if(t.dataset.t==='buy'){const n=Math.min(UI.qty,MAX_BUY);if(canBuy(S,pi,c,n))doBuy(pi,c,n);}else{const n=Math.min(UI.qty,me.sh[c]);if(canSell(S,pi,c,n))doSell(pi,c,n);}return;}
+  if(card){const c=+card.dataset.c;if(UI.sel!==c){UI.sel=c;UI.qty=1;render();}}
+});
+$('#cos').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('co')){e.preventDefault();e.target.click();}});
+
+/* ================= boot ================= */
+window.__pw={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;}};
+(function boot(){
+  S={players:[{name:'—',ai:true,cash:START_CASH,sh:Array(NC).fill(0),tr:{}}],comps:COMPS.map((_,i)=>({idx:7+(i%3),pool:SHARES,tre:START_TRE,ceo:null,emb:false,hist:[TRACK[7+(i%3)]],qStart:7+(i%3)})),q:1,start:0,acts:0,phase:'idle',events:[],log:[],belief:[[0,0,0,0,0]],viewer:null};
+  render();showSetup();
+})();
+</script>
+<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("../../sw.js",{scope:"../../"}).catch(()=>{}));</script>
+</body>
+</html>

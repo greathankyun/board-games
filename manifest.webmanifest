@@ -1,0 +1,20 @@
+{
+  "name": "桌遊大廳",
+  "short_name": "桌遊大廳",
+  "description": "原創策略桌遊合集，可離線遊玩，支援 AI 對手與同機多人。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#E4E9EE",
+  "theme_color": "#1D5E56",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "控股風雲", "url": "games/proxy-war/", "icons": [{"src": "icons/icon-192.png", "sizes": "192x192"}]}
+  ]
+}

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>桌遊大廳</title>
+<meta name="description" content="原創策略桌遊合集，可安裝到手機主畫面、離線遊玩，支援 AI 對手與同機多人。">
+<meta name="theme-color" content="#1D5E56">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="桌遊大廳">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a game shelf — one lobby header, then a row of game "boxes" */
+:root{
+  --bg:#E4E9EE; --surface:#F8FAFB; --surface2:#EDF1F5; --ink:#142033; --muted:#5B687B; --line:#C7D0DA;
+  --accent:#1D5E56; --accent-ink:#F4FBFA; --gold:#9C7116;
+  --c0:#4655CF; --c1:#CF5426; --c2:#178C79; --c3:#A9801A; --c4:#2A7DBB;
+  --f-display:'Noto Serif TC','Songti TC','PMingLiU',serif;
+  --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0E1520; --surface:#162030; --surface2:#1D293C; --ink:#E6ECF4; --muted:#93A1B6; --line:#2B3A50;
+  --accent:#4DB2A3; --accent-ink:#0A1917; --gold:#E2B54E;
+  --c0:#7B88F0; --c1:#F07C4E; --c2:#3CC1A9; --c3:#D9AE3E; --c4:#5AA9E6; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:28px}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(32px,6vw,48px);letter-spacing:.08em;line-height:1;margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin:0 0 8px}
+.lead{color:var(--muted);margin:10px 0 0;max-width:46ch}
+.btn{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.game{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;color:inherit;text-decoration:none;min-width:0}
+.game:hover{border-color:var(--ink)}
+.cover{height:150px;position:relative;background:var(--surface2);overflow:hidden;display:flex;align-items:flex-end;padding:14px;gap:6px}
+.cover::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 110% -20%,transparent 0 9px,color-mix(in srgb,var(--accent) 14%,transparent) 9px 10px)}
+.bar{position:relative;flex:1;border-radius:2px 2px 0 0}
+.game .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.game h2{font-family:var(--f-display);font-size:24px;font-weight:900;letter-spacing:.05em;margin:0}
+.game p{margin:0;color:var(--muted);font-size:14px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:8px}
+.meta span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--muted)}
+.play{font-weight:700;color:var(--accent);font-size:14px;margin-top:6px}
+.soon{border-style:dashed;background:transparent;justify-content:center;align-items:center;text-align:center;padding:32px;color:var(--muted);min-height:200px}
+.soon b{display:block;font-family:var(--f-display);font-size:18px;color:var(--ink);margin-bottom:4px}
+.install{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.install p{margin:0;color:var(--muted);font-size:14px;max-width:60ch}
+.install b{color:var(--ink)}
+footer{margin-top:32px;font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.06em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Board Game Hall</p>
+      <h1>桌遊大廳</h1>
+      <p class="lead">原創策略桌遊合集。可以跟 AI 對戰，也能幾個人輪流用同一台裝置。安裝到主畫面後，沒有網路也能玩。</p>
+    </div>
+    <button class="btn primary" id="installBtn" type="button" hidden>安裝到主畫面</button>
+  </header>
+
+  <main class="shelf">
+    <a class="game" href="games/proxy-war/">
+      <div class="cover" aria-hidden="true">
+        <span class="bar" style="height:38%;background:var(--c0)"></span>
+        <span class="bar" style="height:72%;background:var(--c1)"></span>
+        <span class="bar" style="height:52%;background:var(--c2)"></span>
+        <span class="bar" style="height:90%;background:var(--c3)"></span>
+        <span class="bar" style="height:60%;background:var(--c4)"></span>
+      </div>
+      <div class="body">
+        <h2>控股風雲</h2>
+        <p>每個人只看得到一則內線消息。讀懂對手的買賣，搶下董事會，決定配息、擴張還是掏空。</p>
+        <div class="meta"><span>2–5 人</span><span>約 20 分鐘</span><span>AI 對手</span><span>股權・推理</span></div>
+        <span class="play">開始遊戲 →</span>
+      </div>
+    </a>
+    <div class="game soon"><div><b>下一款製作中</b>新遊戲完成後會出現在這裡</div></div>
+  </main>
+
+  <section class="install" id="installHelp">
+    <p id="installText"><b>安裝方式：</b>Android 或電腦版 Chrome 可以按上方的「安裝到主畫面」。iPhone 和 iPad 請用 Safari 開啟，點「分享」再點「加入主畫面」。</p>
+  </section>
+
+  <footer>v1 · 所有遊戲皆為原創設計</footer>
+</div>
+<script>
+'use strict';
+let deferred=null;
+const btn=document.getElementById('installBtn');
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;btn.hidden=false;});
+btn.addEventListener('click',async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice.catch(()=>{});deferred=null;btn.hidden=true;});
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+if(standalone){document.getElementById('installHelp').hidden=true;}
+addEventListener('appinstalled',()=>{btn.hidden=true;document.getElementById('installText').innerHTML='<b>已安裝。</b>之後從主畫面圖示打開就好。';});
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
