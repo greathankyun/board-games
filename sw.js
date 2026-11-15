@@ -1,6 +1,6 @@
 // 桌遊大廳 service worker：先用快取、背景更新，讓遊戲離線也能玩。
 // 新增遊戲時把檔案加進 PRECACHE，並把 VERSION 加一。
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = 'board-games-' + VERSION;
 const FONT_CACHE = 'board-games-fonts';
 const PRECACHE = [
