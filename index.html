@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>桌遊大廳</title>
 <meta name="description" content="原創策略桌遊合集，可安裝到手機主畫面、離線遊玩，支援 AI 對手與同機多人。">
-<meta name="theme-color" content="#1D5E56">
+<meta name="theme-color" content="#1E5641">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -14,23 +14,19 @@
 <meta name="apple-mobile-web-app-title" content="桌遊大廳">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
 /* Layout: a game shelf — one lobby header, then a row of game "boxes" */
 :root{
-  --bg:#E4E9EE; --surface:#F8FAFB; --surface2:#EDF1F5; --ink:#142033; --muted:#5B687B; --line:#C7D0DA;
-  --accent:#1D5E56; --accent-ink:#F4FBFA; --gold:#9C7116;
-  --c0:#4655CF; --c1:#CF5426; --c2:#178C79; --c3:#A9801A; --c4:#2A7DBB;
-  --f-display:'Noto Serif TC','Songti TC','PMingLiU',serif;
+  --bg:#F5EEE1; --surface:#FFFBF4; --surface2:#EFE6D4; --ink:#1F2B27; --muted:#6E7068; --line:#E5D9C3;
+  --accent:#1E5641; --accent-ink:#F3F7EF; --gold:#E9643B;
+  --c0:#7A5AD3; --c1:#D7542B; --c2:#22987A; --c3:#D19A17; --c4:#2E7DC0;
+  --f-display:'Noto Sans TC','PingFang TC',system-ui,sans-serif;
   --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
   --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
   color-scheme:light;
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#0E1520; --surface:#162030; --surface2:#1D293C; --ink:#E6ECF4; --muted:#93A1B6; --line:#2B3A50;
-  --accent:#4DB2A3; --accent-ink:#0A1917; --gold:#E2B54E;
-  --c0:#7B88F0; --c1:#F07C4E; --c2:#3CC1A9; --c3:#D9AE3E; --c4:#5AA9E6; color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
@@ -39,11 +35,11 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-be
 h1{font-family:var(--f-display);font-weight:900;font-size:clamp(32px,6vw,48px);letter-spacing:.08em;line-height:1;margin:0}
 .eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin:0 0 8px}
 .lead{color:var(--muted);margin:10px 0 0;max-width:46ch}
-.btn{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
-.game{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;color:inherit;text-decoration:none;min-width:0}
+.game{position:relative;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;color:inherit;text-decoration:none;min-width:0}
 .game:hover{border-color:var(--ink)}
 .cover{height:150px;position:relative;background:var(--surface2);overflow:hidden;display:flex;align-items:flex-end;padding:14px;gap:6px}
 .cover::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 110% -20%,transparent 0 9px,color-mix(in srgb,var(--accent) 14%,transparent) 9px 10px)}
@@ -56,7 +52,7 @@ h1{font-family:var(--f-display);font-weight:900;font-size:clamp(32px,6vw,48px);l
 .play{font-weight:700;color:var(--accent);font-size:14px;margin-top:6px}
 .soon{border-style:dashed;background:transparent;justify-content:center;align-items:center;text-align:center;padding:32px;color:var(--muted);min-height:200px}
 .soon b{display:block;font-family:var(--f-display);font-size:18px;color:var(--ink);margin-bottom:4px}
-.install{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.install{margin-top:28px;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
 .install p{margin:0;color:var(--muted);font-size:14px;max-width:60ch}
 .install b{color:var(--ink)}
 footer{margin-top:32px;font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.06em}
