@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>失憶特工</title>
+<meta name="description" content="原創隱藏身分桌遊：你看得到所有人的身分，唯獨看不到自己。從別人怎麼騙你，推理自己是誰，再選對直升機。">
+<meta name="theme-color" content="#1E5641">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="桌遊大廳">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Outfit:wght@600;700;800&display=swap">
+<style>
+:root{
+  --paper:#F5EEE1; --paper2:#EFE6D4; --card:#FFFBF4; --ink:#1F2B27; --muted:#6E7068; --line:#E5D9C3; --line2:#D9CBB1;
+  --green:#1E5641; --green2:#28704F; --green-ink:#F3F7EF; --yellow:#F5C443; --yellow-ink:#2A2310;
+  --orange:#E9643B; --pink:#F7DDD3; --pink2:#EFC6B8; --up:#2C8F4E; --up-bg:#D5EEDA; --down:#C8432F; --down-bg:#F7DAD3; --flat-bg:#ECE5D7;
+  --red:#D7542B; --red-bg:#F8DCCF; --blue:#2E7DC0; --blue-bg:#D6E7F5; --violet:#7A5AD3; --violet-bg:#E4DCF7; --gold:#D19A17; --gold-bg:#F6E7BE;
+  --p0:#E58FA0; --p1:#8B67D6; --p2:#4F9E61; --p3:#E0922F; --p4:#3E9CC4; --p5:#C8573E; --p6:#6C7A3A; --p7:#5C6BC0;
+  --scrim:rgba(40,32,20,.45);
+  --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+  --f-num:'Outfit','Noto Sans TC',system-ui,sans-serif;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;font-weight:500}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(rgba(120,90,40,.07) 1px,transparent 1px);background-size:5px 5px}
+.wrap{position:relative;z-index:1;max-width:1600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 28px}
+h1,h2,h3,h4{text-wrap:balance;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+svg{display:block}
+
+/* header */
+.top{display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap;padding-block:6px 12px;border-bottom:1.5px solid var(--line2)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand svg{width:44px;height:44px;flex:none}
+.brand h1{font-size:clamp(26px,3.4vw,38px);font-weight:900;letter-spacing:.06em;line-height:1}
+.brand small{font-family:var(--f-num);font-size:12px;letter-spacing:.42em;color:var(--ink);font-weight:600;margin-left:6px}
+.homelink{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:900;color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);border-radius:12px;padding:7px 12px;background:var(--card)}.homelink svg{width:18px;height:18px}
+.vsep{width:1.5px;align-self:stretch;background:var(--line2);margin-block:6px}
+.steps{display:flex;align-items:center;flex:1;min-width:0;justify-content:center}
+.step{font-family:var(--f-num);font-weight:700;font-size:15px;padding:5px 14px;border-radius:999px;border:1.5px solid var(--line2);background:var(--card);color:var(--ink);white-space:nowrap}
+.step.done{color:var(--muted);background:var(--paper2)}
+.step.now{background:var(--green);border-color:var(--green);color:var(--green-ink);font-size:17px;padding:6px 18px}
+.link{flex:1;min-width:8px;max-width:56px;height:2px;background:repeating-linear-gradient(90deg,var(--line2) 0 4px,transparent 4px 8px)}
+.link.done{background:var(--green)}
+.tops{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:12px;cursor:pointer;font-weight:700;line-height:1.2;text-decoration:none}
+.btn svg{width:18px;height:18px}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.dark,.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.ghost{background:transparent}
+
+/* layout */
+.board{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,430px);grid-template-areas:"hero desk" "main desk";grid-template-rows:auto 1fr;gap:14px 18px;margin-top:12px;align-items:start}
+.hero{grid-area:hero;position:relative;min-height:140px;display:flex;align-items:center;overflow:hidden;border-radius:18px}
+.hero-txt{position:relative;z-index:2;padding:8px 0 10px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-family:var(--f-num);font-weight:600;letter-spacing:.32em;font-size:13px}
+.eyebrow::after{content:"";width:80px;height:1.5px;background:var(--ink)}
+.hero h2{font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:.03em;line-height:1.15;margin-top:6px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.swoosh{display:block;width:150px;height:14px;margin-top:-2px}
+.qbadge{position:relative;font-size:17px;font-weight:900;border:2px solid var(--ink);border-radius:999px;padding:3px 14px;background:var(--card);letter-spacing:.04em}
+.hero-art{position:absolute;right:0;top:0;bottom:0;width:min(62%,640px);z-index:1;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 28%);mask-image:linear-gradient(90deg,transparent 0%,#000 28%)}
+.hero-art svg{width:100%;height:100%}
+main{grid-area:main;min-width:0}
+.sect{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:900;padding-bottom:10px;border-bottom:1.5px solid var(--line2);margin:0 0 12px}
+.sect svg{width:26px;height:26px;color:var(--orange)}
+.sect small{font-size:13px;color:var(--muted);font-weight:700;margin-left:auto}
+
+/* desk */
+.desk{grid-area:desk;position:sticky;top:max(10px,env(safe-area-inset-top,0px));background:var(--green);color:var(--green-ink);border-radius:26px;padding:24px 24px 22px;overflow:hidden;display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 40px rgba(20,60,45,.25)}
+.desk .leaf{position:absolute;right:-30px;top:-20px;width:190px;height:190px;opacity:.9;pointer-events:none}
+.desk>*{position:relative}
+.dhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dhead h2{font-size:clamp(26px,2.6vw,36px);font-weight:900;letter-spacing:.04em;line-height:1.1}
+.pill{background:var(--orange);color:#fff;font-weight:900;border-radius:999px;padding:5px 14px;font-size:15px;white-space:nowrap}
+.pill.soft{background:rgba(255,255,255,.16)}
+.dsub{font-weight:700;font-size:15px;margin-top:-6px;opacity:.9}
+.dlab{font-size:14px;opacity:.9;font-weight:900;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.dlab small{font-weight:700;opacity:.8;font-size:12px}
+.dnote{font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px}
+.dnote.warn{background:rgba(233,100,59,.28)}
+.confirm{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:none;border-radius:16px;background:var(--yellow);color:var(--yellow-ink);font-size:22px;font-weight:900;padding:13px;cursor:pointer;box-shadow:0 4px 0 #C99A1E;letter-spacing:.06em}
+.confirm svg{width:24px;height:24px}
+.confirm:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #C99A1E}
+.confirm:disabled{opacity:.5;cursor:not-allowed}
+.passbtn{width:100%;border:2px solid rgba(255,255,255,.85);background:transparent;color:var(--green-ink);border-radius:14px;font-weight:900;font-size:17px;padding:10px;cursor:pointer}
+.passbtn:hover{background:rgba(255,255,255,.08)}
+.empty{border:2px dashed rgba(255,255,255,.35);border-radius:16px;padding:20px 16px;text-align:center;font-weight:700;opacity:.92}
+.empty b{display:block;font-size:19px;margin-bottom:4px}
+.think{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.1);border-radius:16px;padding:14px}
+.think .av{width:56px;height:56px;flex:none}
+.think b{font-size:19px}
+.dots::after{content:"…";display:inline-block;animation:blink 1.1s steps(3) infinite}
+@keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+.chooser{display:flex;flex-wrap:wrap;gap:6px}
+.chooser button{border:2px solid rgba(255,255,255,.55);background:transparent;color:var(--green-ink);border-radius:12px;padding:7px 12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:40px}
+.chooser button .av{width:24px;height:24px}
+.chooser button.on{background:var(--card);color:var(--ink);border-color:var(--card)}
+.chooser button:disabled{opacity:.35;cursor:not-allowed}
+.chooser button.red.on{background:var(--red);border-color:var(--red);color:#fff}
+.chooser button.blue.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chooser.big button{flex:1;justify-content:center;font-size:16px}
+.opt2{display:flex;flex-direction:column;gap:6px}
+.opt2 button{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;border:2px solid rgba(255,255,255,.4);background:transparent;color:var(--green-ink);border-radius:12px;padding:9px 12px;cursor:pointer}
+.opt2 button b{font-weight:900;font-size:15px}
+.opt2 button span{font-size:12px;opacity:.85}
+.opt2 button.on{background:var(--card);color:var(--ink);border-color:var(--card)}
+.opt2 button.on span{opacity:1;color:var(--muted)}
+.opt2 button:disabled{opacity:.35;cursor:not-allowed}
+.dsec{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+
+/* private note card */
+.intel{position:relative;background:var(--pink);color:var(--ink);border-radius:14px;padding:14px 16px 12px;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.intel::after{content:"";position:absolute;right:0;top:0;width:28px;height:28px;background:linear-gradient(225deg,var(--green) 50%,var(--pink2) 50%);border-bottom-left-radius:8px}
+.intel .ilab{display:flex;align-items:center;gap:8px;font-weight:900;color:#B24A35;font-size:16px;padding-bottom:8px;border-bottom:1.5px solid var(--pink2)}
+.intel .ilab svg{width:20px;height:20px}
+.intel ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.intel li{font-size:13.5px;line-height:1.45;display:flex;gap:8px;align-items:flex-start}
+.intel li .rt{font-family:var(--f-num);font-weight:700;font-size:11px;border:1.5px solid var(--pink2);border-radius:6px;padding:0 5px;background:var(--card);white-space:nowrap;margin-top:1px}
+.intel li.void{opacity:.45;text-decoration:line-through}
+.intel .inote{font-size:12.5px;color:#5B4A40;margin-top:8px}
+.intel .big{font-size:22px;font-weight:900;margin:8px 0 2px}
+.stamp{border:1.5px solid #B24A35;color:#B24A35;border-radius:8px;padding:1px 9px;font-weight:900;font-size:12px;white-space:nowrap;display:inline-block;transform:rotate(-3deg)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:900;padding:1px 9px;border-radius:8px;background:var(--flat-bg);color:var(--ink);white-space:nowrap}
+.chip.red{background:var(--red);color:#fff}.chip.blue{background:var(--blue);color:#fff}.chip.violet{background:var(--violet);color:#fff}
+.chip.gold{background:var(--gold-bg);color:#6B4D07}.chip.green{background:var(--up-bg);color:var(--up)}.chip.down{background:var(--down-bg);color:var(--down)}
+
+/* feed */
+.feed{margin-top:18px}
+.feedlist{list-style:none;margin:0;padding:0;overflow:auto;max-height:320px}
+.feedlist li{display:grid;grid-template-columns:auto 34px minmax(0,1fr);gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.qtag{font-family:var(--f-num);font-weight:700;font-size:12px;border:1.5px solid var(--line2);border-radius:6px;padding:1px 6px;background:var(--card)}
+.feedlist .av{width:34px;height:34px}
+.feedlist .txt{font-size:13.5px;line-height:1.45;min-width:0}
+.feedlist .ic{width:34px;height:34px;border-radius:50%;background:var(--paper2);display:grid;place-items:center;color:var(--green)}
+.feedlist .ic svg{width:18px;height:18px}
+.feedlist li.q .txt{font-weight:900;color:var(--green)}
+.feedlist li.k .txt{color:#8A4A12}
+.pn{font-weight:900;color:var(--ink)}
+
+/* players strip */
+.players{margin-top:18px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));padding:8px;gap:6px;box-shadow:0 8px 20px rgba(90,70,30,.06)}
+.pl{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;position:relative;min-width:0}
+.pl.cur{background:var(--pink)}
+.pl .av{width:52px;height:52px;flex:none}
+.pl .nm{font-size:17px;font-weight:900;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:700;border:1.5px solid var(--line2);border-radius:6px;padding:0 5px;color:var(--muted);background:var(--card)}
+.pl .fig{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.pl .fig b{font-family:var(--f-num);font-weight:800;color:var(--ink);font-size:16px;margin-left:3px}
+
+/* responsive */
+@media (max-width:1040px){
+  .board{grid-template-columns:minmax(0,1fr);grid-template-areas:"hero" "desk" "main"}
+  .desk{position:relative;top:0}
+  .hero-art{width:70%;opacity:.55}
+}
+@media (max-width:640px){
+  .vsep{display:none}
+  .steps{order:3;flex-basis:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px}
+  .step{padding:4px 10px;font-size:13px}.step.now{padding:5px 12px;font-size:15px}
+  .brand small{display:none}
+  .desk{padding:20px 16px;border-radius:22px}
+  .tops .btn{padding:8px 11px}
+}
+
+/* modals */
+.overlay{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--card);color:var(--ink);border-radius:24px;border:1.5px solid var(--line);width:min(660px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:24px;box-shadow:0 30px 70px rgba(40,30,10,.3)}
+.modal h2{font-size:27px;font-weight:900;margin-bottom:6px;letter-spacing:.03em}
+.modal .sub{color:var(--muted);margin:0 0 14px}
+.modal .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.modal .acts .btn{padding:10px 20px;font-size:16px}
+.modal .intel::after{background:linear-gradient(225deg,var(--card) 50%,var(--pink2) 50%)}
+.seats{display:flex;flex-direction:column;gap:10px}
+.seat{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center}
+.seat .av{width:44px;height:44px}
+.seat input{font:inherit;font-weight:700;padding:9px 12px;border:1.5px solid var(--line2);border-radius:12px;background:var(--paper);color:var(--ink);min-width:0;width:100%}
+.seg{display:inline-flex;border:1.5px solid var(--line2);border-radius:12px;overflow:hidden;background:var(--paper);flex-wrap:wrap}
+.seg button{border:none;background:transparent;color:var(--muted);padding:8px 12px;cursor:pointer;font-weight:700}
+.seg button.on{background:var(--green);color:var(--green-ink)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;flex-wrap:wrap}
+.field>span{font-weight:900;font-size:16px}
+.note{font-size:12px;color:var(--muted)}
+.pitch{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 6px}
+.pitch div{background:var(--paper);border-radius:14px;padding:12px;font-size:13px;color:var(--muted)}
+.pitch b{display:block;color:var(--ink);font-size:15px;font-weight:900;margin-bottom:2px}
+.setup-art{height:120px;margin:-24px -24px 16px;overflow:hidden;border-radius:24px 24px 0 0}
+.setup-art svg{width:100%;height:100%}
+.rules{font-size:15px;line-height:1.8}
+.rules h3{font-size:19px;font-weight:900;margin:18px 0 6px;color:var(--green)}
+.rules p,.rules li{max-width:64ch}
+.rules ol,.rules ul{padding-left:1.3em;margin:6px 0}
+.rules table{border-collapse:collapse;font-size:14px;margin:6px 0;width:100%}
+.rules td,.rules th{border-top:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.rules th{font-size:12px;color:var(--muted)}
+.handoff .av{width:84px;height:84px;margin-bottom:10px}
+table.res{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+table.res th{font-size:12px;color:var(--muted);text-align:right;font-weight:700;padding:4px 6px}
+table.res td{text-align:right;padding:8px 6px;border-top:1px solid var(--line);font-family:var(--f-num);font-weight:700;font-variant-numeric:tabular-nums}
+table.res th:first-child,table.res td:first-child{text-align:left;font-family:var(--f-body)}
+.tablewrap{overflow-x:auto}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+.win{font-size:32px;font-weight:900;color:var(--green);margin:4px 0}
+.revlist{display:flex;flex-direction:column;gap:8px}
+.rev{border:1.5px solid var(--line2);border-radius:14px;padding:10px 14px;background:var(--paper);display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.rev h4{font-size:16px;font-weight:900}
+.rev .kn{font-size:12.5px;color:var(--muted);font-weight:700}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none}.btn{transition:none}}
+
+/* Layout: a dossier wall of agents on the left, the green "next move" desk on the right. */
+.wall{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:1280px){.wall{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.wall{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+.ag{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 0 var(--line),0 8px 20px rgba(90,70,30,.07);min-width:0}
+.ag.pick{cursor:pointer}
+.ag.pick:hover{transform:translateY(-2px)}
+.ag.sel{border:3px solid var(--green);box-shadow:0 0 0 3px rgba(30,86,65,.14)}
+.ag.me{border-style:dashed;border-color:var(--ink)}
+.ag .top2{display:flex;align-items:center;gap:10px;padding:12px 12px 8px}
+.ag .top2 .av{width:46px;height:46px;flex:none}
+.ag .nm{font-size:17px;font-weight:900;line-height:1.2;display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0;word-break:break-all}
+.file{margin:0 12px;border-radius:12px;padding:10px 12px;min-height:66px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.file .fk{font-size:11px;font-weight:700;letter-spacing:.2em;opacity:.85;font-family:var(--f-num)}
+.file b{font-size:22px;font-weight:900;letter-spacing:.05em;line-height:1.2}
+.file.R{background:var(--red);color:#fff}
+.file.B{background:var(--blue);color:#fff}
+.file.D{background:var(--violet);color:#fff}
+.file.hid{background:repeating-linear-gradient(135deg,var(--paper2) 0 10px,#E8DDC8 10px 20px);color:var(--muted)}
+.file.self{background:var(--ink);color:#fff}
+.file.self b{font-size:30px;letter-spacing:.2em}
+.file .emb{position:absolute;right:8px;bottom:-6px;width:54px;height:54px;opacity:.28}
+.ag .st{display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px 12px;min-height:40px;align-items:center}
+.decl{font-family:var(--f-num);font-weight:800}
+.done-tick{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--green);display:grid;place-items:center}
+.done-tick svg{width:15px;height:15px}
+.prob{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.prob div{background:var(--card);border-radius:10px;padding:6px 8px;text-align:center}
+.prob small{display:block;font-size:11px;color:var(--muted);font-weight:700}
+.prob b{font-family:var(--f-num);font-size:20px;font-weight:800}
+.heli{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.heli>div{border:1.5px solid var(--line2);border-radius:16px;padding:12px;background:var(--paper)}
+.heli h4{font-size:18px;font-weight:900;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.heli ul{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:6px}
+.heli li{display:flex;align-items:center;gap:8px;font-weight:700}
+.heli li .av{width:28px;height:28px}
+.heli .verdict{margin-top:8px;font-size:13px;font-weight:700;color:var(--muted)}
+.heli .win-tag{color:var(--up)}
+@media (max-width:520px){.heli{grid-template-columns:1fr}}
+.sumlist{display:flex;flex-direction:column;gap:6px}
+.sumlist div{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0;flex-wrap:wrap}
+.sumlist .av{width:30px;height:30px;flex:none}
+.sumlist b{font-weight:900}
+.fd{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px rgba(255,255,255,.8)}.fd.R{background:var(--red)}.fd.B{background:var(--blue)}.fd.D{background:var(--violet)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="homelink" href="../../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>大廳</a>
+    <div class="brand"><svg viewBox="0 0 56 48" aria-hidden="true"><rect x="6" y="8" width="26" height="32" rx="4" fill="none" stroke="#1E5641" stroke-width="5"/><text x="19" y="31" text-anchor="middle" font-size="18" font-weight="900" fill="#1E5641" font-family="Outfit,sans-serif">?</text><rect x="24" y="8" width="26" height="32" rx="4" fill="none" stroke="#E9643B" stroke-width="5" stroke-dasharray="30 6"/></svg><h1>失憶特工</h1><small>BLANK AGENTS</small></div>
+    <span class="vsep"></span>
+    <nav class="steps" id="steps" aria-label="回合進度"></nav>
+    <span class="vsep"></span>
+    <div class="tops">
+      <button class="btn" id="btnRules" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>規則</button>
+      <button class="btn dark" id="btnNew" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新遊戲</button>
+    </div>
+  </header>
+  <div class="board">
+    <section class="hero" id="hero"></section>
+    <aside class="desk" id="desk" aria-live="polite"></aside>
+    <main>
+      <h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>安全屋檔案牆<small id="wallnote"></small></h3>
+      <div class="wall" id="wall"></div>
+      <section class="feed"><h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>行動紀錄</h3><div id="feed"></div></section>
+    </main>
+  </div>
+</div>
+<div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script>
+'use strict';
+const LOBBY='../../';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+const pick=a=>a[Math.random()*a.length|0];
+const SPEEDS={快:250,中:650,慢:1200};
+let SPEED=650, timer=null;
+function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+const ICONS={
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>',
+  bars:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>',
+  gavel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6M11 7l6 6M12.5 5.5l-5 5 4 4 5-5M9.5 12.5 3 19"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>',
+  skull:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3a8 8 0 0 0-5 14.2V20h10v-2.8A8 8 0 0 0 12 3z"/><circle cx="9" cy="11.5" r="1.6" fill="currentColor"/><circle cx="15" cy="11.5" r="1.6" fill="currentColor"/><path d="M10 20v-2M14 20v-2"/></svg>',
+};
+const AVATARS=[
+ `<circle cx="32" cy="32" r="32" fill="#F6C6CF"/><ellipse cx="24" cy="17" rx="5.5" ry="14" fill="#fff" transform="rotate(-12 24 17)"/><ellipse cx="24" cy="18" rx="2.6" ry="10" fill="#F2A0B0" transform="rotate(-12 24 18)"/><ellipse cx="40" cy="17" rx="5.5" ry="14" fill="#fff" transform="rotate(12 40 17)"/><ellipse cx="40" cy="18" rx="2.6" ry="10" fill="#F2A0B0" transform="rotate(12 40 18)"/><ellipse cx="32" cy="40" rx="16" ry="14" fill="#fff"/><circle cx="26" cy="38" r="2.2" fill="#3A2A2A"/><circle cx="38" cy="38" r="2.2" fill="#3A2A2A"/><ellipse cx="32" cy="43.5" rx="2.4" ry="1.7" fill="#E9798F"/><circle cx="22" cy="44" r="2.6" fill="#F8C4CE"/><circle cx="42" cy="44" r="2.6" fill="#F8C4CE"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#CDBCF0"/><path d="M10 64c2-14 10-20 22-20s20 6 22 20z" fill="#7A5236"/><path d="M18 34c0-12 7-20 15-20s14 7 14 16c0 6-3 10-6 12l-8 2-11-3c-3-2-4-4-4-7z" fill="#fff"/><path d="M38 30c6 0 11 2 12 6-2 0-3 1-5 3-1-3-4-4-7-4z" fill="#F4B63B"/><circle cx="34" cy="27" r="2.6" fill="#2A2320"/><path d="M29 23l9 2" stroke="#2A2320" stroke-width="2.2" stroke-linecap="round"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#CFE6CB"/><path d="M14 14l9 12h18l9-12 1 18c0 12-9 20-19 20s-19-8-19-20z" fill="#E98A3A"/><path d="M17 18l5 7M47 18l-5 7" stroke="#B85A1E" stroke-width="3" stroke-linecap="round"/><path d="M15 33c4 0 11 4 17 13 6-9 13-13 17-13-1 11-8 19-17 19S16 44 15 33z" fill="#fff"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><circle cx="32" cy="45" r="2.6" fill="#2A2320"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#F4D3A0"/><path d="M12 64c2-11 9-15 20-15s18 4 20 15z" fill="#5E7F55"/><circle cx="32" cy="36" r="13" fill="#F2C49B"/><path d="M8 27c8-3 40-3 48 0-4 2-44 2-48 0z" fill="#8A5A2E"/><path d="M19 26c1-9 6-13 13-13s12 4 13 13z" fill="#B07A42"/><rect x="19" y="22" width="26" height="4" fill="#6E4522"/><circle cx="27" cy="36" r="1.9" fill="#2A2320"/><circle cx="37" cy="36" r="1.9" fill="#2A2320"/><path d="M27 42c3 3 7 3 10 0" stroke="#8A4A2A" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#C3E2EE"/><path d="M14 22l6 6M50 22l-6 6" stroke="#6B5444" stroke-width="4" stroke-linecap="round"/><ellipse cx="32" cy="40" rx="18" ry="19" fill="#8C6E58"/><ellipse cx="32" cy="46" rx="11" ry="11" fill="#D9C2A5"/><circle cx="24.5" cy="34" r="7" fill="#fff"/><circle cx="39.5" cy="34" r="7" fill="#fff"/><circle cx="25" cy="34" r="3.2" fill="#2A2320"/><circle cx="39" cy="34" r="3.2" fill="#2A2320"/><path d="M29.5 39l2.5 4 2.5-4z" fill="#F0A93B"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#F3C9A8"/><path d="M14 14l8 14M50 14l-8 14" stroke="#4A4A4A" stroke-width="7" stroke-linecap="round"/><ellipse cx="32" cy="38" rx="18" ry="16" fill="#5A5A5E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#EDE6DC"/><circle cx="25" cy="35" r="2.6" fill="#F4D35E"/><circle cx="39" cy="35" r="2.6" fill="#F4D35E"/><path d="M29.5 41.5h5l-2.5 2.5z" fill="#E77F8B"/><path d="M14 42h8M14 46h8M42 42h8M42 46h8" stroke="#DCD6CC" stroke-width="1.2"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
+];
+const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
+const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
+function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
+
+/* modals */
+let modalCb=null;
+function openModal(html,cb){$('#modal').innerHTML=html;$('#overlay').hidden=false;$('#modal').scrollTop=0;modalCb=cb;const f=$('#modal .primary');f&&f.focus({preventScroll:true});}
+function closeModal(){$('#overlay').hidden=true;$('#modal').innerHTML='';modalCb=null;}
+$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b&&!b.disabled&&modalCb)modalCb(b.dataset.m,b);});
+function showRulesHTML(html){
+  $('#rulesModal').innerHTML=`<h2>遊戲規則</h2><div class="rules">${html}</div><div class="acts"><button class="btn primary" id="closeRules">知道了</button></div>`;
+  $('#rulesOv').hidden=false;$('#rulesModal').scrollTop=0;$('#closeRules').focus({preventScroll:true});
+}
+$('#rulesOv').addEventListener('click',e=>{if(e.target.id==='closeRules'||e.target.id==='rulesOv')$('#rulesOv').hidden=true;});
+function feedHTML(log,tag,emptyTxt){
+  const items=log.slice(0,40).map(l=>{
+    const who=l.a!=null&&S.players[l.a]?avatar(l.a):`<span class="ic">${l.c==='q'?ICONS.spark:l.c==='k'?ICONS.gavel:ICONS.bars}</span>`;
+    return `<li class="${l.c||''}"><span class="qtag">${tag(l)}</span>${who}<span class="txt">${l.h}</span></li>`;}).join('');
+  return `<ul class="feedlist">${items||`<li><span class="txt" style="grid-column:1/-1;color:var(--muted)">${emptyTxt}</span></li>`}</ul>`;
+}
+function setupSeatsHTML(cfg,min,max){
+  return `<div class="field"><span>玩家人數</span><div class="seg">${Array.from({length:max-min+1},(_,k)=>k+min).map(k=>`<button data-m="n:${k}" class="${k===cfg.n?'on':''}">${k} 人</button>`).join('')}</div></div>
+   <div class="seats">${cfg.seats.slice(0,cfg.n).map((s,i)=>`<div class="seat">${avatar(i)}<input data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('')}</div>
+   <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===cfg.speed?'on':''}">${k}</button>`).join('')}</div></div>`;
+}
+function setupSeatsHandle(cfg,m,redraw){
+  document.querySelectorAll('[data-seat]').forEach(inp=>{cfg.seats[+inp.dataset.seat].name=inp.value;});
+  if(m.startsWith('n:')){cfg.n=+m.slice(2);redraw();return true;}
+  if(m.startsWith('h:')||m.startsWith('a:')){cfg.seats[+m.slice(2)].ai=m[0]==='a';redraw();return true;}
+  if(m.startsWith('sp:')){cfg.speed=m.slice(3);SPEED=SPEEDS[cfg.speed];redraw();return true;}
+  return false;
+}
+function seatsToPlayers(cfg,aiNames){return cfg.seats.slice(0,cfg.n).map((s,i)=>({name:(s.name||'').trim()||(s.ai?aiNames[i%aiNames.length]:'玩家'+(i+1)),ai:s.ai}));}
+function scrollDeskIntoView(){if(innerWidth<=1040){const d=$('#desk');const r=d.getBoundingClientRect();if(r.top<0||r.top>innerHeight*.6)d.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}
+
+/* ================= constants ================= */
+const ROUNDS=4, DECK={R:6,B:6,D:1}, TESTI=2, MIRRORS=2, MIRROR_FROM=2;
+const FN={R:'紅隼',B:'藍鯨',D:'雙面人'};
+const FCLS={R:'red',B:'blue',D:'violet'};
+const opp=c=>c==='R'?'B':'R';
+const AI_NAMES=['影子','黑貓','老K','夜鷹','渡鴉','白狐','鐵面','銀狼'];
+const SAVE_KEY='blankagents-save-v1';
+const ACTS={mirror:'照鏡子',search:'搜身',face:'整容',wait:'待命'};
+
+/* ================= state ================= */
+let S=null, UI={};
+let setupCfg={n:6,seats:[{name:'你',ai:false}].concat(AI_NAMES.slice(0,7).map(n=>({name:n,ai:true}))),speed:'中',series:{}};
+const NP=()=>S.players.length;
+const humans=()=>S.players.filter(p=>!p.ai);
+const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
+const fchip=c=>`<span class="chip ${FCLS[c]}">${FN[c]}</span>`;
+function log(html,cls=''){const m=/data-p="(\d)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,r:S.r});if(S.log.length>200)S.log.length=200;}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function clearSave(){lsSet(SAVE_KEY,null);}
+const order=()=>Array.from({length:NP()},(_,k)=>(S.captain+k)%NP());
+
+/* ================= setup ================= */
+function setupGame(players){
+  clearTimeout(timer);
+  const deck=shuffle([...Array(DECK.R).fill('R'),...Array(DECK.B).fill('B'),...Array(DECK.D).fill('D')]);
+  S={players:players.map((p,i)=>({name:p.name,ai:p.ai,card:deck.pop(),testi:TESTI,faced:false,mirror:false,decl:null,notes:[],evac:null,testiIn:0})),
+     scrap:deck,mirrors:MIRRORS,r:1,captain:Math.random()*players.length|0,phase:'turn',ch:{},log:[],viewer:null,result:null,cfgPlayers:players};
+  const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;
+  log(`第 1 夜開始。安全屋裡有 ${NP()} 名失憶特工，${S.scrap.length} 份檔案被丟進廢檔堆。`,'q');
+  UI={};render();proceed();
+}
+
+/* ================= knowledge ================= */
+function counts(i){
+  const c={...DECK};
+  S.players.forEach((p,j)=>{if(j!==i)c[p.card]--;});
+  S.players[i].notes.forEach(n=>{if(n.k==='search'&&!n.void)c[n.card]--;});
+  for(const k in c)c[k]=Math.max(0,c[k]);
+  return c;
+}
+function certain(i){const n=S.players[i].notes.find(n=>(n.k==='testi'||n.k==='mirror')&&!n.void);return n?n.card:null;}
+function priorBelief(i){
+  const ce=certain(i);if(ce)return {R:+(ce==='R'),B:+(ce==='B'),D:+(ce==='D'),sure:true};
+  const c=counts(i),t=c.R+c.B+c.D||1;return {R:c.R/t,B:c.B/t,D:c.D/t,sure:false};
+}
+function belief(i){
+  const pb=priorBelief(i);if(pb.sure)return pb;
+  const L={R:pb.R,B:pb.B,D:pb.D};
+  S.players[i].notes.forEach(n=>{
+    if(n.k!=='msg'||n.void||n.sc==='D')return;
+    const w=n.says!==n.sc?0.78:0.6;
+    L.R*=n.says==='R'?w:1-w;L.B*=n.says==='B'?w:1-w;L.D*=0.5;
+  });
+  const t=L.R+L.B+L.D||1;return {R:L.R/t,B:L.B/t,D:L.D/t,sure:false};
+}
+
+/* ================= AI ================= */
+function aiPlan(i){
+  const p=S.players[i],bel=belief(i);
+  let m=bel.R>bel.B?'R':bel.B>bel.R?'B':(Math.random()<.5?'R':'B');if(bel.D>0.5)m='D';
+  const conf=bel[m];
+  const others=S.players.map((_,j)=>j).filter(j=>j!==i);
+  const T=m==='D'?[]:others.filter(j=>S.players[j].card===m), E=m==='D'?[]:others.filter(j=>S.players[j].card===opp(m));
+  // declaration
+  let decl=p.decl;
+  if(m!=='D'&&conf>=0.55){
+    const t={A:0,B:0};T.forEach(j=>{const d=S.players[j].decl;if(d)t[d]++;});
+    if(t.A!==t.B)decl=t.A>t.B?'A':'B';else if(!decl)decl=Math.random()<.5?'A':'B';
+  }else if(!decl&&Math.random()<.5)decl=Math.random()<.5?'A':'B';
+  // message
+  let msgTo,says;
+  if(m==='D'||conf<0.55){msgTo=pick(others);says=Math.random()<.5?'R':'B';}
+  else{
+    const H=decl||'A';
+    const tH=1+T.filter(j=>S.players[j].decl===H).length, eH=E.filter(j=>S.players[j].decl===H).length;
+    if(E.length&&eH===0&&Math.random()<.6){const c=E.filter(j=>S.players[j].decl!==H);msgTo=pick(c.length?c:E);says=m;}
+    else if(E.length&&eH>=tH){msgTo=pick(E.filter(j=>S.players[j].decl===H));says=opp(m);}
+    else if(T.length){const sent=j=>S.players[j].notes.filter(n=>n.k==='msg'&&n.from===i).length;const mn=Math.min(...T.map(sent));msgTo=pick(T.filter(j=>sent(j)===mn));says=m;}
+    else{msgTo=pick(others);says=m;}
+  }
+  // testimony
+  let testiTo=null;
+  if(S.r>=2&&p.testi>0&&conf>=0.8&&m!=='D'&&T.length&&Math.random()<.55){
+    const cand=T.filter(j=>!S.players[j].mirror);
+    if(cand.length){const mn=Math.min(...cand.map(j=>S.players[j].testiIn));testiTo=pick(cand.filter(j=>S.players[j].testiIn===mn));}
+  }
+  // action
+  let act='wait';
+  const unseen=S.scrap.length-p.notes.filter(n=>n.k==='search'&&!n.void).length;
+  if(S.r>=MIRROR_FROM&&S.mirrors>0&&!p.mirror&&conf<0.9&&Math.random()<.45)act='mirror';
+  else if(conf<0.75&&unseen>0&&!bel.sure)act='search';
+  else if(!p.faced&&m!=='D'&&conf>0.85&&T.length+1<=E.length-2&&Math.random()<.5)act='face';
+  return {msgTo,says,testiTo,act,decl};
+}
+function aiEvac(i){
+  const bel=belief(i);
+  let best='A',bv=-1;
+  for(const h of ['A','B']){
+    let w=0;const N=300;
+    for(let k=0;k<N;k++){
+      const r=Math.random();const mine=r<bel.R?'R':r<bel.R+bel.B?'B':'D';
+      const cards=S.players.map((p,j)=>j===i?mine:p.card);
+      const boards=S.players.map((p,j)=>j===i?h:(p.decl&&Math.random()<.8?p.decl:(Math.random()<.5?'A':'B')));
+      if(evaluate(cards,boards).winners.includes(i))w++;
+    }
+    if(w>bv){bv=w;best=h;}
+  }
+  return best;
+}
+
+/* ================= scoring ================= */
+function evaluate(cards,boards){
+  const helis={};let anySuccess=false;const winners=[];
+  for(const h of ['A','B']){
+    const M=cards.map((_,j)=>j).filter(j=>boards[j]===h);
+    const r=M.filter(j=>cards[j]==='R').length,b=M.filter(j=>cards[j]==='B').length;
+    let ctrl=null,ok=false,crash=false;
+    if(!M.length){helis[h]={M,ctrl,ok,crash,empty:true};continue;}
+    if(r!==b){ctrl=r>b?'R':'B';ok=(ctrl==='R'?b:r)>0;if(ok)anySuccess=true;}
+    else crash=true;
+    helis[h]={M,ctrl,ok,crash,r,b};
+  }
+  for(const h of ['A','B']){const H=helis[h];if(H.empty)continue;
+    if(H.crash)H.M.forEach(j=>{if(cards[j]==='D')winners.push(j);});
+    else if(H.ok||!anySuccess)H.M.forEach(j=>{if(cards[j]===H.ctrl)winners.push(j);});
+  }
+  return {helis,winners,anySuccess};
+}
+
+/* ================= flow ================= */
+function proceed(){
+  clearTimeout(timer);save();
+  if(!S||!$('#overlay').hidden)return;
+  if(S.phase==='turn'||S.phase==='evac'){
+    const key=S.phase==='turn'?'ch':'ev';
+    S[key]=S[key]||{};
+    const next=order().find(j=>S[key][j]==null);
+    if(next==null){S.phase==='turn'?resolveRound():resolveEvac();return;}
+    const p=S.players[next];
+    if(p.ai){render();timer=setTimeout(()=>{if(S.phase==='turn')S.ch[next]=aiPlan(next);else S.ev[next]=aiEvac(next);proceed();},humans().length?Math.min(SPEED,350):SPEED/3);return;}
+    if(S.viewer!==next){
+      S.viewer=null;UI={};render();
+      openModal(`<div class="handoff">${avatar(next)}</div><h2>請把裝置交給 ${esc(p.name)}</h2><p class="sub">${S.phase==='turn'?`第 ${S.r} 夜輪到 ${esc(p.name)} 行動`:'撤離時間到了，請秘密選擇要上哪一架直升機'}。其他人請別偷看：接下來畫面會顯示其他人的身分和 ${esc(p.name)} 的情報筆記。</p>
+       <div class="acts"><button class="btn primary" data-m="go">我是 ${esc(p.name)}，開始</button></div>`,()=>{closeModal();S.viewer=next;UI={decl:p.decl,act:'wait'};render();scrollDeskIntoView();});
+      return;
+    }
+    if(UI.decl===undefined)UI={decl:p.decl,act:'wait'};
+    render();
+  }
+}
+function submitTurn(){
+  const pi=order().find(j=>S.ch[j]==null);if(pi==null||S.viewer!==pi)return;
+  if(UI.msgTo==null||!UI.says)return;
+  S.ch[pi]={msgTo:UI.msgTo,says:UI.says,testiTo:UI.testiTo??null,act:UI.act||'wait',decl:UI.decl||null};
+  UI={};
+  if(humans().length>1){S.viewer=null;}
+  proceed();
+}
+function resolveRound(){
+  const ch=S.ch,r=S.r;
+  log(`第 ${r} 夜揭曉`,'q');
+  const summary=[];
+  order().forEach(i=>{
+    const c=ch[i],p=S.players[i],t=S.players[c.msgTo];
+    t.notes.push({r,k:'msg',from:i,says:c.says,sc:p.card});
+    const s={i,msgTo:c.msgTo};
+    if(c.testiTo!=null&&p.testi>0){const tt=S.players[c.testiTo];tt.notes.push({r,k:'testi',from:i,card:tt.card});p.testi--;tt.testiIn++;s.testiTo=c.testiTo;}
+    if(c.decl!==p.decl){p.decl=c.decl;}
+    s.decl=p.decl;
+    log(`${pn(i)} 把密報交給 ${esc(t.name)}${s.testiTo!=null?`，並對 ${esc(S.players[s.testiTo].name)} 宣誓證詞`:''}`);
+    summary.push(s);
+  });
+  order().forEach(i=>{
+    const c=ch[i],p=S.players[i],s=summary.find(x=>x.i===i);
+    let act=c.act;
+    if(act==='mirror'&&(S.mirrors<=0||r<MIRROR_FROM||p.mirror))act='wait',s.missed=true;
+    if(act==='face'&&p.faced)act='wait';
+    const known=p.notes.filter(n=>n.k==='search'&&!n.void).map(n=>n.idx);
+    if(act==='search'&&known.length>=S.scrap.length)act='wait';
+    s.act=act;
+    if(act==='mirror'){S.mirrors--;p.mirror=true;p.notes.push({r,k:'mirror',card:p.card});log(`${pn(i)} 照了鏡子，現在知道自己是誰了（剩 ${S.mirrors} 面）`,'k');}
+    else if(act==='search'){const cand=S.scrap.map((_,k)=>k).filter(k=>!known.includes(k));const k=pick(cand);p.notes.push({r,k:'search',idx:k,card:S.scrap[k]});log(`${pn(i)} 翻了廢檔堆`);}
+    else if(act==='face'){
+      const old=p.card;S.scrap.push(old);shuffle(S.scrap);p.card=S.scrap.pop();p.faced=true;p.mirror=false;
+      p.notes.forEach(n=>n.void=true);
+      S.players.forEach(q=>q.notes.forEach(n=>{if(n.k==='search')n.void=true;}));
+      p.notes.push({r,k:'face'});
+      log(`${pn(i)} 整容了！檔案從 ${FN[old]} 換成新的一份，之前的情報全部作廢`,'k');
+    }
+    if(s.missed)log(`${pn(i)} 想照鏡子，但鏡子已經被拿走了`);
+  });
+  const dec=summary.filter(s=>s.decl).map(s=>`${esc(S.players[s.i].name)}→${s.decl}`).join('、');
+  if(dec)log(`公開表態：${dec}`);
+  S.lastSummary=summary;S.ch={};
+  const single=humans().length===1?S.players.indexOf(humans()[0]):null;
+  render();
+  const lastNight=r>=ROUNDS;
+  const rows=summary.map(s=>{const p=S.players[s.i];
+    return `<div>${avatar(s.i)}<b>${esc(p.name)}</b><span>密報→${esc(S.players[s.msgTo].name)}</span>${s.testiTo!=null?`<span class="chip gold">證詞→${esc(S.players[s.testiTo].name)}</span>`:''}<span class="chip">${s.missed?'鏡子被搶走':ACTS[s.act]}</span>${s.decl?`<span class="chip green decl">表態 ${s.decl} 機</span>`:''}</div>`;}).join('');
+  let mine='';
+  if(single!=null){const got=S.players[single].notes.filter(n=>n.r===r&&n.k!=='face');
+    mine=`<div class="intel" style="margin-top:14px"><div class="ilab">${ICONS.lock}你今晚得到的情報</div><ul>${got.length?got.map(noteLi).join(''):'<li>今晚沒人給你任何情報。</li>'}</ul></div>`;}
+  openModal(`<h2>第 ${r} 夜 · 揭曉</h2><p class="sub">誰把密報交給了誰、誰宣誓了證詞，大家都看得到；內容只有收到的人知道。</p><div class="sumlist">${rows}</div>${mine}
+    <div class="acts"><button class="btn primary" data-m="next">${lastNight?'天亮了，準備撤離':'進入第 '+(r+1)+' 夜'}</button></div>`,()=>{
+      closeModal();
+      if(lastNight){S.phase='evac';S.ev={};log('天亮了。兩架直升機降落在安全屋外，每個人秘密選擇 A 或 B。','q');}
+      else{S.r++;S.captain=(S.captain+1)%NP();log(`第 ${S.r} 夜開始`,'q');}
+      if(humans().length>1)S.viewer=null;
+      UI={};proceed();
+    });
+  if(!humans().length)timer=setTimeout(()=>{if(modalCb)modalCb('next');},SPEED*3);
+}
+function resolveEvac(){
+  const cards=S.players.map(p=>p.card),boards=S.players.map((_,j)=>S.ev[j]);
+  S.players.forEach((p,j)=>p.evac=boards[j]);
+  const res=evaluate(cards,boards);S.result=res;S.phase='end';S.viewer=null;
+  const series=setupCfg.series;
+  S.players.forEach((p,j)=>{if(res.winners.includes(j))series[p.name]=(series[p.name]||0)+(p.card==='D'?5:3);else series[p.name]=series[p.name]||0;});
+  log(`撤離結果：${res.winners.length?res.winners.map(j=>esc(S.players[j].name)).join('、')+' 獲勝':'沒有人成功撤離'}`,'q');
+  clearSave();render();endModal();
+}
+function heliHTML(res){
+  return `<div class="heli">${['A','B'].map(h=>{const H=res.helis[h];
+    const v=H.empty?'沒有人上這架':H.crash?'兩邊人數一樣，飛機失控墜毀':H.ok?`${FN[H.ctrl]}控制，帶著俘虜完成任務`:res.anySuccess?`${FN[H.ctrl]}控制，但沒帶到俘虜，功勞被另一架搶走`:`${FN[H.ctrl]}控制，雖然沒帶到俘虜，兩架都沒人立功，平安撤離也算贏`;
+    return `<div><h4>${h} 機 ${H.ok?'<span class="chip green">任務成功</span>':H.crash?'<span class="chip down">墜毀</span>':H.empty?'':res.anySuccess?'<span class="chip">空手而回</span>':'<span class="chip green">平安撤離</span>'}</h4><ul>${H.M.map(j=>`<li>${avatar(j)}${esc(S.players[j].name)} ${fchip(S.players[j].card)}${res.winners.includes(j)?' <span class="win-tag">勝</span>':''}</li>`).join('')||'<li style="color:var(--muted)">（空）</li>'}</ul><div class="verdict">${v}</div></div>`;}).join('')}</div>`;
+}
+function endModal(){
+  const res=S.result;
+  const ws=res.winners.map(j=>esc(S.players[j].name));
+  const series=setupCfg.series;const names=Object.keys(series).sort((a,b)=>series[b]-series[a]);
+  openModal(`<h2>撤離結果</h2><div class="win">${ws.length?ws.join('、')+' 獲勝':'沒有人贏'}</div>
+    <p class="sub">所有檔案翻開。每架飛機由人數較多的陣營控制；帶到敵方俘虜就是任務成功，只有任務成功的人贏。兩架都沒人成功時，控制飛機的人都算平安撤離。</p>
+    ${heliHTML(res)}
+    <div class="tablewrap"><table class="res"><thead><tr><th>連戰積分</th><th>累計</th></tr></thead><tbody>${names.map(n=>`<tr><td>${esc(n)}</td><td>${series[n]}</td></tr>`).join('')}</tbody></table></div>
+    <p class="note">連戰積分：獲勝 +3，雙面人獲勝 +5。按「再來一局」會沿用同一批玩家繼續累積。</p>
+    <div class="acts"><button class="btn" data-m="close">看看檔案牆</button><button class="btn primary" data-m="again">再來一局</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
+}
+
+/* ================= view ================= */
+function noteLi(n){
+  const rt=`<span class="rt">第${n.r}夜</span>`;let t='';
+  if(n.k==='msg')t=`${esc(S.players[n.from].name)}（${FN[n.sc]}）的密報說：你是 <b>${FN[n.says]}</b>`;
+  else if(n.k==='testi')t=`${esc(S.players[n.from].name)} 宣誓證詞：你是 <b>${FN[n.card]}</b>（一定是真話）`;
+  else if(n.k==='mirror')t=`你照了鏡子：你是 <b>${FN[n.card]}</b>`;
+  else if(n.k==='search')t=`廢檔堆裡有一份 <b>${FN[n.card]}</b>${n.void?'（之後有人整容，廢檔堆已洗過）':''}`;
+  else if(n.k==='face')t='你整容了，換上一份新檔案，之前的情報全部作廢';
+  return `<li class="${n.void&&n.k!=='face'?'void':''}">${rt}<span>${t}</span></li>`;
+}
+function notesHTML(i){
+  const p=S.players[i],pb=priorBelief(i);
+  const pct=x=>Math.round(x*100)+'%';
+  return `<div class="intel"><div class="ilab">${ICONS.lock}${esc(p.name)} 的情報筆記</div>
+    ${pb.sure?`<div class="big">你確定是 ${FN[certain(i)]}</div>`:`<div class="prob"><div><small>紅隼</small><b>${pct(pb.R)}</b></div><div><small>藍鯨</small><b>${pct(pb.B)}</b></div><div><small>雙面人</small><b>${pct(pb.D)}</b></div></div><div class="inote">依「看得到的檔案＋你翻過的廢檔」算出的機率，還沒算進別人的密報。</div>`}
+    <ul>${p.notes.length?p.notes.slice().reverse().map(noteLi).join(''):'<li>還沒有任何情報。</li>'}</ul></div>`;
+}
+function fileHTML(i){
+  const p=S.players[i];
+  const show=S.phase==='end'||(S.viewer!=null&&S.viewer!==i);
+  if(S.phase!=='end'&&S.viewer===i)return `<div class="file self"><span class="fk">YOUR FILE</span><b>？？？</b></div>`;
+  if(!show)return `<div class="file hid"><span class="fk">CLASSIFIED</span><b>檔案蓋著</b></div>`;
+  return `<div class="file ${p.card}"><span class="fk">${p.card==='R'?'RED FALCON':p.card==='B'?'BLUE WHALE':'DOUBLE'}</span><b>${FN[p.card]}</b>${emblem(p.card)}</div>`;
+}
+function emblem(c){
+  if(c==='R')return '<svg class="emb" viewBox="0 0 64 64"><path d="M4 30 L30 22 L60 6 L44 30 L60 40 L34 38 L20 56 L22 36Z" fill="#fff"/></svg>';
+  if(c==='B')return '<svg class="emb" viewBox="0 0 64 64"><path d="M6 34c6-14 30-18 44-8 4-6 8-8 12-8-2 4-2 8 0 12-4 0-8-2-10-4-6 14-30 18-46 8z" fill="#fff"/></svg>';
+  return '<svg class="emb" viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="none" stroke="#fff" stroke-width="5"/><path d="M32 10v44" stroke="#fff" stroke-width="5"/></svg>';
+}
+function curTurn(){if(!S||(S.phase!=='turn'&&S.phase!=='evac'))return null;const key=S.phase==='turn'?'ch':'ev';return order().find(j=>(S[key]||{})[j]==null)??null;}
+function myTurn(){const c=curTurn();return c!=null&&!S.players[c].ai&&S.viewer===c&&$('#overlay').hidden;}
+function render(){
+  if(!S)return;
+  let st='';for(let i=1;i<=ROUNDS;i++){if(i>1)st+=`<span class="link ${i<=S.r?'done':''}"></span>`;st+=`<span class="step ${i<S.r||S.phase!=='turn'&&S.phase!=='idle'?'done':i===S.r&&S.phase==='turn'?'now':''}">第${i}夜</span>`;}
+  st+=`<span class="link ${S.phase==='evac'||S.phase==='end'?'done':''}"></span><span class="step ${S.phase==='evac'?'now':S.phase==='end'?'done':''}">撤離</span>`;
+  $('#steps').innerHTML=st;
+  const head=S.phase==='idle'?'誰才是你？':S.phase==='evac'?'選一架直升機':S.phase==='end'?'檔案全部翻開':'找出你自己';
+  $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">SAFE HOUSE</div><h2>${head}<span class="qbadge">${S.phase==='idle'?'準備開局':S.phase==='turn'?'第 '+S.r+' 夜':S.phase==='evac'?'天亮了':'結束'}</span></h2>${swoosh}</div>`;
+  renderWall();renderDesk();
+  $('#feed').innerHTML=feedHTML(S.log,l=>l.r?'第'+l.r+'夜':'—','每一夜的行動都會記在這裡。');
+}
+function renderWall(){
+  const mine=myTurn()&&S.phase==='turn';const cur=curTurn();
+  $('#wallnote').textContent=S.viewer!=null&&S.phase!=='end'?`目前顯示 ${S.players[S.viewer].name} 看到的畫面`:S.phase==='end'?'所有檔案已翻開':'換人中，檔案全部蓋著';
+  $('#wall').innerHTML=S.players.map((p,i)=>{
+    const key=S.phase==='turn'?'ch':'ev';const done=(S.phase==='turn'||S.phase==='evac')&&(S[key]||{})[i]!=null;
+    const pickable=mine&&i!==S.viewer;const sel=mine&&UI.msgTo===i;
+    const chips=[];
+    if(p.decl&&S.phase!=='end')chips.push(`<span class="chip green decl">表態 ${p.decl} 機</span>`);
+    if(S.phase==='end'&&p.evac)chips.push(`<span class="chip green decl">上了 ${p.evac} 機</span>`);
+    if(p.mirror)chips.push('<span class="chip gold">照過鏡子</span>');
+    if(p.faced)chips.push('<span class="chip">整容過</span>');
+    chips.push(`<span class="chip">證詞 ${p.testi}/${TESTI}</span>`);
+    return `<article class="ag ${pickable?'pick':''} ${sel?'sel':''} ${S.viewer===i&&S.phase!=='end'?'me':''}" data-i="${i}" ${pickable?`tabindex="0" role="button" aria-label="把密報交給 ${esc(p.name)}"`:''}>
+      ${done?`<span class="done-tick"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>`:''}
+      <div class="top2">${avatar(i)}<div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}${i===S.captain&&S.phase==='turn'?'<span class="tag">先手</span>':''}${cur===i?'<span class="tag" style="border-color:var(--orange);color:var(--orange)">行動中</span>':''}</div></div>
+      ${fileHTML(i)}<div class="st">${chips.join('')}</div></article>`;
+  }).join('');
+}
+function renderDesk(){
+  let h=leafDeco;const cur=curTurn();
+  if((S.phase==='turn'||S.phase==='evac')&&cur!=null){
+    const p=S.players[cur];
+    if(myTurn()){
+      if(S.phase==='turn'){
+        const others=S.players.map((_,j)=>j).filter(j=>j!==cur);
+        const mirrorOK=S.r>=MIRROR_FROM&&S.mirrors>0&&!p.mirror;
+        const known=p.notes.filter(n=>n.k==='search'&&!n.void).length;
+        h+=`<div class="dhead"><h2>你的下一步</h2><span class="pill">第 ${S.r} 夜</span></div><div class="dsub">${esc(p.name)}，選好四件事後按確認</div>
+        <div class="dsec"><div class="dlab">1. 密報要交給誰？<small>必填，可以說謊</small></div><div class="chooser">${others.map(j=>`<button data-to="${j}" class="${UI.msgTo===j?'on':''}">${avatar(j)}${esc(S.players[j].name)}<i class="fd ${S.players[j].card}" title="${FN[S.players[j].card]}"></i></button>`).join('')}</div>
+         <div class="chooser big"><button data-says="R" class="red ${UI.says==='R'?'on':''}">說他是紅隼</button><button data-says="B" class="blue ${UI.says==='B'?'on':''}">說他是藍鯨</button></div>
+         ${UI.msgTo!=null?`<div class="dnote">${esc(S.players[UI.msgTo].name)} 其實是 <b>${FN[S.players[UI.msgTo].card]}</b>${UI.says?`，你要說他是 <b>${FN[UI.says]}</b>${UI.says===S.players[UI.msgTo].card?'（真話）':'（說謊）'}`:''}</div>`:''}</div>
+        <div class="dsec"><div class="dlab">2. 宣誓證詞<small>剩 ${p.testi} 枚，系統保證是真話</small></div><div class="chooser"><button data-testi="-1" class="${UI.testiTo==null?'on':''}">不用</button>${p.testi>0?others.map(j=>`<button data-testi="${j}" class="${UI.testiTo===j?'on':''}">${esc(S.players[j].name)}<i class="fd ${S.players[j].card}" title="${FN[S.players[j].card]}"></i></button>`).join(''):''}</div></div>
+        <div class="dsec"><div class="dlab">3. 行動</div><div class="opt2">
+          <button data-act="mirror" class="${UI.act==='mirror'?'on':''}" ${mirrorOK?'':'disabled'}><b>照鏡子</b><span>${S.r<MIRROR_FROM?'第 2 夜起可用':p.mirror?'你已經照過':S.mirrors>0?`偷看自己的檔案（剩 ${S.mirrors} 面，先手先拿）`:'鏡子已被拿光'}</span></button>
+          <button data-act="search" class="${UI.act==='search'?'on':''}" ${known>=S.scrap.length?'disabled':''}><b>搜身</b><span>偷看廢檔堆裡一份你沒看過的檔案</span></button>
+          <button data-act="face" class="${UI.act==='face'?'on':''}" ${p.faced?'disabled':''}><b>整容</b><span>${p.faced?'整場只能一次':'把檔案丟回廢檔堆換一份新的，舊情報全部作廢'}</span></button>
+          <button data-act="wait" class="${UI.act==='wait'?'on':''}"><b>待命</b><span>不做事</span></button></div></div>
+        <div class="dsec"><div class="dlab">4. 公開表態<small>你打算上哪一架，可以改口</small></div><div class="chooser big"><button data-decl="A" class="${UI.decl==='A'?'on':''}">A 機</button><button data-decl="B" class="${UI.decl==='B'?'on':''}">B 機</button><button data-decl="" class="${!UI.decl?'on':''}">不表態</button></div></div>
+        <button class="confirm" id="btnConfirm" ${UI.msgTo!=null&&UI.says?'':'disabled'}>確認，結束這一夜 ${ICONS.arrow}</button>`;
+      }else{
+        h+=`<div class="dhead"><h2>撤離</h2><span class="pill">秘密選擇</span></div><div class="dsub">${esc(p.name)}，你要上哪一架？</div>
+        <div class="chooser big"><button data-evac="A" class="${UI.evac==='A'?'on':''}">A 機</button><button data-evac="B" class="${UI.evac==='B'?'on':''}">B 機</button></div>
+        <div class="dnote">人數多的陣營控制飛機。帶到敵方俘虜的那架才是贏家；兩架都沒俘虜，控制方都平安撤離。兩邊一樣多就墜毀，雙面人最愛這種結局。</div>
+        <button class="confirm" id="btnEvac" ${UI.evac?'':'disabled'}>確認登機 ${ICONS.arrow}</button>`;
+      }
+      h+=notesHTML(cur);
+    }else{
+      h+=`<div class="dhead"><h2>${p.ai?'對手思考中':'換人操作'}</h2><span class="pill soft">${S.phase==='turn'?'第 '+S.r+' 夜':'撤離'}</span></div>
+        <div class="think">${avatar(cur)}<div><b>${esc(p.name)}</b><div>${p.ai?'正在盤算<span class="dots"></span>':'等待交接裝置'}</div></div></div>`;
+      if(S.viewer!=null)h+=notesHTML(S.viewer);
+    }
+  }else if(S.phase==='end'){
+    const ws=S.result.winners.map(j=>esc(S.players[j].name));
+    h+=`<div class="dhead"><h2>遊戲結束</h2><span class="pill">${ws.length?'贏家':'全滅'}</span></div><div class="empty"><b>${ws.length?ws.join('、'):'沒有人成功撤離'}</b>所有檔案已經翻開，看看你到底是誰。</div>
+      <button class="passbtn" id="btnResult">再看一次撤離結果</button><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`;
+  }else{
+    h+=`<div class="dhead"><h2>準備開局</h2></div><div class="empty"><b>設定玩家後開始</b>5 到 8 人，可以混搭 AI 對手。</div>`;
+  }
+  $('#desk').innerHTML=h;
+}
+function heroArt(){return `<svg viewBox="0 0 640 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+  <defs><linearGradient id="hs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5EEE1"/><stop offset="1" stop-color="#F3E3CC"/></linearGradient></defs>
+  <rect width="640" height="180" fill="url(#hs)"/>
+  <circle cx="560" cy="44" r="24" fill="#F8D27A"/><circle cx="570" cy="38" r="22" fill="#F5EEE1"/>
+  <path d="M40 140 L140 96 L210 122 L300 80 L380 118 L470 92 L560 120 L640 104 V180 H40Z" fill="#9EC59A"/>
+  <rect x="250" y="96" width="120" height="58" fill="#E9D8BA"/><path d="M240 100 L310 62 L380 100Z" fill="#B95B3B"/><rect x="270" y="112" width="18" height="16" fill="#F5C443"/><rect x="300" y="112" width="18" height="16" fill="#3B4A44"/><rect x="330" y="112" width="18" height="16" fill="#F5C443"/><rect x="300" y="132" width="20" height="22" fill="#6B4A2E"/>
+  <g transform="translate(420 40)"><ellipse cx="40" cy="22" rx="30" ry="13" fill="#D7542B"/><rect x="62" y="18" width="40" height="6" rx="3" fill="#D7542B"/><path d="M2 6h76" stroke="#3B4A44" stroke-width="3"/><rect x="38" y="4" width="4" height="8" fill="#3B4A44"/><circle cx="30" cy="20" r="6" fill="#BFD7E8"/><path d="M24 36h34" stroke="#3B4A44" stroke-width="3"/><text x="44" y="28" font-size="11" font-weight="900" fill="#fff" font-family="Outfit">A</text></g>
+  <g transform="translate(150 54)"><ellipse cx="40" cy="22" rx="30" ry="13" fill="#2E7DC0"/><rect x="-22" y="18" width="40" height="6" rx="3" fill="#2E7DC0"/><path d="M2 6h76" stroke="#3B4A44" stroke-width="3"/><rect x="38" y="4" width="4" height="8" fill="#3B4A44"/><circle cx="50" cy="20" r="6" fill="#BFD7E8"/><path d="M22 36h34" stroke="#3B4A44" stroke-width="3"/><text x="32" y="28" font-size="11" font-weight="900" fill="#fff" font-family="Outfit">B</text></g>
+  ${tree(214,128,16,'#5E9B6C')}${tree(410,130,18,'#5E9B6C')}${tree(600,124,22,'#4F8D5F')}
+  <rect x="40" y="154" width="600" height="26" fill="#E9DCC0"/>
+ </svg>`;}
+
+/* ================= setup & rules ================= */
+function showSetup(){
+  clearTimeout(timer);
+  const sv=lsGet(SAVE_KEY);
+  openModal(`<div class="setup-art">${heroArt()}</div><h2>失憶特工</h2><p class="sub">一次失敗的行動後，紅隼與藍鯨的特工在同一間安全屋醒來，全都失憶了。每個人的檔案夾在胸前：別人讀得到，自己讀不到。四夜之後直升機來接人，上錯飛機就是俘虜。</p>
+   <div class="pitch"><div><b>看不見自己</b>你看得到所有人的身分，唯獨不知道自己是哪一邊。</div><div><b>謊言與證詞</b>密報可以亂講，證詞一定是真話，但每人只有兩枚。</div><div><b>搶俘虜</b>人多的陣營控制飛機。騙到敵人上機當俘虜，功勞就只屬於你們。</div></div>
+   ${setupSeatsHTML(setupCfg,5,8)}
+   <p class="note">多位人類玩家可以共用一台裝置輪流操作，換人時畫面會全部蓋起來。</p>
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${sv&&(sv.phase==='turn'||sv.phase==='evac')?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+  m=>{
+    if(setupSeatsHandle(setupCfg,m,showSetup))return;
+    if(m==='rules')showRules();
+    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;UI={};render();proceed();}
+    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];setupCfg.series={};setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
+  });
+}
+function showRules(){showRulesHTML(`
+  <p><b>一句話：</b>你的身分卡朝外，大家都看得到，只有你看不到。四夜之後選一架直升機撤離，你的陣營要控制那架飛機、還要帶到敵方俘虜，你才算贏。</p>
+  <h3>身分</h3>
+  <ul><li>身分牌共 13 張：紅隼 6、藍鯨 6、雙面人 1。每人發一張，剩下的蓋成廢檔堆，所以光數人頭算不出自己是誰。</li>
+  <li>畫面上你看得到每個人的檔案，自己的那格只會顯示「？？？」。</li></ul>
+  <h3>每一夜（共 4 夜）</h3>
+  <p>每個人秘密決定以下四件事，全員決定後一起揭曉：</p>
+  <ol><li><b>密報（必做）：</b>選一個人，告訴他「你是紅隼」或「你是藍鯨」。可以說真話，也可以說謊。大家都看得到你把密報給了誰，但只有他看得到內容。</li>
+  <li><b>宣誓證詞（可選）：</b>每人整場只有 ${TESTI} 枚。對某人宣誓時，系統會把他的真實身分告訴他，一定是真話。大家看得到你對誰宣誓。</li>
+  <li><b>行動（四選一）：</b>
+   <ul><li><b>照鏡子：</b>第 ${MIRROR_FROM} 夜起可用，全場只有 ${MIRRORS} 面，同一夜有人搶時按先手順序。看到自己的身分，大家也會知道你看過了。</li>
+   <li><b>搜身：</b>偷看廢檔堆裡一份你沒看過的檔案，幫你縮小可能性。</li>
+   <li><b>整容（整場一次）：</b>把自己的身分卡丟回廢檔堆洗勻，再抽一張新的。你仍然看不到新身分，之前收到的情報全部作廢，所有人翻過的廢檔也作廢。</li>
+   <li><b>待命。</b></li></ul></li>
+  <li><b>公開表態：</b>宣布你打算上 A 機或 B 機，或不表態。只是表態，最後可以反悔。</li></ol>
+  <p>每夜先手玩家順時針輪替。</p>
+  <h3>撤離與勝負</h3>
+  <ol><li>第 4 夜之後，每人秘密選 A 機或 B 機，同時揭曉，所有身分翻開。</li>
+  <li>每架飛機比紅隼與藍鯨的人數（雙面人不算），多的一方控制飛機。</li>
+  <li>控制方在機上帶到至少 1 名敵方陣營的人當俘虜，就是<b>任務成功</b>。</li>
+  <li>只要有任何一架任務成功，<b>只有</b>任務成功那架的控制方獲勝；另一架就算控制住了，也是空手而回。</li>
+  <li>兩架都沒有任務成功時，兩架的控制方都算平安撤離，一起獲勝。</li>
+  <li>兩邊人數一樣時飛機墜毀，沒人控制；機上的雙面人獲勝。</li></ol>
+  <h3>致勝心法</h3>
+  <ul><li>你想讓隊友知道真相，也想騙一兩個敵人跟上你的飛機當俘虜。騙太多，控制權就沒了。</li>
+  <li>有人說你和他「不同陣營」，通常比說你和他「同陣營」可信：叫隊友走開沒有好處。</li>
+  <li>你把證詞花在誰身上，等於公開你心中的隊友名單，別人可以拿來反推你的顏色。</li>
+  <li>看看大家的表態：你的隊友都說要上哪一架？</li></ul>
+  <h3>和實體版的差別</h3>
+  <p>實體版用嘴巴談判、遵守禁口令。App 版把交流收斂成密報、證詞和公開表態三種，而且證詞由系統保證是真話。</p>`);}
+
+/* ================= input ================= */
+$('#wall').addEventListener('click',e=>{if(!myTurn()||S.phase!=='turn')return;const a=e.target.closest('.ag.pick');if(!a)return;UI.msgTo=+a.dataset.i;render();scrollDeskIntoView();});
+$('#wall').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('pick')){e.preventDefault();e.target.click();}});
+$('#desk').addEventListener('click',e=>{
+  if(e.target.closest('#btnAgain')){setupGame(S.cfgPlayers);return;}
+  if(e.target.closest('#btnResult')){endModal();return;}
+  if(!myTurn())return;
+  const b=e.target.closest('button');if(!b||b.disabled)return;
+  if(b.dataset.to!=null){UI.msgTo=+b.dataset.to;}
+  else if(b.dataset.says){UI.says=b.dataset.says;}
+  else if(b.dataset.testi!=null){const v=+b.dataset.testi;UI.testiTo=v<0?null:v;}
+  else if(b.dataset.act){UI.act=b.dataset.act;}
+  else if(b.dataset.decl!=null){UI.decl=b.dataset.decl||null;}
+  else if(b.dataset.evac){UI.evac=b.dataset.evac;}
+  else if(b.id==='btnConfirm'){submitTurn();return;}
+  else if(b.id==='btnEvac'){const pi=curTurn();S.ev[pi]=UI.evac;UI={};if(humans().length>1)S.viewer=null;proceed();return;}
+  else return;
+  render();
+});
+$('#btnRules').addEventListener('click',showRules);
+$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();if(S.phase==='end')endModal();else proceed();}});}else showSetup();});
+
+/* ================= boot ================= */
+window.__ba={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;},evaluate,belief};
+(function boot(){
+  S={players:Array.from({length:6},(_,i)=>({name:'—',ai:true,card:'R',testi:TESTI,faced:false,mirror:false,decl:null,notes:[],testiIn:0})),scrap:[],mirrors:MIRRORS,r:1,captain:0,phase:'idle',ch:{},log:[],viewer:null};
+  render();showSetup();
+})();
+</script>
+<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("../../sw.js",{scope:"../../"}).catch(()=>{}));</script>
+</body>
+</html>
