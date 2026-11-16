@@ -1,0 +1,1898 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>財富自由之路</title>
+<meta name="description" content="原創理財桌遊：從 22 歲玩到 62 歲，用有限的時間賺錢、學習、投資，讓被動收入蓋過支出，同時活得快樂。">
+<meta name="theme-color" content="#1E5641">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="桌遊大廳">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Outfit:wght@600;700;800&display=swap">
+<style>
+/* Layout: illustrated life board — hero + market board + action spaces + market row on the left,
+      a deep-green "next move" desk on the right, statement + player strip along the bottom. Single warm-paper look by design. */
+:root{
+  --paper:#F5EEE1; --paper2:#EFE6D4; --card:#FFFBF4; --ink:#1F2B27; --muted:#6E7068; --line:#E5D9C3; --line2:#D9CBB1;
+  --green:#1E5641; --green2:#28704F; --green-ink:#F3F7EF; --yellow:#F5C443; --yellow-ink:#2A2310;
+  --orange:#E9643B; --pink:#F7DDD3; --pink2:#EFC6B8; --up:#2C8F4E; --up-bg:#D5EEDA; --down:#C8432F; --down-bg:#F7DAD3; --flat-bg:#ECE5D7;
+  --c0:#7A5AD3; --c1:#D7542B; --c2:#22987A; --c3:#D19A17; --c4:#2E7DC0;
+  --p0:#E58FA0; --p1:#8B67D6; --p2:#4F9E61; --p3:#E0922F; --p4:#3E9CC4;
+  --scrim:rgba(40,32,20,.45);
+  --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+  --f-num:'Outfit','Noto Sans TC',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;font-weight:500}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(rgba(120,90,40,.07) 1px,transparent 1px);background-size:5px 5px}
+.wrap{position:relative;z-index:1;max-width:1600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 28px}
+h1,h2,h3,h4{text-wrap:balance;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+svg{display:block}
+
+/* ---------- header ---------- */
+.top{display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap;padding-block:6px 12px;border-bottom:1.5px solid var(--line2)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand svg{width:44px;height:44px;flex:none}
+.brand h1{font-size:clamp(26px,3.4vw,38px);font-weight:900;letter-spacing:.06em;line-height:1}
+.brand small{font-family:var(--f-num);font-size:12px;letter-spacing:.42em;color:var(--ink);font-weight:600;margin-left:6px}
+.homelink{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:900;color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);border-radius:12px;padding:7px 12px;background:var(--card)}.homelink svg{width:18px;height:18px}
+.homelink:hover{color:var(--ink);border-color:var(--ink)}
+.vsep{width:1.5px;align-self:stretch;background:var(--line2);margin-block:6px}
+.steps{display:flex;align-items:center;flex:1;min-width:0;justify-content:center}
+.step{font-family:var(--f-num);font-weight:700;font-size:15px;padding:5px 14px;border-radius:999px;border:1.5px solid var(--line2);background:var(--card);color:var(--ink);white-space:nowrap}
+.step.done{color:var(--muted);background:var(--paper2)}
+.step.now{background:var(--green);border-color:var(--green);color:var(--green-ink);font-size:17px;padding:6px 18px}
+.link{flex:1;min-width:8px;max-width:56px;height:2px;background:repeating-linear-gradient(90deg,var(--line2) 0 4px,transparent 4px 8px);position:relative}
+.link.done{background:var(--green)}
+.tops{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:12px;cursor:pointer;font-weight:700;line-height:1.2;text-decoration:none}
+.btn svg{width:18px;height:18px}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.dark{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.ghost{background:transparent}
+
+/* ---------- layout ---------- */
+.board{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,430px);grid-template-areas:"hero desk" "main desk";grid-template-rows:auto 1fr;gap:14px 18px;margin-top:12px;align-items:start}
+.hero{grid-area:hero;position:relative;min-height:150px;display:flex;align-items:center;overflow:hidden;border-radius:18px}
+.hero-txt{position:relative;z-index:2;padding:8px 0 10px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-family:var(--f-num);font-weight:600;letter-spacing:.32em;font-size:13px}
+.eyebrow::after{content:"";width:80px;height:1.5px;background:var(--ink)}
+.hero h2{font-size:clamp(30px,4.2vw,52px);font-weight:900;letter-spacing:.03em;line-height:1.15;margin-top:6px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.swoosh{display:block;width:150px;height:14px;margin-top:-2px}
+.qbadge{position:relative;font-size:17px;font-weight:900;border:2px solid var(--ink);border-radius:999px;padding:3px 14px;background:var(--card);letter-spacing:.04em}
+.qbadge::after{content:"";position:absolute;right:-16px;top:-14px;width:22px;height:18px;
+  background:linear-gradient(var(--orange),var(--orange)) 0 100%/3px 9px no-repeat,linear-gradient(var(--orange),var(--orange)) 9px 40%/3px 11px no-repeat,linear-gradient(var(--orange),var(--orange)) 18px 100%/3px 9px no-repeat;transform:rotate(18deg)}
+.hero-art{position:absolute;right:0;top:0;bottom:0;width:min(62%,640px);z-index:1;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 28%);mask-image:linear-gradient(90deg,transparent 0%,#000 28%)}
+.hero-art svg{width:100%;height:100%}
+main{grid-area:main;min-width:0}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:1280px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---------- company card ---------- */
+.co{--cc:var(--c0);position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 0 var(--line),0 8px 20px rgba(90,70,30,.07);min-width:0}
+.co.pick{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.co.pick:hover{transform:translateY(-2px);box-shadow:0 2px 0 var(--line),0 14px 26px rgba(90,70,30,.12)}
+.co.sel{border:3px solid var(--green);box-shadow:0 0 0 3px rgba(30,86,65,.12),0 12px 26px rgba(30,86,65,.18)}
+.co .art{height:112px;position:relative;overflow:hidden}
+.co .art svg{width:100%;height:100%}
+.check{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;background:var(--green);display:grid;place-items:center;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.check svg{width:18px;height:18px}
+.co .body{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.cohead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.co h3{font-size:26px;font-weight:900;letter-spacing:.03em;line-height:1.1}
+.tick{font-family:var(--f-num);font-size:12px;font-weight:800;letter-spacing:.06em;color:#fff;background:var(--cc);border-radius:999px;padding:2px 9px}
+.sector{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:14px}
+.sector svg{width:20px;height:20px;color:var(--cc)}
+.prow{display:flex;align-items:center;gap:12px}
+.price{font-family:var(--f-num);font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.delta{font-family:var(--f-num);font-weight:800;font-size:17px;border-radius:999px;padding:3px 12px;display:inline-flex;gap:4px;align-items:center}
+.delta.up{background:var(--up-bg);color:var(--up)} .delta.down{background:var(--down-bg);color:var(--down)} .delta.flat{background:var(--flat-bg);color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);margin:2px 0 0}
+.stats div{padding:0 10px;border-left:1.5px solid var(--line2)}
+.stats div:first-child{padding-left:0;border-left:none}
+.stats dt{font-size:12px;color:var(--muted);font-weight:500}
+.stats dd{margin:0;font-family:var(--f-num);font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+.ceo{display:flex;align-items:center;gap:8px;font-size:14px;min-height:24px;flex-wrap:wrap}
+.ceo .k{font-family:var(--f-num);font-weight:600;color:var(--muted)}
+.ceo b{font-weight:900}
+.emb{font-size:11px;font-weight:700;color:var(--down);background:var(--down-bg);border-radius:999px;padding:1px 8px}
+.holdrow{display:flex;align-items:center;gap:10px}
+.hold{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.cell{height:12px;border-radius:4px;background:var(--flat-bg)}
+.cell.f{background:var(--pc)}
+.hbadge{font-size:12px;font-weight:700;background:var(--paper2);border-radius:8px;padding:2px 8px;white-space:nowrap}
+.hlist{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--muted);min-height:18px}
+.hlist span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pc);margin-right:4px}
+
+/* ---------- feed ---------- */
+.feed{background:transparent;padding:6px 6px 0;display:flex;flex-direction:column;min-width:0}
+.feed h3{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:900;padding-bottom:10px;border-bottom:1.5px solid var(--line2)}
+.feed h3 svg{width:28px;height:28px;color:var(--orange)}
+.feedlist{list-style:none;margin:0;padding:0;overflow:auto;max-height:300px}
+.feedlist li{display:grid;grid-template-columns:auto 40px minmax(0,1fr);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.qtag{font-family:var(--f-num);font-weight:700;font-size:12px;border:1.5px solid var(--line2);border-radius:6px;padding:1px 6px;background:var(--card)}
+.feedlist .av{width:40px;height:40px}
+.feedlist .txt{font-size:13.5px;line-height:1.45;min-width:0}
+.feedlist .ic{width:40px;height:40px;border-radius:50%;background:var(--paper2);display:grid;place-items:center;color:var(--green)}
+.feedlist .ic svg{width:20px;height:20px}
+.feedlist li.q .txt{font-weight:900;color:var(--green)}
+.feedlist li.k .txt{color:#8A4A12}
+.pn{font-weight:900;color:var(--ink)}
+.cn{font-weight:900}
+
+/* ---------- desk (right panel) ---------- */
+.desk{grid-area:desk;position:sticky;top:max(10px,env(safe-area-inset-top,0px));background:var(--green);color:var(--green-ink);border-radius:26px;padding:24px 24px 22px;overflow:hidden;display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 40px rgba(20,60,45,.25)}
+.desk .leaf{position:absolute;right:-30px;top:-20px;width:190px;height:190px;opacity:.9;pointer-events:none}
+.desk>*{position:relative}
+.dhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dhead h2{font-size:clamp(28px,2.8vw,40px);font-weight:900;letter-spacing:.04em;line-height:1.1}
+.pill{background:var(--orange);color:#fff;font-weight:900;border-radius:999px;padding:5px 14px;font-size:16px;white-space:nowrap}
+.pill.soft{background:rgba(255,255,255,.16)}
+.dsub{font-weight:700;font-size:16px;margin-top:-6px;opacity:.9}
+.dlab{font-size:14px;opacity:.85;font-weight:700}
+.target{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:-6px}
+.target svg{width:30px;height:30px}
+.target b{font-size:26px;font-weight:900;letter-spacing:.03em}
+.target .vs{width:1.5px;height:24px;background:rgba(255,255,255,.4)}
+.target .cur{font-weight:700;font-size:17px}
+.target .cur span{font-family:var(--f-num);font-size:28px;font-weight:800;margin-left:6px}
+.toggle{display:grid;grid-template-columns:1fr 1fr;border:2px solid rgba(255,255,255,.85);border-radius:12px;overflow:hidden}
+.toggle button{border:none;background:transparent;color:var(--green-ink);font-weight:900;font-size:17px;padding:10px;cursor:pointer}
+.toggle button.on{background:var(--card);color:var(--ink)}
+.qrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qrow>span{font-weight:700;font-size:16px}
+.stepper{display:grid;grid-template-columns:52px 1fr 52px;background:var(--yellow);border-radius:12px;min-width:220px;overflow:hidden}
+.stepper button{border:none;background:rgba(255,255,255,.35);color:var(--yellow-ink);font-size:24px;font-weight:700;cursor:pointer;line-height:1;padding:8px 0}
+.stepper button:disabled{opacity:.4;cursor:not-allowed}
+.stepper b{display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:24px;color:var(--yellow-ink);background:#FBE7A6}
+.est{margin:0;display:flex;flex-direction:column}
+.est div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid rgba(255,255,255,.22)}
+.est div:first-child{border-top:none}
+.est dt{font-weight:700;font-size:15px}
+.est dd{margin:0;font-family:var(--f-num);font-weight:800;font-size:20px}
+.dnote{font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px}
+.dnote.warn{background:rgba(233,100,59,.28)}
+.confirm{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:none;border-radius:16px;background:var(--yellow);color:var(--yellow-ink);font-size:24px;font-weight:900;padding:14px;cursor:pointer;box-shadow:0 4px 0 #C99A1E;letter-spacing:.06em}
+.confirm svg{width:26px;height:26px}
+.confirm:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #C99A1E}
+.confirm:disabled{opacity:.5;cursor:not-allowed}
+.passbtn{width:100%;border:2px solid rgba(255,255,255,.85);background:transparent;color:var(--green-ink);border-radius:14px;font-weight:900;font-size:18px;padding:11px;cursor:pointer}
+.passbtn:hover{background:rgba(255,255,255,.08)}
+.empty{border:2px dashed rgba(255,255,255,.35);border-radius:16px;padding:22px 16px;text-align:center;font-weight:700;opacity:.92}
+.empty b{display:block;font-size:20px;margin-bottom:4px}
+.think{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.1);border-radius:16px;padding:14px}
+.think .av{width:56px;height:56px;flex:none}
+.think b{font-size:20px}
+.dots::after{content:"…";display:inline-block;animation:blink 1.1s steps(3) infinite}
+@keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none}.co.pick,.btn{transition:none}}
+
+/* private intel card */
+.intel{position:relative;background:var(--pink);color:var(--ink);border-radius:14px;padding:16px 18px 14px;transform:rotate(-1.2deg);box-shadow:0 6px 14px rgba(0,0,0,.18);margin-top:6px}
+.intel::after{content:"";position:absolute;right:0;top:0;width:30px;height:30px;background:linear-gradient(225deg,var(--green) 50%,var(--pink2) 50%);border-bottom-left-radius:8px}
+.intel .ilab{display:flex;align-items:center;gap:8px;font-weight:900;color:#B24A35;font-size:17px;padding-bottom:8px;border-bottom:1.5px solid var(--pink2)}
+.intel .ilab svg{width:20px;height:20px}
+.intel .ititle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 6px;flex-wrap:wrap}
+.intel h4{font-size:24px;font-weight:900;letter-spacing:.03em}
+.intel .inote{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;font-size:13px;color:#5B4A40}
+.stamp{border:1.5px solid #B24A35;color:#B24A35;border-radius:8px;padding:2px 10px;font-weight:900;font-size:13px;white-space:nowrap;transform:rotate(-3deg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:14px;font-weight:900;padding:2px 10px;border-radius:8px;background:var(--flat-bg);color:var(--ink)}
+.chip.up{background:var(--up-bg);color:var(--up)}
+.chip.down{background:#E8573F;color:#fff}
+.chip.sp{background:#F4D58A;color:#5A4210}
+
+/* ---------- players strip ---------- */
+.players{margin-top:18px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));padding:8px;gap:6px;box-shadow:0 8px 20px rgba(90,70,30,.06)}
+.pl{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;position:relative;min-width:0}
+.pl+.pl::before{content:"";position:absolute;left:-4px;top:16px;bottom:16px;width:1.5px;background:var(--line2)}
+.pl.cur{background:var(--pink)}
+.pl.cur::before,.pl.cur+.pl::before{display:none}
+.pl .av{width:60px;height:60px;flex:none}
+.pl .nm{font-size:19px;font-weight:900;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:700;border:1.5px solid var(--line2);border-radius:6px;padding:0 5px;color:var(--muted);background:var(--card)}
+.pl .fig{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.pl .fig b{font-family:var(--f-num);font-weight:800;color:var(--ink);font-size:16px;margin-left:3px}
+.pl .ceos{display:flex;gap:4px;margin-top:3px}
+.pl .ceos i{font-style:normal;font-size:10px;font-weight:900;color:#fff;background:var(--cc);border-radius:5px;padding:0 5px;font-family:var(--f-num)}
+
+/* ---------- responsive ---------- */
+@media (max-width:1040px){
+  .board{grid-template-columns:minmax(0,1fr);grid-template-areas:"hero" "desk" "main"}
+  .desk{position:relative;top:0}
+  .hero-art{width:70%;opacity:.55}
+}
+@media (max-width:640px){
+  .cards{grid-template-columns:minmax(0,1fr)}
+  .vsep{display:none}
+  .steps{order:3;flex-basis:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px}
+  .step{padding:4px 10px;font-size:13px}.step.now{padding:5px 12px;font-size:15px}
+  .brand small{display:none}
+  .stepper{min-width:170px}
+  .desk{padding:20px 18px;border-radius:22px}
+  .co h3{font-size:23px}
+}
+
+/* ---------- modals ---------- */
+.overlay{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--card);color:var(--ink);border-radius:24px;border:1.5px solid var(--line);width:min(640px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:26px;box-shadow:0 30px 70px rgba(40,30,10,.3)}
+.modal h2{font-size:28px;font-weight:900;margin-bottom:6px;letter-spacing:.03em}
+.modal .sub{color:var(--muted);margin:0 0 16px}
+.modal .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
+.modal .acts .btn{padding:10px 20px;font-size:16px}
+.modal .intel{transform:none;margin-bottom:6px}
+.modal .intel::after{background:linear-gradient(225deg,var(--card) 50%,var(--pink2) 50%)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line2);background:var(--paper)}
+.opt:hover:not(:disabled){border-color:var(--green);background:var(--card)}
+.opt b{font-size:17px;font-weight:900}
+.opt span{font-size:13px;color:var(--muted)}
+.opt .go{font-weight:900;color:var(--green);font-size:14px;white-space:nowrap}
+.evlist{display:grid;gap:8px}
+.ev{border:1.5px solid var(--line2);border-radius:14px;padding:12px 14px;background:var(--paper);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.ev h4{font-size:18px;font-weight:900;margin:0 0 6px}
+.ev .kn{font-size:12px;color:var(--muted);font-weight:700}
+.ev.hidden-card{border-style:dashed;background:var(--card)}
+table.res{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+table.res th{font-size:12px;color:var(--muted);text-align:right;font-weight:700;padding:4px 6px}
+table.res td{text-align:right;padding:8px 6px;border-top:1px solid var(--line);font-family:var(--f-num);font-weight:700;font-variant-numeric:tabular-nums}
+table.res th:first-child,table.res td:first-child{text-align:left;font-family:var(--f-body)}
+.tablewrap{overflow-x:auto}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+.seats{display:flex;flex-direction:column;gap:10px}
+.seat{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center}
+.seat .av{width:44px;height:44px}
+.seat input{font:inherit;font-weight:700;padding:9px 12px;border:1.5px solid var(--line2);border-radius:12px;background:var(--paper);color:var(--ink);min-width:0;width:100%}
+.seg{display:inline-flex;border:1.5px solid var(--line2);border-radius:12px;overflow:hidden;background:var(--paper)}
+.seg button{border:none;background:transparent;color:var(--muted);padding:8px 12px;cursor:pointer;font-weight:700}
+.seg button.on{background:var(--green);color:var(--green-ink)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;flex-wrap:wrap}
+.field>span{font-weight:900;font-size:16px}
+.note{font-size:12px;color:var(--muted)}
+.pitch{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 6px}
+.pitch div{background:var(--paper);border-radius:14px;padding:12px;font-size:13px;color:var(--muted)}
+.pitch b{display:block;color:var(--ink);font-size:15px;font-weight:900;margin-bottom:2px}
+.setup-art{height:120px;margin:-26px -26px 16px;overflow:hidden;border-radius:24px 24px 0 0}
+.setup-art svg{width:100%;height:100%}
+.rules{font-size:15px;line-height:1.8}
+.rules h3{font-size:19px;font-weight:900;margin:18px 0 6px;color:var(--green)}
+.rules p,.rules li{max-width:62ch}
+.rules ol,.rules ul{padding-left:1.3em;margin:6px 0}
+.trackline{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--f-num);font-weight:700;font-size:12px}
+.trackline span{border:1.5px solid var(--line2);padding:0 6px;border-radius:6px;background:var(--paper)}
+.win{font-size:34px;font-weight:900;color:var(--green);margin:4px 0}
+.handoff .av{width:84px;height:84px;margin-bottom:10px}
+.roomcode{display:flex;gap:10px;justify-content:center;margin:6px 0 4px}
+.roomcode span{width:64px;height:78px;display:grid;place-items:center;font-size:44px;font-weight:800;background:var(--green);color:var(--green-ink);border-radius:14px;box-shadow:0 4px 0 #123A2B}
+.codein{font:inherit;font-weight:800;font-size:20px;padding:9px 14px;border:1.5px solid var(--line2);border-radius:12px;background:var(--paper);color:var(--ink);width:min(220px,100%)}
+.seat b{font-weight:900}
+.roombar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:700;opacity:.9;border-top:1px solid rgba(255,255,255,.2);padding-top:12px}
+.roombar b{font-size:20px;letter-spacing:.12em;background:rgba(255,255,255,.14);border-radius:8px;padding:0 10px}
+
+/* ================= 財富自由之路 additions ================= */
+.board{grid-template-areas:"hero desk" "main desk"}
+.sec-h{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:900;margin:22px 0 12px;letter-spacing:.03em}
+.sec-h svg{width:26px;height:26px;color:var(--orange)}
+.sec-h small{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:0}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:18px;box-shadow:0 2px 0 var(--line),0 8px 20px rgba(90,70,30,.07);min-width:0}
+/* market board */
+.mboard{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;padding:16px 18px;align-items:center}
+.clock svg{width:100%;height:auto}
+.mside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.news{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border-radius:14px;padding:12px 14px}
+.news .nlab{font-family:var(--f-num);font-weight:800;font-size:11px;letter-spacing:.2em;color:var(--orange);white-space:nowrap;padding-top:3px}
+.news b{font-size:18px;font-weight:900;display:block;line-height:1.35}
+.news span{font-size:13px;color:var(--muted)}
+.tracks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.trk{background:var(--paper);border-radius:14px;padding:10px 12px;min-width:0}
+.trk dt{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}
+.trk dd{margin:2px 0 0;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.trk .v{font-family:var(--f-num);font-weight:800;font-size:26px;line-height:1}
+.trk .d{font-family:var(--f-num);font-weight:800;font-size:13px;border-radius:999px;padding:1px 8px}
+.trk .d.up{background:var(--up-bg)} .trk .d.down{background:var(--down-bg)} .trk .d.flat{background:var(--flat-bg)}
+/* action spaces */
+.spaces{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@media (max-width:1400px){.spaces{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:1180px){.spaces{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.sp{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 0 var(--line);min-width:0;text-align:left;padding:0;font:inherit;color:inherit}
+.sp .art{height:64px;position:relative;overflow:hidden}
+.sp .art svg{width:100%;height:100%}
+.sp .body{padding:9px 12px 11px;display:flex;flex-direction:column;gap:4px;flex:1}
+.sp h3{font-size:17px;font-weight:900;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.sp .cap{font-family:var(--f-num);font-size:12px;font-weight:800;color:var(--muted);background:var(--paper2);border-radius:999px;padding:0 8px;white-space:nowrap}
+.sp .cap.full{background:var(--down-bg);color:var(--down)}
+.sp p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.45}
+.sp .need{font-size:11px;font-weight:800;color:#8A4A12}
+.sp .occ{display:flex;gap:3px;min-height:24px;margin-top:auto;padding-top:4px}
+.sp .occ .av{width:24px;height:24px}
+.sp.pick{cursor:pointer;transition:transform .15s}
+.sp.pick:hover{transform:translateY(-2px);border-color:var(--green)}
+.sp.sel{border:3px solid var(--green);box-shadow:0 0 0 3px rgba(30,86,65,.12)}
+.sp.off{opacity:.55}
+.sp .check{width:24px;height:24px;right:8px;top:8px}
+/* investment market */
+.mrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) 18px repeat(2,minmax(0,1fr));gap:12px;align-items:stretch}
+.mrow .gap{width:2px;background:repeating-linear-gradient(180deg,var(--line2) 0 6px,transparent 6px 12px);justify-self:center}
+@media (max-width:1400px){.mrow{grid-template-columns:repeat(4,minmax(0,1fr))}.mrow .gap{display:none}}
+@media (max-width:1180px){.mrow{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ic{--cc:var(--c2);background:var(--card);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;min-width:0;box-shadow:0 2px 0 var(--line)}
+.ic .ih{background:var(--cc);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:8px;font-weight:900;font-size:13px}
+.ic .ih svg{width:18px;height:18px}
+.ic .ib{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.ic h4{font-size:17px;font-weight:900}
+.ic .kv{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12.5px;color:var(--muted)}
+.ic .kv b{font-family:var(--f-num);color:var(--ink);font-weight:800;font-size:15px;margin-left:2px}
+.ic .note{font-size:12px;color:var(--muted)}
+.ic.empty{border-style:dashed;background:transparent;display:grid;place-items:center;color:var(--muted);font-size:13px;min-height:120px}
+.ic.opp{--cc:#B24A35}
+.ic.opp.spec{--cc:#7A5AD3}
+.flags{display:flex;gap:4px;flex-wrap:wrap}
+.flag{font-size:11px;font-weight:900;color:#fff;background:#D7372B;border-radius:6px;padding:1px 6px;display:inline-flex;gap:3px;align-items:center}
+.truth{font-size:12px;font-weight:900;border-radius:8px;padding:2px 8px;align-self:flex-start}
+.truth.t{background:var(--up-bg);color:var(--up)} .truth.f{background:var(--down-bg);color:var(--down)}
+/* statement */
+.stmt{padding:16px 18px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line2);background:var(--paper);border-radius:999px;padding:3px 12px 3px 4px;cursor:pointer;font-weight:800;font-size:14px}
+.tabs button .av{width:26px;height:26px}
+.tabs button.on{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.meter{margin:4px 0 14px}
+.meter .ml{display:flex;justify-content:space-between;gap:10px;font-weight:800;font-size:14px;flex-wrap:wrap}
+.meter .ml b{font-family:var(--f-num);font-size:18px}
+.bar2{position:relative;height:16px;border-radius:999px;background:var(--flat-bg);overflow:hidden;margin-top:6px}
+.bar2 i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#4F9E61,#2C8F4E);border-radius:999px}
+.bar2.free i{background:linear-gradient(90deg,#E9B12E,#F5C443)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+.ledger h5{font-size:14px;font-weight:900;margin:0 0 4px;color:var(--green);display:flex;justify-content:space-between}
+.ledger dl{margin:0}
+.ledger dl div{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.ledger dd{margin:0;font-family:var(--f-num);font-weight:800}
+.ledger .tot{font-weight:900;border-bottom:none}
+.ledger .tot dd{font-size:16px}
+.ledger .none{font-size:13px;color:var(--muted);padding:4px 0}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip.ins{background:#DCEBF6;color:#245E8A}
+.chip.off{background:var(--flat-bg);color:var(--muted);text-decoration:line-through}
+/* players strip additions */
+.pl .mini{height:6px;border-radius:999px;background:var(--flat-bg);overflow:hidden;margin-top:4px;max-width:160px}
+.pl .mini i{display:block;height:100%;background:#2C8F4E}
+.pl .mini.free i{background:var(--yellow)}
+.dotsrow{display:inline-flex;gap:3px;vertical-align:middle}
+.dotsrow i{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block}
+.dotsrow i.u{background:var(--line2)}
+.badge-free{font-size:11px;font-weight:900;color:var(--yellow-ink);background:var(--yellow);border-radius:6px;padding:0 6px}
+/* desk forms */
+.frm{display:flex;flex-direction:column;gap:8px}
+.frow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 10px}
+.frow .fl{min-width:0}
+.frow .fl b{display:block;font-size:15px;font-weight:900}
+.frow .fl span{font-size:12px;opacity:.85}
+.mini-step{display:grid;grid-template-columns:34px 44px 34px;background:var(--yellow);border-radius:10px;overflow:hidden;flex:none}
+.mini-step button{border:none;background:rgba(255,255,255,.35);color:var(--yellow-ink);font-size:20px;font-weight:800;cursor:pointer;padding:4px 0;line-height:1}
+.mini-step button:disabled{opacity:.35;cursor:not-allowed}
+.mini-step b{display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:17px;color:var(--yellow-ink);background:#FBE7A6}
+.radio{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:2px solid rgba(255,255,255,.3);background:transparent;color:var(--green-ink);border-radius:12px;padding:9px 12px;cursor:pointer}
+.radio:disabled{opacity:.45;cursor:not-allowed}
+.radio.on{border-color:var(--yellow);background:rgba(245,196,67,.16)}
+.radio .rb{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;flex:none;display:grid;place-items:center}
+.radio.on .rb::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--yellow)}
+.radio .rt{flex:1;min-width:0}
+.radio .rt b{display:block;font-size:15px;font-weight:900}
+.radio .rt span{font-size:12px;opacity:.85}
+.radio .rv{font-family:var(--f-num);font-weight:800;font-size:16px;white-space:nowrap}
+.sw{display:inline-flex;border:2px solid rgba(255,255,255,.7);border-radius:10px;overflow:hidden;flex:none}
+.sw button{border:none;background:transparent;color:var(--green-ink);font-weight:900;padding:5px 10px;cursor:pointer;font-size:13px}
+.sw button.on{background:var(--card);color:var(--ink)}
+.dream{background:#FFF2C9;color:var(--ink);border-radius:14px;padding:12px 14px;box-shadow:0 6px 14px rgba(0,0,0,.15);transform:rotate(.8deg)}
+.dream .ilab{display:flex;align-items:center;gap:8px;font-weight:900;color:#8A6410;font-size:15px;padding-bottom:6px;border-bottom:1.5px solid #F1DC9A;margin-bottom:6px}
+.dream .ilab svg{width:18px;height:18px}
+.dream li{font-size:13.5px;margin:3px 0}
+.dream li b{font-weight:900}
+.dream ul{margin:0;padding-left:1.1em}
+.dream .ok{color:var(--up);font-weight:900}
+.intel .peek{display:grid;gap:6px;margin-top:8px}
+.intel .peek div{background:rgba(255,255,255,.55);border-radius:8px;padding:6px 10px;font-size:13.5px}
+.intel .peek b{font-weight:900}
+.repaybtn{width:100%;border:2px dashed rgba(255,255,255,.6);background:transparent;color:var(--green-ink);border-radius:14px;font-weight:800;font-size:15px;padding:9px;cursor:pointer}
+.tip{background:#E7F2E6;border-left:4px solid var(--green);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:12px}
+.tip b{color:var(--green)}
+.evrow{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;border:1.5px solid var(--line2);border-radius:14px;padding:10px 12px;background:var(--paper)}
+.evrow .av{width:44px;height:44px}
+.evrow h4{font-size:16px;font-weight:900;margin:0}
+.evrow p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+.evrow .cat{font-size:11px;font-weight:900;border-radius:6px;padding:0 6px;background:var(--paper2);color:var(--muted);margin-left:6px}
+.chart{width:100%;height:auto;margin-top:8px}
+.lessons{display:grid;gap:8px;margin-top:10px}
+.lessons div{background:var(--paper);border-radius:12px;padding:10px 12px;font-size:13.5px}
+.opt .lft{min-width:0}
+.big{font-size:20px;font-weight:900}
+@media (max-width:1040px){.board{grid-template-areas:"hero" "desk" "main"}}
+@media (max-width:760px){
+  .mboard{grid-template-columns:minmax(0,1fr)}
+  .clock{max-width:220px;margin:0 auto}
+  .tracks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .spaces,.mrow{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:420px){.spaces,.mrow{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1440px){.brand small{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="homelink" href="../../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>大廳</a>
+    <div class="brand"><svg viewBox="0 0 56 48" aria-hidden="true"><path d="M6 40 C16 40 18 26 28 24 S42 10 50 8" fill="none" stroke="#1E5641" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="8" r="6" fill="#F5C443" stroke="#E9643B" stroke-width="3"/><path d="M8 44h40" stroke="#E9643B" stroke-width="3" stroke-dasharray="5 4"/></svg><h1>財富自由之路</h1><small>ROAD TO FREEDOM</small></div>
+    <span class="vsep"></span>
+    <nav class="steps" id="steps" aria-label="人生進度"></nav>
+    <span class="vsep"></span>
+    <div class="tops">
+      <button class="btn" id="btnRules" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>規則</button>
+      <button class="btn dark" id="btnNew" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新遊戲</button>
+    </div>
+  </header>
+  <div class="board">
+    <section class="hero" id="hero"></section>
+    <aside class="desk" id="desk" aria-live="polite"></aside>
+    <main>
+      <section class="panel mboard" id="mboard" aria-label="景氣看板"></section>
+      <h2 class="sec-h" id="spH"></h2>
+      <div class="spaces" id="spaces"></div>
+      <h2 class="sec-h" id="mkH"></h2>
+      <div class="mrow" id="mrow"></div>
+      <section class="feed" aria-label="人生動態" style="margin-top:18px" id="feed"></section>
+    </main>
+  </div>
+  <section class="panel stmt" id="stmt" aria-label="財務報表" style="margin-top:18px"></section>
+  <section class="players" id="players" aria-label="玩家"></section>
+</div>
+<div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script>
+'use strict';
+const LOBBY='../../';
+/* ================= constants ================= */
+const ROUNDS=8, BASE_W=3, MAX_LVL=4, MAX_KNOW=5, BANKRUPT_CC=20, INFL_ROUNDS=[3,5,7];
+const ageOf=r=>17+5*r;
+const JOBS=[
+  {id:'eng',n:'工程師',cash:3,sal:8,live:4,inc:1,ab:'買成長股不需要知識'},
+  {id:'nurse',n:'護理師',cash:5,sal:6,live:3,inc:1,ab:'自帶醫療險，免保費'},
+  {id:'teach',n:'國小老師',cash:5,sal:6,live:3,inc:2,ab:'不會被裁員；退休金計入淨資產 +4'},
+  {id:'civil',n:'公務員',cash:5,sal:6,live:3,inc:2,ab:'蕭條期不會失業；信貸額度是薪水 ×3'},
+  {id:'sales',n:'業務',cash:2,sal:3,live:3,inc:2,ab:'薪水＝底薪＋擲骰；繁榮期再 +2'},
+  {id:'chef',n:'廚師',cash:3,sal:6,live:3,inc:2,ab:'開餐飲類小生意時擲骰 +1'},
+  {id:'design',n:'設計師',cash:3,sal:6,live:3,inc:2,know:2,ab:'起始知識 2；機會市集不受名額限制'},
+  {id:'creator',n:'自媒體創作者',cash:2,sal:0,live:2,inc:1,ab:'薪水＝3＋擲骰；每張生活風格卡收入 +1'},
+];
+const JI=Object.fromEntries(JOBS.map((j,i)=>[j.id,i]));
+const ZONES=[
+  {n:'復甦',mkt:2,gro:3,house:1,gold:-1,col:'#8CBF6E'},
+  {n:'繁榮',mkt:3,gro:6,house:1,gold:-1,col:'#E9B12E'},
+  {n:'衰退',mkt:-1,gro:-2,house:0,gold:2,col:'#E07A4C'},
+  {n:'蕭條',mkt:-2,gro:-5,house:-2,gold:2,col:'#6E7FA8'},
+];
+const zoneOf=pos=>ZONES[pos>>1];
+const RANGE={mkt:[4,30],gro:[1,40],house:[-3,6],gold:[4,30]};
+const NEWS_DEF=[
+  ...['市場觀望，景氣原地踏步','選舉年，各方按兵不動','政策方向未明，投資人觀望'].map(n=>({n,mv:0})),
+  ...['央行例行理監事會','出口數據公布','新任財政部長上任','國際油價波動','就業報告出爐','房市交易量統計出爐','消費者信心指數公布','年度總預算三讀','國際貿易協定簽署','大型科技展落幕'].map(n=>({n,mv:1})),
+  ...['資金大舉流動，景氣快轉','全球同步調整利率','產業供應鏈大洗牌','國際局勢劇變','原物料價格急遽變動'].map(n=>({n,mv:2})),
+  ...['黑天鵝：全球疫情爆發','黑天鵝：國際金融危機'].map(n=>({n,swan:true})),
+];
+// investment cards: prop / biz / patent
+const INV=[
+  {t:'prop',n:'學生套房',p:15,rent:2,k:1,cnt:4},
+  {t:'prop',n:'老公寓',p:20,rent:3,k:1,cnt:4,leak:true,note:'抽到漏水事件時多付 2'},
+  {t:'prop',n:'電梯兩房',p:30,rent:4,k:1,cnt:4},
+  {t:'prop',n:'河景三房',p:35,rent:5,k:2,cnt:2},
+  {t:'prop',n:'街角店面',p:40,rent:6,k:2,cnt:3,shop:true,note:'蕭條期可能空置一輪'},
+  {t:'biz',n:'手搖飲店',p:10,k:2,tiers:[0,2,2,4,4,6],fee:1,food:true,cnt:3},
+  {t:'biz',n:'自助洗衣',p:12,k:2,tiers:[1,3,3,3,3,4],fee:0,cnt:3,note:'穩定但天花板低'},
+  {t:'biz',n:'網路商店',p:6,k:2,tiers:[0,0,2,2,4,7],fee:1,cnt:3,note:'便宜，變化大'},
+  {t:'biz',n:'補習班',p:15,k:3,tiers:[0,3,3,5,5,8],fee:2,cnt:3},
+  {t:'biz',n:'早午餐店',p:12,k:2,tiers:[0,2,3,4,5,7],fee:1,food:true,cnt:2},
+  {t:'pat',n:'專利授權',p:18,k:3,inc:3,cnt:2,note:'每輪收入 3，遊戲結束時價值歸零'},
+  {t:'prop',n:'法拍公寓',p:30,rent:4,k:0,cnt:0},
+  {t:'biz',n:'朋友的咖啡廳',p:8,k:0,tiers:[3,3,3,3,3,3],fee:0,cnt:0,cafe:true},
+];
+const FORECLOSE=INV.findIndex(c=>c.n==='法拍公寓'), CAFE=INV.findIndex(c=>c.cafe);
+const STYLE={
+  car:{n:'新車',cost:8,h:4,exp:1,res:2,once:true},
+  pet:{n:'養寵物',cost:2,h:3,exp:1,once:true},
+  gym:{n:'健身房會員',cost:1,h:1,exp:1,once:true,note:'健康事件少付 2'},
+  phone:{n:'最新手機',cost:3,h:1,exp:1,once:true},
+  bag:{n:'名牌包',cost:5,h:3,exp:0},
+  trip:{n:'出國旅行',cost:6,h:4,exp:0,trip:true},
+};
+const INS={med:{n:'醫療險',d:'健康事件只付 1'},acc:{n:'意外險',d:'意外事件只付 1'},prop:{n:'產險',d:'房屋損失全免'},life:{n:'壽險',d:'重大家庭事件理賠 10'}};
+const DREAMS=[
+  {id:'early',n:'提早退休',pts:12,d:'第 6 輪結束前拿到財務自由徽章'},
+  {id:'land',n:'包租公／包租婆',pts:8,d:'終局擁有 3 間房產'},
+  {id:'boss',n:'創業家',pts:8,d:'終局有 2 間經營中的小生意'},
+  {id:'world',n:'環遊世界',pts:6,d:'整場出國旅行 2 次'},
+  {id:'nodebt',n:'零負債人生',pts:5,d:'終局沒有任何借款'},
+  {id:'family',n:'家庭圓滿',pts:6,d:'結婚並且至少有 1 個小孩'},
+  {id:'master',n:'投資大師',pts:7,d:'終局持有 4 種以上資產類別'},
+  {id:'give',n:'回饋社會',pts:8,d:'整場捐款累計 10'},
+];
+const DI=Object.fromEntries(DREAMS.map((d,i)=>[d.id,i]));
+const FLAGS={g:'保證獲利',t:'限時搶購',p:'拉人頭',z:'高報酬零風險'};
+const OPP=[
+  {id:'robot',n:'學長的 AI 套利機器人',kind:'scam',flags:['g','z','t'],cnt:2,d:'「保證每輪 20%、名額只到今晚」，投入多少都可以。',tip:'保證獲利、高報酬零風險、限時，同時出現就是詐騙。真正的投資一定有風險。'},
+  {id:'lottery',n:'恭喜抽中最新手機',kind:'scam',flags:['t','g'],cnt:2,d:'先付手續費 2 才能領獎。',tip:'要你先付錢才能領的獎品，幾乎都是詐騙。'},
+  {id:'stockgrp',n:'老師帶單飆股群組',kind:'scam',flags:['g','p','t'],cnt:2,d:'付 5 入會費，老師每天報明牌。',tip:'會「保證」報酬的明牌群組，賺的是你的入會費。'},
+  {id:'mlm',n:'高獲利加盟',kind:'scam',flags:['p','z'],cnt:1,d:'投入 10 成為加盟主，拉越多人賺越多。',tip:'靠拉人頭而不是賣產品賺錢的，是老鼠會。'},
+  {id:'crypto',n:'加密幣熱潮',kind:'spec',flags:[],cnt:3,d:'投入任意金額後擲骰：1–3 歸零、4–5 變 2 倍、6 變 4 倍。',tip:'投機不是投資。只拿輸光也不會傷筋骨的閒錢，這叫部位控制。'},
+  {id:'cafe',n:'朋友合開咖啡廳',kind:'gen',flags:[],cnt:2,d:'投入 8。真：變成每輪收入 3 的小生意（朋友經營，算被動收入）。假：經營不善，只拿回 2。',tip:'合夥前先看懂生意模式與對方的經營能力。'},
+  {id:'lend',n:'親戚來借錢',kind:'gen',flags:[],cnt:2,d:'借出 5。真：3 輪後拿回 7。假：拿不回來，但幸福 +2（人情）。',tip:'借錢給親友，最好當作送出去也不心疼的金額。'},
+  {id:'esop',n:'公司員工認股',kind:'gen',flags:[],cnt:2,d:'付 8 得到 1 股成長股。假：公司下市，股票歸零。',tip:'集中押在單一公司股票，風險比分散投資高很多。'},
+  {id:'fore',n:'法拍屋',kind:'gen',flags:[],cnt:2,d:'付 18 買下市價 30、租金 4 的公寓（可貸款 10）。假：有占用戶，第一輪收不到租金。',tip:'法拍屋便宜有原因，要先查清楚產權與占用。'},
+  {id:'policy',n:'投資型保單推銷',kind:'gen',flags:[],cnt:2,d:'簽約後每輪付 2，終局拿回已付總額 ×1.1。假：手續費很高，終局只拿回一半。',tip:'保險和投資最好分開，先看懂費用再簽約。'},
+  {id:'lecture',n:'財商講座',kind:'gen',flags:[],cnt:2,d:'付 3。真：知識 +2。假：只是推銷課，知識不變。',tip:'學習很值得，但要分辨真正的課程和推銷話術。'},
+  {id:'usedcar',n:'二手車特價',kind:'gen',flags:[],cnt:2,d:'付 4 得到「新車」生活風格卡。假：泡水車，再付 3 修理。',tip:'便宜的東西也要檢查清楚，車子是會折舊的消費。'},
+];
+const SPACES=[
+  {id:'work',n:'上班加班',d:'拿薪水的一半，幸福 −1（同輪第二次 −2）',art:'work'},
+  {id:'study',n:'進修學院',d:'付 3×(等級+1)，等級 +1、知識 +1',art:'study'},
+  {id:'broker',n:'證券行',d:'買賣債券、基金、成長股、REITs、黃金',art:'broker',need:'成長股需知識 1'},
+  {id:'realty',n:'房仲',d:'買 1 間房（可辦房貸）或賣 1 間',art:'realty',need:'知識 1'},
+  {id:'startup',n:'創業孵化',d:'開 1 間小生意，擲骰決定收入',art:'startup',need:'知識 2'},
+  {id:'bank',n:'銀行',d:'借信貸，或開關定期定額',art:'bank'},
+  {id:'insure',n:'保險公司',d:'投保或退保，每張每輪保費 1',art:'insure'},
+  {id:'research',n:'財經研究室',d:'偷看接下來 2 則新聞，知識 +1',art:'research'},
+  {id:'opp',n:'機會市集',d:'拿 1 張機會卡，決定要不要做',art:'opp',need:'知識 2 可先查證真假'},
+  {id:'leisure',n:'休閒生活',d:'放鬆、買生活風格卡或捐款',art:'leisure'},
+];
+const SPI=Object.fromEntries(SPACES.map((s,i)=>[s.id,i]));
+const PERS={cons:'穩健',bal:'平衡',agg:'衝衝衝',naive:'小白'};
+const AI_NAMES=['阿穩','精算師','衝哥','小白'];
+const AI_PERS=['cons','bal','agg','naive'];
+const SPEEDS={快:300,中:750,慢:1300};
+const SAVE_KEY='wealthroad-save-v1';
+
+/* ================= state ================= */
+let S=null, UI={sp:null,a:{},tab:null,pending:false}, timer=null, SPEED=750, SIM=false;
+let setupCfg={n:4,seats:[{name:'你',ai:false},{name:AI_NAMES[0],ai:true},{name:AI_NAMES[1],ai:true},{name:AI_NAMES[2],ai:true},{name:AI_NAMES[3],ai:true}],speed:'中'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const NP=()=>S.players.length;
+const humans=()=>S.players.filter(p=>!p.ai&&!p.remote);
+const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
+const d6=()=>1+(Math.random()*6|0);
+const clamp=(v,[a,b])=>Math.max(a,Math.min(b,v));
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function log(html,cls=''){if(SIM)return;const m=/data-p="(\d)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,r:S.r});if(S.log.length>150)S.log.length=150;}
+function save(){if(SIM)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+function loadSave(){try{const s=localStorage.getItem(SAVE_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+
+/* ================= economy helpers ================= */
+const job=p=>JOBS[JI[p.job]||0];
+const zone=()=>zoneOf(S.pos);
+const isBoom=()=>(S.pos>>1)===1, isDown=()=>(S.pos>>1)===2, isDep=()=>(S.pos>>1)===3;
+const reitP=()=>10+S.house;
+const bondSell=()=>isDown()?11:10;
+const propVal=c=>Math.floor(INV[c].p*(10+S.house)/10);
+const hasIns=(p,k)=>k==='med'&&p.job==='nurse'?true:!!p.ins[k];
+const styleCount=p=>p.style.length;
+function baseSal(p){const j=job(p);
+  if(p.job==='sales')return 3+(p.lvl-1)*2+3;
+  if(p.job==='creator')return 6+(p.lvl-1)+styleCount(p);
+  return j.sal+(p.lvl-1)*j.inc;}
+function otGain(p){return Math.floor(baseSal(p)/2)+(isBoom()?1:0);}
+function rollSalary(p){
+  if(p.job==='sales'){const r=d6();return {v:3+(p.lvl-1)*2+r+(isBoom()?2:0),r};}
+  if(p.job==='creator'){const r=d6();return {v:3+r+(p.lvl-1)+styleCount(p),r};}
+  return {v:baseSal(p),r:null};
+}
+const studyCost=p=>p.lvl>=MAX_LVL?3:3*(p.lvl+1);
+const loanCap=p=>baseSal(p)*(p.job==='civil'?3:2);
+function expenses(p){
+  const j=job(p),rows=[];
+  rows.push(['生活費',j.live+S.infl]);
+  const st=p.style.reduce((a,k)=>a+STYLE[k].exp,0);if(st)rows.push(['生活風格',st]);
+  if(p.married)rows.push(['家庭開銷',1]);
+  if(p.kids)rows.push(['小孩',p.kids]);
+  const mi=p.props.reduce((a,x)=>a+Math.floor(x.loan/10),0);if(mi)rows.push(['房貸利息',mi]);
+  if(p.loan)rows.push(['信貸利息',Math.floor(p.loan/10)*2]);
+  if(p.cc)rows.push(['卡債利息',Math.ceil(p.cc/10)*4]);
+  const ins=Object.keys(INS).filter(k=>p.ins[k]&&!(k==='med'&&p.job==='nurse')).length;if(ins)rows.push(['保費',ins]);
+  const fee=p.biz.reduce((a,b)=>a+(b.mgr?INV[b.c].fee:0),0);if(fee)rows.push(['經理費',fee]);
+  if(p.policy)rows.push(['投資型保單',2]);
+  if(p.care)rows.push(['照顧父母',p.care]);
+  return {rows,total:rows.reduce((a,r)=>a+r[1],0)};
+}
+function passive(p,forSettle){
+  const rows=[];
+  if(p.bond)rows.push(['債券配息',p.bond]);
+  if(p.fund)rows.push(['基金配息',p.fund]);
+  if(p.reit)rows.push(['REITs 配息',p.reit]);
+  const rent=p.props.reduce((a,x)=>a+((x.vac||x.occ)&&forSettle?0:INV[x.c].rent),0);if(rent)rows.push(['租金',rent]);
+  const bz=p.biz.reduce((a,b)=>a+(b.mgr?b.inc:0),0);if(bz)rows.push(['小生意（請經理）',bz]);
+  return {rows,total:rows.reduce((a,r)=>a+r[1],0)};
+}
+const activeBiz=p=>p.biz.reduce((a,b)=>a+(b.mgr?0:b.inc),0);
+const selfManaging=p=>p.biz.some(b=>!b.mgr);
+function netWorth(p,final){
+  let v=p.cash+p.bond*10+p.fund*S.mkt+p.gro*S.gro+p.reit*reitP()+p.gold*S.gold;
+  p.props.forEach(x=>{v+=propVal(x.c)-x.loan;});
+  p.biz.forEach(b=>{const c=INV[b.c];v+=c.t==='pat'?(final?0:Math.floor(c.p/2)):Math.floor(c.p/2);});
+  p.style.forEach(k=>{v+=STYLE[k].res||0;});
+  p.recv.forEach(x=>{v+=x.amt;});
+  if(p.policy)v+=p.policy.t===false?Math.floor(p.policy.paid/2):Math.floor(p.policy.paid*1.1);
+  if(p.job==='teach')v+=4;
+  v-=p.loan+p.cc;
+  return v;
+}
+function assetClasses(p){return [p.bond>0,p.fund>0,p.gro>0,p.reit>0,p.gold>0,p.props.length>0,p.biz.some(b=>INV[b.c].t==='biz')].filter(Boolean).length;}
+function dreamOK(p,id){
+  switch(id){
+    case 'early':return p.firstFree>0&&p.firstFree<=6;
+    case 'land':return p.props.length>=3;
+    case 'boss':return p.biz.filter(b=>INV[b.c].t==='biz').length>=2;
+    case 'world':return p.travel>=2;
+    case 'nodebt':return !p.loan&&!p.cc&&!p.props.some(x=>x.loan>0);
+    case 'family':return p.married&&p.kids>=1;
+    case 'master':return assetClasses(p)>=4;
+    case 'give':return p.donated>=10;
+  }return false;
+}
+function score(i){
+  const p=S.players[i],nw=netWorth(p,true),ex=expenses(p).total,pa=passive(p).total;
+  const free=pa>=ex;
+  const dreams=p.dreams.map(id=>({id,ok:dreamOK(p,id)}));
+  const r={nw,nwPts:Math.floor(nw/5),free:free?10:0,first:S.firstFree===i?3:0,happy:p.happy,
+    dreamPts:dreams.reduce((a,d)=>a+(d.ok?DREAMS[DI[d.id]].pts:0),0),dreams,retire:nw<30?-8:0,bk:-10*p.bk};
+  r.total=r.nwPts+r.free+r.first+r.happy+r.dreamPts+r.retire+r.bk;
+  return r;
+}
+
+/* ================= placement rules ================= */
+function spCap(sp){
+  switch(sp){case 'study':case 'realty':case 'research':case 'opp':return 2;case 'startup':return 1;case 'broker':return NP();default:return 99;}
+}
+function spFull(sp,pi){const n=(S.occ[sp]||[]).length;if(sp==='opp'&&S.players[pi]&&S.players[pi].job==='design')return false;return n>=spCap(sp);}
+function rowCards(t){return S.row.map((c,i)=>({c,i})).filter(x=>x.c!=null&&(Array.isArray(t)?t.includes(INV[x.c].t):INV[x.c].t===t));}
+function canPlace(pi,sp){
+  const p=S.players[pi];
+  if(spFull(sp,pi))return {ok:false,why:'名額已滿'};
+  switch(sp){
+    case 'study':if(p.cash<studyCost(p))return {ok:false,why:`需要 $${studyCost(p)}`};if(p.lvl>=MAX_LVL&&p.know>=MAX_KNOW)return {ok:false,why:'已到頂'};break;
+    case 'realty':if(p.know<1)return {ok:false,why:'需要知識 1'};if(!p.props.length&&!rowCards('prop').length)return {ok:false,why:'市場上沒有房子'};break;
+    case 'startup':if(p.know<2)return {ok:false,why:'需要知識 2'};if(!rowCards(['biz','pat']).length)return {ok:false,why:'市場上沒有生意'};break;
+    case 'research':if(S.np>=S.news.length)return {ok:false,why:'沒有新聞了'};break;
+    case 'opp':if(!S.opp.some(o=>o))return {ok:false,why:'沒有機會卡'};break;
+  }
+  return {ok:true};
+}
+const ASSETS=[
+  {k:'bond',n:'債券',price:()=>10,sell:()=>bondSell(),inc:'配息 1'},
+  {k:'fund',n:'指數基金',price:()=>S.mkt,sell:()=>S.mkt,inc:'配息 1'},
+  {k:'gro',n:'成長股',price:()=>S.gro,sell:()=>S.gro,inc:'不配息、波動大'},
+  {k:'reit',n:'REITs',price:()=>reitP(),sell:()=>reitP(),inc:'配息 1、跟著房市'},
+  {k:'gold',n:'黃金',price:()=>S.gold,sell:()=>S.gold,inc:'不配息、景氣差時漲'},
+];
+function brokerCalc(pi,d,first){
+  const p=S.players[pi];let net=0,any=false,why=null;
+  for(const a of ASSETS){const n=d[a.k]|0;if(!n)continue;any=true;
+    if(n<0){if(-n>p[a.k]){why=`${a.n}持有不足`;}net+=(-n)*a.sell();}
+    else{if(a.k==='gro'&&p.know<1&&p.job!=='eng')why='買成長股需要知識 1';net-=n*a.price();}}
+  const fee=any&&!first?1:0;net-=fee;
+  if(!any)why='還沒選要買賣什麼';
+  else if(!why&&p.cash+net<0)why=`現金不足，還差 $${-(p.cash+net)}`;
+  return {net,fee,ok:!why,why,after:p.cash+net};
+}
+function validArgs(pi,sp,a){
+  const p=S.players[pi];a=a||{};
+  switch(sp){
+    case 'work':case 'study':case 'research':return {ok:true};
+    case 'broker':{const first=!(S.occ.broker||[]).length;return brokerCalc(pi,a.d||{},first);}
+    case 'realty':{
+      if(a.mode==='sell'){const x=p.props[a.idx|0];return x?{ok:true}:{ok:false,why:'請選一間房子'};}
+      const c=S.row[a.slot];if(c==null||INV[c].t!=='prop')return {ok:false,why:'請選一間房子'};
+      const C=INV[c],L=a.loan|0,max=Math.floor(C.p*0.8/10)*10;
+      if(p.know<C.k)return {ok:false,why:`需要知識 ${C.k}`};
+      if(L<0||L>max||L%10)return {ok:false,why:'貸款金額不對'};
+      if(L&&p.cc)return {ok:false,why:'有卡債不能辦房貸'};
+      if(p.cash<C.p-L)return {ok:false,why:`頭期款不足，需要 $${C.p-L}`};
+      return {ok:true,cost:C.p-L};}
+    case 'startup':{const c=S.row[a.slot];if(c==null||!['biz','pat'].includes(INV[c].t))return {ok:false,why:'請選一間生意'};
+      const C=INV[c];if(p.know<C.k)return {ok:false,why:`需要知識 ${C.k}`};if(p.cash<C.p)return {ok:false,why:`需要 $${C.p}`};return {ok:true};}
+    case 'bank':{const L=a.loan|0;if(L<0||L%10)return {ok:false,why:'金額不對'};if(L&&p.cc)return {ok:false,why:'有卡債不能借信貸'};
+      if(p.loan+L>loanCap(p))return {ok:false,why:`信貸上限 $${loanCap(p)}`};if(!L&&!!a.dca===p.dca)return {ok:false,why:'沒有任何變更'};return {ok:true};}
+    case 'insure':{const ins=a.ins||{};const ch=Object.keys(INS).some(k=>!!ins[k]!==!!p.ins[k]);return ch?{ok:true}:{ok:false,why:'沒有任何變更'};}
+    case 'opp':{const o=S.opp[a.slot];return o?{ok:true}:{ok:false,why:'請選一張機會卡'};}
+    case 'leisure':{
+      if(a.kind==='relax')return p.cash>=1?{ok:true}:{ok:false,why:'需要 $1'};
+      if(a.kind==='donate')return p.cash>=5?{ok:true}:{ok:false,why:'需要 $5'};
+      if(a.kind==='style'){const s=STYLE[a.item];if(!s)return {ok:false,why:'請選一項'};if(s.once&&p.style.includes(a.item))return {ok:false,why:'已經有了'};if(p.cash<s.cost)return {ok:false,why:`需要 $${s.cost}`};return {ok:true};}
+      return {ok:false,why:'請選一項'};}
+  }
+  return {ok:false,why:'未知的行動'};
+}
+
+/* ================= paying & defaults ================= */
+function liquid(p){return p.bond*7+Math.floor(p.fund*S.mkt*0.7)+Math.floor(p.gro*S.gro*0.7)+Math.floor(p.reit*reitP()*0.7)+Math.floor(p.gold*S.gold*0.7)+p.props.reduce((a,x)=>a+Math.max(0,Math.floor(propVal(x.c)*0.7)-x.loan),0);}
+function panicSell(pi,need){
+  const p=S.players[pi];let got=0;const sold=[];
+  const order=[['bond',()=>7,'債券'],['reit',()=>Math.floor(reitP()*0.7),'REITs'],['fund',()=>Math.floor(S.mkt*0.7),'基金'],['gold',()=>Math.floor(S.gold*0.7),'黃金'],['gro',()=>Math.floor(S.gro*0.7),'成長股']];
+  for(const [k,f,n] of order){let c=0;while(got<need&&p[k]>0){p[k]--;got+=f();c++;}if(c)sold.push(`${n}×${c}`);}
+  while(got<need&&p.props.length){let bi=0,bv=1e9;p.props.forEach((x,i)=>{const v=Math.floor(propVal(x.c)*0.7)-x.loan;if(v>0&&v<bv){bv=v;bi=i;}});
+    if(bv===1e9)break;const x=p.props.splice(bi,1)[0];got+=bv;sold.push(INV[x.c].n);}
+  p.cash+=got;p.st.panic+=got?1:0;
+  return {got,sold};
+}
+// pay amt; if short, owner chooses panic sale (70%) or credit-card debt
+function pay(pi,amt,why,done){
+  const p=S.players[pi];
+  if(amt<=0)return done();
+  if(p.cash>=amt){p.cash-=amt;return done();}
+  const short=amt-p.cash;const liq=liquid(p);
+  const finish=(mode)=>{
+    if(mode==='sell'){const r=panicSell(pi,short);if(r.sold.length)log(`${pn(pi)} 現金不夠付${why}，7 折拋售 ${r.sold.join('、')}，拿到 $${r.got}`,'k');}
+    if(p.cash>=amt){p.cash-=amt;}else{const d=amt-p.cash;p.cash=0;p.cc+=d;log(`${pn(pi)} 現金不夠付${why}，差額 $${d} 變成卡債（每 10 收 4 利息）`,'k');}
+    done();
+  };
+  if(liq<=0)return finish('cc');
+  askChoice(pi,{title:'現金不夠了',body:`${esc(p.name)} 要付${esc(why)} $${amt}，但只有 $${p.cash}，還差 $${short}。`,
+    opts:[{l:'7 折拋售資產',d:`從債券、REITs、基金……依序賣到夠為止（可賣約 $${liq}）`},{l:'記成卡債',d:`欠 $${short}，每輪利息 ${Math.ceil((p.cc+short)/10)*4-Math.ceil(p.cc/10)*4}，有卡債就不能借房貸和信貸`}],
+    tip:'手邊留一筆緊急預備金，遇到意外就不必被迫賤賣資產或欠高利卡債。',
+    ai:()=>{const ccCost=Math.ceil((p.cc+short)/10)*4;return (p.cc+short>12||ccCost>=4&&liq>=short)?0:1;}},
+    v=>finish(v===0?'sell':'cc'));
+}
+function bankrupt(pi){
+  const p=S.players[pi];
+  Object.assign(p,{cash:5,bond:0,fund:0,gro:0,reit:0,gold:0,props:[],biz:[],loan:0,cc:0,dca:false,policy:null,recv:[]});
+  p.know=Math.min(MAX_KNOW,p.know+1);p.bk++;
+  log(`${pn(pi)} 卡債超過 ${BANKRUPT_CC}，宣告破產重生：資產與負債全部清空，現金重設為 $5，知識 +1，扣 10 分`,'k');
+}
+
+/* ================= choices (AI / local / remote) ================= */
+function askChoice(pi,spec,cb){
+  const p=S.players[pi];
+  if(SIM||p.ai){let v=0;try{v=spec.ai?spec.ai():0;}catch(e){v=0;}if(spec.opts[v]&&spec.opts[v].dis)v=spec.opts.findIndex(o=>!o.dis);return cb(Math.max(0,v));}
+  if(p.remote)return NET.ask(pi,spec,cb);
+  choiceModal(pi,spec,cb);
+}
+function seq(list,fn,done){let i=0;const next=()=>{if(i>=list.length)return done();const x=list[i++];fn(x,next);};next();}
+
+/* ================= actions ================= */
+const SPN=sp=>SPACES[SPI[sp]].n;
+function doPlace(pi,sp,a){
+  a=a||{};const p=S.players[pi];
+  const first=!(S.occ[sp]||[]).length;
+  (S.occ[sp]=S.occ[sp]||[]).push(pi);p.left--;
+  const after=()=>{S.ti=(S.ti+1)%NP();UI.sp=null;UI.a={};UI.pending=false;proceed();};
+  switch(sp){
+    case 'work':{const g=otGain(p);p.ot++;const h=p.ot>=2?2:1;p.cash+=g;p.happy-=h;log(`${pn(pi)} 加班，賺 $${g}，幸福 −${h}`);break;}
+    case 'study':{const c=studyCost(p);p.cash-=c;const up=p.lvl<MAX_LVL;if(up)p.lvl++;p.know=Math.min(MAX_KNOW,p.know+1);
+      log(`${pn(pi)} 進修花 $${c}${up?`，升到 Lv${p.lvl}（薪水 $${baseSal(p)}）`:''}，知識 ${p.know}`);break;}
+    case 'broker':{const d=a.d||{};const r=brokerCalc(pi,d,first);const parts=[];
+      for(const as of ASSETS){const n=d[as.k]|0;if(n<0){p[as.k]+=n;p.cash+=(-n)*as.sell();parts.push(`賣 ${as.n}×${-n}`);}}
+      for(const as of ASSETS){const n=d[as.k]|0;if(n>0){p[as.k]+=n;p.cash-=n*as.price();parts.push(`買 ${as.n}×${n}`);}}
+      p.cash-=r.fee;p.st.fees+=r.fee;log(`${pn(pi)} 在證券行${parts.join('、')}${r.fee?'，手續費 $1':'（第一位免手續費）'}`);break;}
+    case 'realty':{
+      if(a.mode==='sell'){const x=p.props.splice(a.idx|0,1)[0];const v=propVal(x.c);p.cash+=v-x.loan;log(`${pn(pi)} 賣掉${INV[x.c].n}，成交 $${v}，還清房貸 $${x.loan}，拿回 $${v-x.loan}`);}
+      else{const c=S.row[a.slot],C=INV[c],L=a.loan|0;S.row[a.slot]=null;p.cash-=C.p-L;p.props.push({c,loan:L});
+        log(`${pn(pi)} 買下${C.n}（$${C.p}），頭期 $${C.p-L}${L?`、房貸 $${L}`:''}，每輪租金 ${C.rent}`);}
+      break;}
+    case 'startup':{const c=S.row[a.slot],C=INV[c];S.row[a.slot]=null;p.cash-=C.p;
+      if(C.t==='pat'){p.biz.push({c,inc:C.inc,mgr:true});log(`${pn(pi)} 買下${C.n}，每輪收入 ${C.inc}`);break;}
+      let r=d6();const bonus=C.food&&p.job==='chef'?1:0;const rr=Math.min(6,r+bonus);const inc=C.tiers[rr-1];
+      if(!inc){p.know=Math.min(MAX_KNOW,p.know+1);log(`${pn(pi)} 開了${C.n}，擲出 ${r}${bonus?'+1':''}……倒閉了，損失 $${C.p}，但學到教訓（知識 +1）`,'k');}
+      else{p.biz.push({c,inc,mgr:!!a.mgr});log(`${pn(pi)} 開了${C.n}，擲出 ${r}${bonus?'+1':''}，每輪收入 ${inc}（${a.mgr?`請經理，經理費 ${C.fee}，算被動收入`:'自己經營，下輪少 1 個時間棋'}）`);}
+      break;}
+    case 'bank':{const L=a.loan|0;if(L){p.loan+=L;p.cash+=L;}const dch=!!a.dca!==p.dca;p.dca=!!a.dca;
+      log(`${pn(pi)} 到銀行${L?`借了信貸 $${L}（每 10 收 2）`:''}${L&&dch?'，':''}${dch?(p.dca?'開啟定期定額（每輪自動買 1 份基金）':'關閉定期定額'):''}`);break;}
+    case 'insure':{const ins=a.ins||{};const on=[],off=[];Object.keys(INS).forEach(k=>{const v=!!ins[k];if(v!==!!p.ins[k]){(v?on:off).push(INS[k].n);p.ins[k]=v;}});
+      log(`${pn(pi)} ${on.length?'投保 '+on.join('、'):''}${on.length&&off.length?'，':''}${off.length?'退保 '+off.join('、'):''}`);break;}
+    case 'research':{p.peek={from:S.np,cards:[S.news[S.np],S.news[S.np+1]].filter(x=>x!=null)};p.know=Math.min(MAX_KNOW,p.know+1);
+      log(`${pn(pi)} 到財經研究室做功課，知識 ${p.know}`);break;}
+    case 'opp':{const o=S.opp[a.slot];S.opp[a.slot]=null;log(`${pn(pi)} 在機會市集拿了「${OPP[o.c].n}」`);
+      if(!SIM)render();return runOpp(pi,o,after);}
+    case 'leisure':{
+      if(a.kind==='relax'){p.cash-=1;p.happy+=2;log(`${pn(pi)} 花 $1 好好休息，幸福 +2`);}
+      else if(a.kind==='donate'){p.cash-=5;p.happy+=3;p.donated+=5;log(`${pn(pi)} 捐款 $5，幸福 +3`);}
+      else{const s=STYLE[a.item];p.cash-=s.cost;p.happy+=s.h;if(s.trip)p.travel++;else p.style.push(a.item);
+        log(`${pn(pi)} 買了${s.n}（$${s.cost}），幸福 +${s.h}${s.exp?`，之後每輪支出 +${s.exp}`:''}`);}
+      break;}
+  }
+  after();
+}
+function repay(pi,kind,amt,idx){
+  const p=S.players[pi];amt=amt|0;if(amt<=0||amt>p.cash)return false;
+  if(kind==='cc'){if(amt>p.cc)return false;p.cc-=amt;}
+  else if(kind==='loan'){if(amt>p.loan||(amt%10&&amt!==p.loan))return false;p.loan-=amt;}
+  else if(kind==='mort'){const x=p.props[idx|0];if(!x||amt>x.loan||(amt%10&&amt!==x.loan))return false;x.loan-=amt;}
+  else return false;
+  p.cash-=amt;log(`${pn(pi)} 還款 $${amt}（${kind==='cc'?'卡債':kind==='loan'?'信貸':'房貸'}）`);return true;
+}
+
+/* ================= opportunity cards ================= */
+function oppOptions(pi,def){
+  const p=S.players[pi],c=p.cash,half=Math.floor(c/2);
+  const amt=(l,v)=>({l,v,dis:v<=0||v>c,d:v>c?`現金不足`:''});
+  switch(def.id){
+    case 'robot':return [{l:'放棄',v:0},amt('投入 $5',5),amt('投入 $10',10),amt(`投入一半現金 $${half}`,half)];
+    case 'lottery':return [{l:'放棄',v:0},amt('付 $2 手續費領獎',2)];
+    case 'stockgrp':return [{l:'放棄',v:0},amt('付 $5 入會',5)];
+    case 'mlm':return [{l:'放棄',v:0},amt('投入 $10',10)];
+    case 'crypto':return [{l:'放棄',v:0},amt('投入 $2',2),amt('投入 $5',5),amt('投入 $10',10),amt(`投入一半現金 $${half}`,half)];
+    case 'cafe':return [{l:'放棄',v:0},amt('投入 $8',8)];
+    case 'lend':return [{l:'婉拒',v:0,d:'幸福 −1'},amt('借出 $5',5)];
+    case 'esop':return [{l:'放棄',v:0},amt('付 $8 認股',8)];
+    case 'fore':return [{l:'放棄',v:0},amt('付現 $18',18),{...amt('付現 $8＋房貸 $10',8),dis:c<8||p.cc>0,d:p.cc>0?'有卡債不能辦房貸':c<8?'現金不足':'房貸每輪利息 1'}];
+    case 'policy':return [{l:'拒絕',v:0},{l:'簽約',v:1,d:'之後每輪付 2'}];
+    case 'lecture':return [{l:'放棄',v:0},amt('付 $3 上課',3)];
+    case 'usedcar':return [{l:'放棄',v:0},{...amt('付 $4 買車',4),dis:c<4||p.style.includes('car'),d:p.style.includes('car')?'已經有車了':''}];
+  }return [{l:'放棄',v:0}];
+}
+function aiOpp(pi,def,o,opts){
+  const p=S.players[pi],pers=p.pers,known=p.know>=2,buf=aiBuffer(p);
+  const ok=i=>opts[i]&&!opts[i].dis;
+  if(def.kind==='scam')return pers==='naive'&&Math.random()<0.6&&ok(1)?1:0;
+  if(def.kind==='spec'){if(pers==='agg')return ok(2)&&p.cash-5>=buf?2:ok(1)?1:0;if(pers==='naive')return ok(4)?4:ok(1)?1:0;return p.cash-2>=buf+6&&ok(1)?1:0;}
+  if(known&&o.t===false)return 0;
+  const sure=known&&o.t;
+  switch(def.id){
+    case 'cafe':return ok(1)&&(p.cash-8>=buf*0.5)?1:0;
+    case 'lend':return ok(1)&&(pers!=='cons'||sure)?1:0;
+    case 'esop':return ok(1)&&(sure||S.gro>=10)&&p.cash-8>=buf*0.5?1:0;
+    case 'fore':return ok(1)&&p.cash-18>=buf*0.5?1:ok(2)&&p.cash-8>=buf*0.5?2:0;
+    case 'policy':return pers==='naive'?1:0;
+    case 'lecture':return ok(1)&&p.know<4?1:0;
+    case 'usedcar':return pers==='naive'&&ok(1)?1:0;
+  }return 0;
+}
+function runOpp(pi,o,done){
+  const p=S.players[pi],def=OPP[o.c],known=def.kind==='gen'&&p.know>=2;
+  const opts=oppOptions(pi,def);
+  askChoice(pi,{title:def.n,body:def.d,flags:def.flags,truth:known?o.t:null,unknown:def.kind==='gen'&&!known,opts:opts.map(x=>({l:x.l,d:x.d||'',dis:!!x.dis})),tip:def.tip,ai:()=>aiOpp(pi,def,o,opts),opp:true},v=>{
+    const x=opts[v]||opts[0];const amt=x.v|0;
+    if(!amt&&def.id!=='policy'){if(def.id==='lend'){p.happy-=1;log(`${pn(pi)} 婉拒了親戚，幸福 −1`);}else log(`${pn(pi)} 放棄了「${def.n}」`);return done();}
+    switch(def.id){
+      case 'robot':case 'lottery':case 'stockgrp':case 'mlm':p.cash-=amt;p.st.scam+=amt;log(`${pn(pi)} 投入 $${amt}……「${def.n}」是詐騙，錢全部飛了`,'k');break;
+      case 'crypto':{p.cash-=amt;const r=d6();const m=r<=3?0:r<=5?2:4;p.cash+=amt*m;log(`${pn(pi)} 投入 $${amt} 買加密幣，擲出 ${r}：${m?`變成 $${amt*m}`:'歸零'}`,m?'':'k');break;}
+      case 'cafe':p.cash-=8;if(o.t){p.biz.push({c:CAFE,inc:3,mgr:true});log(`${pn(pi)} 和朋友合開咖啡廳成功，每輪被動收入 3`);}else{p.cash+=2;log(`${pn(pi)} 合開的咖啡廳經營不善，只拿回 $2`,'k');}break;
+      case 'lend':p.cash-=5;if(o.t){p.recv.push({r:S.r+3,amt:7});log(`${pn(pi)} 借給親戚 $5，約好 3 輪後還 $7`);}else{p.happy+=2;log(`${pn(pi)} 借給親戚 $5，錢要不回來了，但幸福 +2`);}break;
+      case 'esop':p.cash-=8;if(o.t){p.gro++;log(`${pn(pi)} 員工認股，用 $8 拿到 1 股成長股（市價 $${S.gro}）`);}else{p.st.scam+=8;log(`${pn(pi)} 員工認股後公司下市，$8 歸零`,'k');}break;
+      case 'fore':{const L=v===2?10:0;p.cash-=18-L;p.props.push({c:FORECLOSE,loan:L,occ:!o.t});log(`${pn(pi)} 買下法拍公寓（市價 30）${L?'，房貸 $10':''}${o.t?'':'，但裡面有占用戶，這輪收不到租'}`,o.t?'':'k');break;}
+      case 'policy':if(v===1){p.policy={paid:0,t:o.t};log(`${pn(pi)} 簽了投資型保單，之後每輪付 2`);}else log(`${pn(pi)} 拒絕了保單推銷`);break;
+      case 'lecture':p.cash-=3;if(o.t){p.know=Math.min(MAX_KNOW,p.know+2);log(`${pn(pi)} 上了扎實的財商課，知識 +2`);}else log(`${pn(pi)} 上的財商講座只是推銷課，白花 $3`,'k');break;
+      case 'usedcar':p.cash-=4;p.style.push('car');p.happy+=4;if(!o.t){log(`${pn(pi)} 買到泡水車，還得付 $3 修理`,'k');return pay(pi,3,'修車費',done);}log(`${pn(pi)} 用 $4 買到便宜二手車，幸福 +4，之後每輪支出 +1`);break;
+    }
+    done();
+  });
+}
+
+/* ================= life events ================= */
+function healthCost(p,c){c=Math.max(0,c-(p.style.includes('gym')?2:0));if(c>1&&hasIns(p,'med')){p.st.ins+=c-1;c=1;}return c;}
+function accCost(p,c){if(c>1&&p.ins.acc){p.st.ins+=c-1;c=1;}return c;}
+const EVENTS=[];
+const ev=(cat,n,cnt,f)=>{for(let i=0;i<cnt;i++)EVENTS.push({cat,n,f});};
+const res=(pi,t)=>{S.evRes[pi]=t;};
+ev('健康','住院開刀',2,(pi,done)=>{const p=S.players[pi],c=healthCost(p,8);res(pi,`醫藥費 8，實付 $${c}${hasIns(p,'med')?'（醫療險）':''}`);pay(pi,c,'醫藥費',done);});
+ev('健康','感冒看醫生',2,(pi,done)=>{const p=S.players[pi],c=healthCost(p,2);res(pi,`醫藥費 2，實付 $${c}`);pay(pi,c,'醫藥費',done);});
+ev('健康','牙齒治療',2,(pi,done)=>{const p=S.players[pi],c=healthCost(p,3);res(pi,`醫藥費 3，實付 $${c}`);pay(pi,c,'醫藥費',done);});
+ev('健康','過勞住院',2,(pi,done)=>{const p=S.players[pi],c=healthCost(p,5);p.happy-=1;res(pi,`醫藥費 5，實付 $${c}，幸福 −1`);pay(pi,c,'醫藥費',done);});
+ev('意外','機車被撞',2,(pi,done)=>{const p=S.players[pi],c=accCost(p,4);res(pi,`修車和醫藥費 4，實付 $${c}${p.ins.acc?'（意外險）':''}`);pay(pi,c,'意外支出',done);});
+ev('意外','手機摔壞',2,(pi,done)=>{res(pi,'修理費 $1');pay(pi,1,'修理費',done);});
+ev('意外','運動扭傷',2,(pi,done)=>{const p=S.players[pi],c=accCost(p,3);res(pi,`醫藥費 3，實付 $${c}`);pay(pi,c,'醫藥費',done);});
+ev('房屋','颱風損壞',2,(pi,done)=>{const p=S.players[pi];if(!p.props.length){res(pi,'沒有房子，逃過一劫');return done();}
+  if(p.ins.prop){p.st.ins+=3*p.props.length;res(pi,`${p.props.length} 間房子受損，產險全額理賠`);return done();}const c=3*p.props.length;res(pi,`${p.props.length} 間房子各付 3，共 $${c}`);pay(pi,c,'修繕費',done);});
+ev('房屋','房客跑租',1,(pi,done)=>{const p=S.players[pi];if(!p.props.length){res(pi,'沒有出租的房子，沒事');return done();}
+  const x=p.props.slice().sort((a,b)=>INV[b.c].rent-INV[a.c].rent)[0],c=INV[x.c].rent;if(p.ins.prop){p.st.ins+=c;res(pi,'房客跑了，產險理賠租金損失');return done();}res(pi,`${INV[x.c].n}的房客跑了，損失租金 $${c}`);pay(pi,c,'租金損失',done);});
+ev('房屋','水管漏水',1,(pi,done)=>{const p=S.players[pi];if(!p.props.length){res(pi,'租屋處漏水，房東負責修');return done();}
+  const c=p.props.reduce((a,x)=>a+2+(INV[x.c].leak?2:0),0);if(p.ins.prop){p.st.ins+=c;res(pi,'漏水修繕由產險理賠');return done();}res(pi,`修繕費 $${c}`);pay(pi,c,'修繕費',done);});
+ev('家庭','結婚',2,(pi,done)=>{const p=S.players[pi];if(p.married){p.happy+=1;res(pi,'結婚紀念日，幸福 +1');return done();}p.married=true;p.happy+=3;res(pi,'幸福 +3；之後每輪家庭開銷 +1、伴侶收入 +2');done();});
+ev('家庭','生小孩',2,(pi,done)=>{const p=S.players[pi];p.kids++;p.happy+=2;res(pi,'幸福 +2；之後每個小孩每輪支出 +1、幸福 +1');done();});
+ev('家庭','父母需要照顧',2,(pi,done)=>{const p=S.players[pi];p.care=3;p.careLeft=2;if(p.ins.life){p.cash+=10;p.st.ins+=10;res(pi,'這輪和下輪各付 3；壽險理賠 $10');}else res(pi,'這輪和下輪各付 3（記在支出）');done();});
+ev('家庭','家人重病',1,(pi,done)=>{const p=S.players[pi];if(p.ins.life){p.cash+=10;p.st.ins+=10;}res(pi,`醫藥費 6${p.ins.life?'；壽險理賠 $10':''}`);pay(pi,6,'醫藥費',done);});
+ev('家庭','家族旅行',1,(pi,done)=>{const p=S.players[pi];res(pi,'付 $2，幸福 +2');pay(pi,2,'旅費',()=>{p.happy+=2;done();});});
+ev('工作','加薪',4,(pi,done)=>{const p=S.players[pi];if(p.quit){p.cash+=2;res(pi,'已經辭職了，老同事請吃飯 +$2');return done();}if(p.lvl<MAX_LVL){p.lvl++;res(pi,`升到 Lv${p.lvl}，薪水 $${baseSal(p)}`);}else{p.cash+=3;res(pi,'已經最高級，改發獎金 $3');}done();});
+ev('工作','被裁員',2,(pi,done)=>{const p=S.players[pi];if(p.job==='teach'||p.quit){res(pi,p.quit?'已經辭職，不受影響':'老師不會被裁員');return done();}p.laid=true;res(pi,'這輪領不到薪水');done();});
+ev('工作','年終獎金',2,(pi,done)=>{const p=S.players[pi];const g=p.quit?0:Math.floor(baseSal(p)/2);p.cash+=g;res(pi,g?`拿到 $${g}`:'已經辭職，沒有年終');done();});
+ev('好運','中統一發票',2,(pi,done)=>{S.players[pi].cash+=2;res(pi,'+$2');done();});
+ev('好運','收到遺產',1,(pi,done)=>{S.players[pi].cash+=10;res(pi,'+$10');done();});
+ev('好運','退稅',1,(pi,done)=>{S.players[pi].cash+=3;res(pi,'+$3');done();});
+ev('誘惑','同學會大家都換了新手機',1,(pi,done)=>{const p=S.players[pi];const has=p.style.includes('phone');if(has){res(pi,'你已經有最新手機了');return done();}
+  askChoice(pi,{title:'同學會',body:`${esc(p.name)} 的同學都換了最新手機，你要跟嗎？`,opts:[{l:'買（付 $3）',d:'幸福 +1，之後每輪支出 +1',dis:p.cash<3},{l:'不買',d:'幸福 −1，支出不變'}],tip:'比較心態會讓支出越來越高。分清楚「需要」和「想要」。',ai:()=>p.pers==='naive'&&p.cash>=3?0:1},
+  v=>{if(v===0){p.cash-=3;p.style.push('phone');p.happy+=1;res(pi,'買了新手機，幸福 +1，每輪支出 +1');}else{p.happy-=1;res(pi,'沒買，幸福 −1，但支出沒增加');}done();});});
+ev('誘惑','朋友揪團出國',1,(pi,done)=>{const p=S.players[pi];
+  askChoice(pi,{title:'朋友揪團出國',body:`朋友約 ${esc(p.name)} 一起出國玩，要去嗎？`,opts:[{l:'去（付 $6）',d:'幸福 +4，算一次出國旅行',dis:p.cash<6},{l:'不去',d:'幸福 −1'}],tip:'花錢買經驗也很值得，前提是不影響緊急預備金。',ai:()=>(p.cash-6>=aiBuffer(p)||p.dreams.includes('world')&&p.cash>=6)?0:1},
+  v=>{if(v===0){p.cash-=6;p.travel++;p.happy+=4;res(pi,'出國玩，幸福 +4');}else{p.happy-=1;res(pi,'沒去，幸福 −1');}done();});});
+
+/* ================= game flow ================= */
+function newPlayer(i,c,jobs,dreams){
+  return {id:i,name:c.name,ai:!!c.ai,pers:c.pers||AI_PERS[(i+3)%4],remote:!!c.remote,pid:c.pid||null,
+    job:null,jobOpts:jobs,lvl:1,cash:0,know:1,happy:3,bond:0,fund:0,gro:0,reit:0,gold:0,props:[],biz:[],
+    ins:{med:false,acc:false,prop:false,life:false},style:[],kids:0,married:false,cc:0,loan:0,dca:false,
+    badge:false,firstFree:0,quit:false,bk:0,dreams:[],dreamOpts:dreams,left:0,peek:null,travel:0,donated:0,recv:[],policy:null,
+    unemp:false,laid:false,care:0,ot:0,cf:0,hist:[],picked:false,st:{scam:0,ccInt:0,ins:0,fees:0,panic:0}};
+}
+function setupGame(cfg){
+  clearTimeout(timer);
+  const jobDeck=shuffle(JOBS.map(j=>j.id));
+  const invDeck=shuffle(INV.flatMap((c,i)=>Array(c.cnt).fill(i))),oppDeck=shuffle(OPP.flatMap((c,i)=>Array(c.cnt).fill(i)));
+  const players=cfg.map((c,i)=>{const jobs=[jobDeck[(i*2)%8],jobDeck[(i*2+1)%8]];const ds=shuffle(DREAMS.map(d=>d.id)).slice(0,3);return newPlayer(i,c,jobs,ds);});
+  S={players,r:0,pos:7,mkt:10,gro:10,house:0,gold:10,infl:0,news:shuffle(NEWS_DEF.map((_,i)=>i)),np:0,inv:invDeck,row:[],oppDeck,opp:[],
+     log:[],firstFree:null,phase:'pick',viewer:null,cfg,dl:{mkt:0,gro:0,house:0,gold:0},curNews:null,occ:{},order:players.map((_,i)=>i),ti:0,evRes:[],setRes:[],cur:null,await:null,evDeck:[]};
+  for(let i=0;i<5;i++)S.row.push(S.inv.pop());
+  for(let i=0;i<2;i++)S.opp.push({c:S.oppDeck.pop(),t:Math.random()<0.7});
+  const hs=humans();S.viewer=hs.length===1?hs[0].id:null;
+  log(`新的人生開始：${S.players.length} 位玩家，從 22 歲玩到 62 歲，共 ${ROUNDS} 輪。`,'q');
+  pickPhase();
+}
+function applyPick(pi,jid,dreams){
+  const p=S.players[pi];if(!p.jobOpts.includes(jid))jid=p.jobOpts[0];
+  dreams=(dreams||[]).filter(d=>p.dreamOpts.includes(d));if(dreams.length!==2)dreams=p.dreamOpts.slice(0,2);
+  p.job=jid;p.dreams=dreams;p.cash=job(p).cash;p.know=job(p).know||1;p.picked=true;if(jid==='nurse')p.ins.med=true;
+}
+function aiPick(pi){const p=S.players[pi];if(window.__wrRJ){applyPick(pi,p.jobOpts[Math.random()*2|0],shuffle(p.dreamOpts.slice()).slice(0,2));return;}const sc=id=>{const j=JOBS[JI[id]];return j.sal-j.live+j.cash*0.3+j.inc*1.5+(id==='sales'?3:0)+(id==='creator'?2:0)+Math.random()*2;};
+  const jid=sc(p.jobOpts[0])>=sc(p.jobOpts[1])?p.jobOpts[0]:p.jobOpts[1];applyPick(pi,jid,shuffle(p.dreamOpts.slice()).slice(0,2));}
+function pickPhase(){
+  S.phase='pick';
+  seq(S.players.map((_,i)=>i),(pi,next)=>{
+    const p=S.players[pi];if(p.picked)return next();
+    if(SIM||p.ai){aiPick(pi);return next();}
+    if(p.remote)return NET.askPick(pi,next);
+    const go=()=>{S.viewer=pi;render();pickModal(pi,next);};
+    if(humans().length>1){S.viewer=null;render();handoff(pi,'選擇你的職業和人生夢想',go);}else go();
+  },()=>{S.players.forEach((p,i)=>log(`${pn(i)} 成為${job(p).n}，起始現金 $${p.cash}，薪水 $${baseSal(p)}，生活費 ${job(p).live}`));
+    const hs=humans();S.viewer=hs.length===1?hs[0].id:null;startRound();});
+}
+function workersFor(p){return Math.max(1,BASE_W+(p.badge?1:0)+(p.quit?1:0)-(p.happy<0?1:0)-(selfManaging(p)?1:0));}
+function startRound(){
+  S.r++;S.occ={};S.await=null;
+  S.players.forEach(p=>{p.ot=0;p.unemp=false;p.laid=false;p.props.forEach(x=>{x.vac=false;});});
+  // order: lowest cash flow last round goes first
+  if(S.r===1){const s=Math.random()*NP()|0;S.order=S.players.map((_,i)=>(s+i)%NP());}
+  else S.order=S.players.map((_,i)=>i).sort((a,b)=>S.players[a].cf-S.players[b].cf||((a-S.r+NP()*9)%NP())-((b-S.r+NP()*9)%NP()));
+  S.players.forEach(p=>{p.left=workersFor(p);});
+  // news
+  const before={mkt:S.mkt,gro:S.gro,house:S.house,gold:S.gold};
+  const nd=NEWS_DEF[S.news[S.np++]];
+  if(nd.swan)S.pos=S.pos<6?6:S.pos;else S.pos=(S.pos+nd.mv)%8;
+  const z=zone();
+  S.mkt=clamp(S.mkt+z.mkt,RANGE.mkt);S.gro=clamp(S.gro+z.gro,RANGE.gro);S.house=clamp(S.house+z.house,RANGE.house);S.gold=clamp(S.gold+z.gold,RANGE.gold);
+  S.dl={mkt:S.mkt-before.mkt,gro:S.gro-before.gro,house:S.house-before.house,gold:S.gold-before.gold};
+  S.curNews={n:nd.n,mv:nd.mv,swan:!!nd.swan,zone:z.n,pos:S.pos};
+  const unemp=[];
+  if(isDep()){S.players.forEach((p,i)=>{if(p.job!=='civil'&&!p.quit&&d6()===1){p.unemp=true;unemp.push(i);}p.props.forEach(x=>{if(INV[x.c].shop&&d6()<=2)x.vac=true;});});}
+  S.curNews.unemp=unemp;
+  log(`第 ${S.r} 輪（${ageOf(S.r)} 歲）新聞：「${nd.n}」，景氣${nd.swan?'直接跌到':'來到'}${z.n}`,'q');
+  unemp.forEach(i=>log(`${pn(i)} 在蕭條中失業，這輪領不到薪水`,'k'));
+  S.phase='action';S.ti=0;
+  if(SIM)return proceed();
+  render();
+  if(humans().length)roundModal();else timer=setTimeout(proceed,SPEED);
+}
+function proceed(){
+  clearTimeout(timer);
+  if(S.phase!=='action')return;
+  let pi=-1;
+  for(let k=0;k<NP();k++){const idx=(S.ti+k)%NP();const q=S.order[idx];if(S.players[q].left>0){pi=q;S.ti=idx;break;}}
+  if(pi<0)return eventPhase();
+  S.cur=pi;S.await=null;UI.sp=null;UI.a={};
+  if(SIM){aiTurn(pi);return;}
+  save();
+  const p=S.players[pi],multi=humans().length>1;
+  if(p.ai){if(multi)S.viewer=null;render();timer=setTimeout(()=>aiTurn(pi),SPEED);}
+  else if(p.remote){S.await={type:'act',seat:pi};render();}
+  else if(multi&&S.viewer!==pi){S.viewer=null;render();handoff(pi,'輪到你放時間棋',()=>{S.viewer=pi;render();});}
+  else render();
+}
+function eventPhase(){
+  S.phase='event';S.evDone=false;S.evRes=[];S.cur=null;S.await=null;if(humans().length>1)S.viewer=null;
+  S.evDraw=[];
+  if(!SIM){log('人生事件：每個人抽一張','q');render();}
+  seq(S.order.slice(),(pi,next)=>{
+    if(!S.evDeck.length)S.evDeck=shuffle(EVENTS.map((_,i)=>i));
+    const ei=S.evDeck.pop();S.evDraw[pi]=ei;const E=EVENTS[ei];
+    E.f(pi,()=>{log(`${pn(pi)}【${E.cat}】${E.n}：${S.evRes[pi]||''}`);next();});
+  },()=>{
+    S.evDone=true;
+    if(SIM)return settlePhase();
+    render();
+    if(humans().length)eventsModal();else timer=setTimeout(settlePhase,SPEED*2);
+  });
+}
+function settlePhase(){
+  S.phase='settle';S.setDone=false;S.setRes=[];S.await=null;
+  seq(S.order.slice(),(pi,next)=>{
+    const p=S.players[pi];
+    const sal=(p.unemp||p.laid||p.quit)?{v:0,r:null}:rollSalary(p);
+    const pa=passive(p,true),ab=activeBiz(p),fam=p.married?2:0;
+    const income=sal.v+pa.total+ab+fam;
+    const ex=expenses(p);
+    p.st.ccInt+=p.cc?Math.ceil(p.cc/10)*4:0;
+    p.cash+=income;
+    const cash0=p.cash-income;
+    pay(pi,ex.total,'這輪支出',()=>{
+      const got=[];
+      p.recv=p.recv.filter(x=>{if(x.r<=S.r){p.cash+=x.amt;got.push(x.amt);return false;}return true;});
+      if(p.kids)p.happy+=p.kids;
+      if(p.policy)p.policy.paid+=2;
+      if(p.careLeft){p.careLeft--;if(!p.careLeft)p.care=0;}
+      let dca=false;if(p.dca&&p.cash>=S.mkt){p.cash-=S.mkt;p.fund++;dca=true;}
+      p.cf=income-ex.total;
+      p.props.forEach(x=>{x.occ=false;});
+      S.setRes[pi]={sal:sal.v,roll:sal.r,unemp:p.unemp,laid:p.laid,pa:pa.total,ab,fam,income,ex:ex.total,cf:income-ex.total,dca,got,cash0,cash:p.cash};
+      log(`${pn(pi)} 結算：收入 $${income}、支出 $${ex.total}，現金流 ${income-ex.total>=0?'+':''}${income-ex.total}${dca?`，定期定額買進 1 份基金（$${S.mkt}）`:''}`);
+      next();
+    });
+  },()=>{
+    if(INFL_ROUNDS.includes(S.r)){S.infl++;log(`通膨來了：所有人生活費 +1（累計 +${S.infl}）`,'k');}
+    const newly=[];
+    S.players.forEach((p,i)=>{
+      const free=passive(p).total>=expenses(p).total;
+      if(free&&!p.badge){p.badge=true;if(!p.firstFree)p.firstFree=S.r;if(S.firstFree==null)S.firstFree=i;newly.push(i);log(`${pn(i)} 達成財務自由！被動收入 $${passive(p).total} ≥ 支出 $${expenses(p).total}，之後每輪多 1 個時間棋`,'k');}
+      else if(!free&&p.badge){p.badge=false;log(`${pn(i)} 的被動收入跌回支出以下，財務自由徽章失效`,'k');}
+      S.setRes[i].free=free;
+      if(p.cc>BANKRUPT_CC)bankrupt(i);
+    });
+    seq(newly.filter(i=>!S.players[i].quit&&S.r<ROUNDS),(pi,next)=>{
+      const p=S.players[pi],pa=passive(p).total,ex=expenses(p).total;
+      askChoice(pi,{title:'財務自由了！要辭職嗎？',body:`${esc(p.name)} 的被動收入 $${pa}，支出 $${ex}。辭職後不再領薪水 $${baseSal(p)}，但每輪再多 1 個時間棋。辭職後不能再回去上班。`,
+        opts:[{l:'繼續上班',d:'薪水照領，比較保險'},{l:'辭職',d:'多 1 個時間棋，但收入只剩被動收入'}],tip:'財務自由不代表一定要辭職，被動收入要比支出多一段安全距離才穩。',ai:()=>pa>=ex+4?1:0},
+      v=>{if(v===1){p.quit=true;log(`${pn(pi)} 辭職了，從此靠被動收入生活`,'k');}next();});
+    },()=>{
+      // refresh markets: oldest card leaves, refill
+      if(S.row[0]!=null)S.row[0]=null;S.row=S.row.filter(c=>c!=null);while(S.row.length<5&&S.inv.length)S.row.push(S.inv.pop());while(S.row.length<5)S.row.push(null);
+      if(S.opp[0])S.opp[0]=null;S.opp=S.opp.filter(o=>o);while(S.opp.length<2&&S.oppDeck.length)S.opp.push({c:S.oppDeck.pop(),t:Math.random()<0.7});while(S.opp.length<2)S.opp.push(null);
+      S.players.forEach(p=>p.hist.push(netWorth(p)));
+      S.setDone=true;
+      if(SIM)return endRound();
+      render();
+      if(humans().length)settleModal();else timer=setTimeout(endRound,SPEED*2);
+    });
+  });
+}
+function endRound(){if(!SIM)closeModal();if(S.r>=ROUNDS)endGame();else startRound();}
+
+/* ================= AI ================= */
+function aiBuffer(p){return expenses(p).total+({cons:6,bal:3,agg:1,naive:0}[p.pers]||3);}
+function peekBad(p){if(!p.peek)return false;const up=p.peek.cards.filter((_,k)=>p.peek.from+k>=S.np);if(!up.length)return false;
+  let pos=S.pos;const n=NEWS_DEF[up[0]];if(n.swan)pos=pos<6?6:pos;else pos=(pos+n.mv)%8;return (pos>>1)>=2;}
+function peekGood(p){if(!p.peek)return false;const up=p.peek.cards.filter((_,k)=>p.peek.from+k>=S.np);if(!up.length)return false;
+  let pos=S.pos;const n=NEWS_DEF[up[0]];if(n.swan)return false;pos=(pos+n.mv)%8;return (pos>>1)<=1;}
+function aiRepay(pi){
+  const p=S.players[pi],buf=aiBuffer(p);
+  if(p.cc&&p.cash>0)repay(pi,'cc',Math.min(p.cc,p.cash));
+  while(p.loan>=10&&p.cash-10>=buf+4)repay(pi,'loan',10);
+}
+function aiTurn(pi){
+  const p=S.players[pi];
+  aiRepay(pi);
+  const c=aiChoose(pi);
+  doPlace(pi,c.sp,c.a);
+}
+function aiChoose(pi){
+  const p=S.players[pi],pers=p.pers,buf=aiBuffer(p),left=ROUNDS-S.r+1,cands=[];
+  const add=(sp,a,s)=>{if(!canPlace(pi,sp).ok)return;if(!validArgs(pi,sp,a).ok)return;cands.push({sp,a,s:s+Math.random()*0.8});};
+  const bad=peekBad(p),good=peekGood(p);
+  // work
+  add('work',{},otGain(p)-(p.ot?2.5:1.3)-(p.happy<=1?2:0));
+  // study
+  if(p.lvl<MAX_LVL){const gain=job(p).inc*(left-0.5)-studyCost(p);const room=p.cash-studyCost(p);add('study',{},room>=0?gain*0.6+(p.know<2?1.5:0.5)-(room<buf*0.4?2:0):-9);}
+  else if(p.know<3)add('study',{},1.2);
+  // research
+  add('research',{},pers==='naive'?0.3:(p.know<2?3.2:1.4)+(left>2?0.6:0)+(pers==='bal'?0.6:0));
+  // broker
+  {const d={};const excess=p.cash-buf;let s=0;
+    if(bad&&(pers==='bal'||pers==='agg'||pers==='cons')&&p.gro>0){d.gro=-p.gro;s+=4+p.gro;}
+    if(good&&p.gold>0){d.gold=-p.gold;s+=2;}
+    if(excess>=8){let money=excess-(S.occ.broker&&S.occ.broker.length?1:0);
+      const pref=bad?(pers==='naive'?['gro']:['bond','gold']):pers==='cons'?['bond','fund','reit']:pers==='bal'?['fund','reit','bond']:pers==='agg'?(p.know>=1||p.job==='eng'?['gro','fund']:['fund']):['gro','fund'];
+      const usable=pref.filter(k=>!(k==='gro'&&p.know<1&&p.job!=='eng'));
+      let k=0;let guard=0;while(usable.length&&guard++<20){const as=ASSETS.find(a=>a.k===usable[k%usable.length]);if(money<as.price())break;d[as.k]=(d[as.k]||0)+1;money-=as.price();k++;}
+      const bought=Object.values(d).filter(v=>v>0).reduce((a,v)=>a+v,0);s+=bought*2.2+(left<=1?-1:0);}
+    if(Object.keys(d).length)add('broker',{d},s);}
+  // realty
+  if(p.know>=1){rowCards('prop').forEach(({c,i})=>{const C=INV[c];if(p.know<C.k)return;const max=p.cc?0:Math.floor(C.p*0.8/10)*10;
+    let L=max;if(pers==='cons'){while(L>0&&p.cash-(C.p-(L-10))>=buf)L-=10;}
+    const down=C.p-L;if(p.cash-down<buf*0.4)return;const net=C.rent-Math.floor(L/10);
+    add('realty',{mode:'buy',slot:i,loan:L},net*left*0.75+(p.dreams.includes('land')?3:0)+(bad?-2:0)+(left<=1?-4:0)+(isDep()?1.5:0));});}
+  // startup
+  if(p.know>=2){rowCards(['biz','pat']).forEach(({c,i})=>{const C=INV[c];if(p.know<C.k||p.cash-C.p<buf*0.4)return;
+    if(C.t==='pat'){add('startup',{slot:i,mgr:true},(C.inc*left-C.p)*0.6);return;}
+    const ev=C.tiers.reduce((a,v,k)=>a+C.tiers[Math.min(5,k+(C.food&&p.job==='chef'?1:0))],0)/6;
+    add('startup',{slot:i,mgr:true},(ev-C.fee)*left*0.65-C.p*0.35+(p.dreams.includes('boss')?3:0)+(pers==='agg'?1:pers==='cons'?-1:0));});}
+  // bank
+  if(!p.dca&&(pers==='cons'||pers==='bal')&&S.r<=4)add('bank',{dca:true,loan:0},2.6);
+  // insurance
+  {const ins={...p.ins};let s=0;
+    if(!hasIns(p,'med')&&pers!=='naive'&&pers!=='agg'&&S.r<=5){ins.med=true;s+=3.2;}
+    if(!p.ins.acc&&pers==='cons'&&S.r<=5){ins.acc=true;s+=1.2;}
+    if(!p.ins.prop&&p.props.length>=2&&pers!=='naive'){ins.prop=true;s+=2.4;}
+    if(S.r>=ROUNDS-1&&pers!=='naive'){Object.keys(ins).forEach(k=>{if(ins[k]&&!(k==='med'&&p.job==='nurse')){ins[k]=false;s+=0.8;}});}
+    if(s>0)add('insure',{ins},s);}
+  // opportunities
+  S.opp.forEach((o,i)=>{if(!o)return;const def=OPP[o.c];const known=def.kind==='gen'&&p.know>=2;let s=0;
+    if(def.kind==='scam')s=pers==='naive'?3:-5;
+    else if(def.kind==='spec')s=pers==='agg'?2.6:pers==='naive'?3.2:0.4;
+    else if(known&&!o.t)s=-5;
+    else{const base={cafe:6,lend:1.5,esop:S.gro>=10?3:1,fore:6,policy:pers==='naive'?1:-3,lecture:p.know<4?3:0,usedcar:pers==='naive'?2:-2}[def.id]||0;s=known?base*1.15:base*0.62;
+      if(def.id==='cafe'&&p.cash<8)s=-5;if(def.id==='fore'&&p.cash<8)s=-5;if(def.id==='esop'&&p.cash<8)s=-5;}
+    add('opp',{slot:i},s);});
+  // leisure
+  if(p.happy<=2)add('leisure',{kind:'relax'},3.2-p.happy*0.6);
+  if(pers==='naive'){const it=['car','pet','phone','bag','gym'].find(k=>!(STYLE[k].once&&p.style.includes(k))&&p.cash>=STYLE[k].cost);if(it)add('leisure',{kind:'style',item:it},2.4);}
+  if(p.dreams.includes('world')&&p.travel<2&&p.cash-6>=buf*0.6)add('leisure',{kind:'style',item:'trip'},3.5);
+  if(p.dreams.includes('give')&&p.donated<10&&p.cash-5>=buf*0.6)add('leisure',{kind:'donate'},3.2);
+  if(!cands.length)return {sp:'work',a:{}};
+  cands.sort((a,b)=>b.s-a.s);return cands[0];
+}
+/* ================= art ================= */
+const ICONS={
+  chip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 3v3M12 3v3M15 3v3M9 18v3M12 18v3M15 18v3M3 9h3M3 12h3M3 15h3M18 9h3M18 12h3M18 15h3"/></svg>',
+  flame:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3c1 4 6 6 6 11a6 6 0 0 1-12 0c0-3 2-4.5 2.5-7 1.5 1.5 2 3 2 4 1-2 1.5-5 1.5-8z"/><path d="M12 21a2.5 2.5 0 0 1-2.5-2.5c0-1.5 1.5-2.5 2.5-4 1 1.5 2.5 2.5 2.5 4A2.5 2.5 0 0 1 12 21z"/></svg>',
+  leaf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c0-9 6-15 16-16 0 10-6 16-15 16"/><path d="M4 20 14 10M9 15h4M12 12V8"/></svg>',
+  bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 9 12 4l9 5z"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
+  ship:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 15h18l-2.5 4.5h-13z"/><path d="M6 15V9h12v6M12 9V4M9 6h6"/><path d="M2 21.5c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1 2-1 4-1"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>',
+  bars:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  gavel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6M11 7l6 6M12.5 5.5l-5 5 4 4 5-5M9.5 12.5 3 19"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>',
+};
+const SECTOR_ICON=['chip','flame','leaf','bank','ship'];
+const AVATARS=[
+ // rabbit
+ `<circle cx="32" cy="32" r="32" fill="#F6C6CF"/><ellipse cx="24" cy="17" rx="5.5" ry="14" fill="#fff" transform="rotate(-12 24 17)"/><ellipse cx="24" cy="18" rx="2.6" ry="10" fill="#F2A0B0" transform="rotate(-12 24 18)"/><ellipse cx="40" cy="17" rx="5.5" ry="14" fill="#fff" transform="rotate(12 40 17)"/><ellipse cx="40" cy="18" rx="2.6" ry="10" fill="#F2A0B0" transform="rotate(12 40 18)"/><ellipse cx="32" cy="40" rx="16" ry="14" fill="#fff"/><circle cx="26" cy="38" r="2.2" fill="#3A2A2A"/><circle cx="38" cy="38" r="2.2" fill="#3A2A2A"/><ellipse cx="32" cy="43.5" rx="2.4" ry="1.7" fill="#E9798F"/><circle cx="22" cy="44" r="2.6" fill="#F8C4CE"/><circle cx="42" cy="44" r="2.6" fill="#F8C4CE"/>`,
+ // eagle
+ `<circle cx="32" cy="32" r="32" fill="#CDBCF0"/><path d="M10 64c2-14 10-20 22-20s20 6 22 20z" fill="#7A5236"/><path d="M18 34c0-12 7-20 15-20s14 7 14 16c0 6-3 10-6 12l-8 2-11-3c-3-2-4-4-4-7z" fill="#fff"/><path d="M38 30c6 0 11 2 12 6-2 0-3 1-5 3-1-3-4-4-7-4z" fill="#F4B63B"/><path d="M45 39c-2 2-5 2-7 1" stroke="#B9822A" stroke-width="1.5" fill="none"/><circle cx="34" cy="27" r="2.6" fill="#2A2320"/><path d="M29 23l9 2" stroke="#2A2320" stroke-width="2.2" stroke-linecap="round"/>`,
+ // fox
+ `<circle cx="32" cy="32" r="32" fill="#CFE6CB"/><path d="M14 14l9 12h18l9-12 1 18c0 12-9 20-19 20s-19-8-19-20z" fill="#E98A3A"/><path d="M17 18l5 7M47 18l-5 7" stroke="#B85A1E" stroke-width="3" stroke-linecap="round"/><path d="M15 33c4 0 11 4 17 13 6-9 13-13 17-13-1 11-8 19-17 19S16 44 15 33z" fill="#fff"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><circle cx="32" cy="45" r="2.6" fill="#2A2320"/>`,
+ // explorer
+ `<circle cx="32" cy="32" r="32" fill="#F4D3A0"/><path d="M12 64c2-11 9-15 20-15s18 4 20 15z" fill="#5E7F55"/><circle cx="32" cy="36" r="13" fill="#F2C49B"/><path d="M8 27c8-3 40-3 48 0-4 2-44 2-48 0z" fill="#8A5A2E"/><path d="M19 26c1-9 6-13 13-13s12 4 13 13z" fill="#B07A42"/><rect x="19" y="22" width="26" height="4" fill="#6E4522"/><circle cx="27" cy="36" r="1.9" fill="#2A2320"/><circle cx="37" cy="36" r="1.9" fill="#2A2320"/><path d="M27 42c3 3 7 3 10 0" stroke="#8A4A2A" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+ // owl
+ `<circle cx="32" cy="32" r="32" fill="#C3E2EE"/><path d="M14 22l6 6M50 22l-6 6" stroke="#6B5444" stroke-width="4" stroke-linecap="round"/><ellipse cx="32" cy="40" rx="18" ry="19" fill="#8C6E58"/><ellipse cx="32" cy="46" rx="11" ry="11" fill="#D9C2A5"/><circle cx="24.5" cy="34" r="7" fill="#fff"/><circle cx="39.5" cy="34" r="7" fill="#fff"/><circle cx="25" cy="34" r="3.2" fill="#2A2320"/><circle cx="39" cy="34" r="3.2" fill="#2A2320"/><path d="M29.5 39l2.5 4 2.5-4z" fill="#F0A93B"/>`,
+];
+const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+
+function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/><circle cx="${x-r*.25}" cy="${y-r*.55}" r="${r*.35}" fill="#fff" fill-opacity=".25"/>`;}
+function hills(c1,c2){return `<path d="M0 70 L40 40 L70 58 L110 28 L150 55 L190 34 L240 60 L280 38 L320 62 V112 H0Z" fill="${c1}"/><path d="M0 84 Q60 66 120 80 T240 76 T320 80 V112 H0Z" fill="${c2}"/>`;}
+function sky(id,a,b){return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="320" height="112" fill="url(#${id})"/>`;}
+const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
+const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
+
+Object.assign(ICONS,{
+  house:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  shop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 9l2-5h14l2 5"/><path d="M3 9c0 2 1.5 3 3 3s3-1 3-3c0 2 1.5 3 3 3s3-1 3-3c0 2 1.5 3 3 3s3-1 3-3"/><path d="M5 12v8h14v-8M10 20v-5h4v5"/></svg>',
+  idea:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
+  flag:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h2v18H5zM8 4h11l-3 4 3 4H8z"/></svg>',
+  dice:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="15" cy="15" r="1.2" fill="currentColor"/><circle cx="15" cy="9" r="1.2" fill="currentColor"/><circle cx="9" cy="15" r="1.2" fill="currentColor"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
+  life:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>',
+  news:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M7 9h7M7 13h7M7 16h4"/></svg>',
+});
+function scene(k){
+  const ground='<rect y="96" width="320" height="16" fill="#D9E3B8"/>';
+  switch(k){
+    case 'work':return `${sky('wk','#CFE0F3','#F1F6FB')}${hills('#B6CCE4','#D3E4C4')}<rect x="120" y="22" width="44" height="74" fill="#7E9CC0"/><rect x="168" y="38" width="36" height="58" fill="#9DB6D4"/>${[0,1,2,3,4,5].map(i=>`<rect x="126" y="${28+i*11}" width="32" height="5" fill="#E6EEF7"/>`).join('')}${[0,1,2,3].map(i=>`<rect x="173" y="${44+i*12}" width="26" height="5" fill="#EEF3F9"/>`).join('')}${tree(70,82,13,'#8CBF6E')}${tree(256,82,14,'#8CBF6E')}${ground}`;
+    case 'study':return `${sky('st','#F6E2AE','#FCF5E2')}${hills('#E9CD8C','#E1E3B4')}<path d="M110 52 L160 30 L210 52Z" fill="#D7542B"/><rect x="116" y="52" width="88" height="44" fill="#F7E3C4"/><rect x="152" y="70" width="16" height="26" fill="#B07A42"/><rect x="126" y="60" width="14" height="12" fill="#BFD7E8"/><rect x="180" y="60" width="14" height="12" fill="#BFD7E8"/><path d="M160 30V12" stroke="#6E4522" stroke-width="2"/><path d="M160 12h16l-4 4 4 4h-16z" fill="#2E7DC0"/>${tree(70,82,14,'#F1C232')}${tree(260,82,14,'#E8B023')}${ground}`;
+    case 'broker':return `${sky('bk','#CDBEF0','#F4EFFB')}${hills('#B9A6E6','#CFE3BE')}<rect x="92" y="28" width="136" height="64" rx="6" fill="#2A2F4A"/><path d="M104 76 L128 62 L146 70 L170 44 L190 54 L216 36" stroke="#5FD39B" stroke-width="3" fill="none"/>${[[112,58,12],[136,52,16],[160,40,20],[184,48,14],[204,34,18]].map(([x,y,h],i)=>`<rect x="${x}" y="${y}" width="6" height="${h}" fill="${i%2?'#E8573F':'#5FD39B'}"/>`).join('')}<rect x="150" y="92" width="20" height="4" fill="#2A2F4A"/>${tree(48,84,13,'#C98BDE')}${tree(276,84,13,'#E6A4D6')}${ground}`;
+    case 'realty':return `${sky('re','#C9EBDF','#EEF8F3')}${hills('#9FD2BF','#CDE6BC')}<rect x="96" y="58" width="50" height="38" fill="#F4E4C8"/><path d="M90 60 L121 38 L152 60Z" fill="#D9764A"/><rect x="114" y="74" width="12" height="22" fill="#B07A42"/><rect x="164" y="48" width="58" height="48" fill="#F7EEDC"/><path d="M158 50 L193 26 L228 50Z" fill="#22987A"/><rect x="172" y="60" width="12" height="12" fill="#BFD7E8"/><rect x="200" y="60" width="12" height="12" fill="#BFD7E8"/><rect x="186" y="76" width="12" height="20" fill="#B07A42"/><rect x="236" y="62" width="4" height="34" fill="#8A6A4A"/><rect x="226" y="54" width="26" height="14" rx="2" fill="#fff" stroke="#D7542B" stroke-width="2"/>${tree(56,84,13,'#6BB27A')}${ground}`;
+    case 'startup':return `${sky('su','#F5CDB6','#FBEDE2')}${hills('#E7AE90','#D9E6BE')}<rect x="110" y="50" width="100" height="46" fill="#FBF3EA"/><path d="M104 50h112l-6-16H110z" fill="#E9573E"/>${[0,1,2,3,4].map(i=>`<path d="M${104+i*22.4} 50 q11 10 22.4 0" fill="${i%2?'#fff':'#E9573E'}"/>`).join('')}<rect x="122" y="64" width="34" height="22" fill="#BFD7E8"/><rect x="170" y="62" width="24" height="34" fill="#B07A42"/>${tree(60,84,13,'#7FB36A')}${tree(262,84,14,'#8CBF6E')}${ground}`;
+    case 'bank':return `${sky('bn','#F6E2AE','#FCF5E2')}${hills('#E9CD8C','#E1E3B4')}<path d="M104 46 L160 24 L216 46Z" fill="#E9B94A"/><rect x="108" y="46" width="104" height="6" fill="#D9A43A"/>${[0,1,2,3,4].map(i=>`<rect x="${116+i*20}" y="54" width="9" height="36" fill="#F7E3AE"/>`).join('')}<rect x="102" y="90" width="116" height="6" fill="#D9A43A"/><circle cx="160" cy="38" r="5" fill="#fff" fill-opacity=".7"/>${tree(56,82,14,'#F1C232')}${tree(264,82,14,'#E8B023')}${ground}`;
+    case 'insure':return `${sky('in','#C3DDF3','#EEF5FC')}${hills('#A9C9E6','#D3E4C4')}<path d="M110 60 A50 40 0 0 1 210 60Z" fill="#2E7DC0"/><path d="M110 60 q12.5 -8 25 0 q12.5 -8 25 0 q12.5 -8 25 0 q12.5 -8 25 0" fill="#EEF5FC"/><path d="M160 60V92q0 6-6 6t-6-6" stroke="#2A2F4A" stroke-width="3" fill="none"/><rect x="128" y="76" width="22" height="20" fill="#F4E4C8"/><path d="M125 77 L139 66 L153 77Z" fill="#D9764A"/>${tree(60,84,13,'#8CBF6E')}${tree(262,84,13,'#6FA35C')}${ground}`;
+    case 'research':return `${sky('rs','#E3D9F6','#F6F2FC')}${hills('#C9BDEB','#D8E5C8')}<rect x="104" y="36" width="88" height="58" rx="4" fill="#FBFAF4" stroke="#6E7068" stroke-width="2"/><rect x="112" y="44" width="72" height="10" fill="#2A2F4A"/>${[0,1,2,3].map(i=>`<rect x="112" y="${60+i*7}" width="${i%2?50:72}" height="3" fill="#B9B4A8"/>`).join('')}<circle cx="206" cy="64" r="20" fill="#DCEBF6" fill-opacity=".7" stroke="#2A2F4A" stroke-width="5"/><path d="M220 78l16 16" stroke="#2A2F4A" stroke-width="7" stroke-linecap="round"/>${tree(52,84,13,'#B98AE0')}${ground}`;
+    case 'opp':return `${sky('op','#F7DDD3','#FCF1EC')}${hills('#EFC6B8','#DCE6C0')}<path d="M100 50 L160 26 L220 50Z" fill="#D7372B"/>${[0,1,2,3,4,5].map(i=>`<path d="M${100+i*20} 50 l10 10 l10-10z" fill="${i%2?'#fff':'#D7372B'}"/>`).join('')}<rect x="108" y="58" width="104" height="38" fill="#FBF3EA"/><text x="160" y="88" text-anchor="middle" font-size="30" font-weight="900" fill="#D7372B" font-family="Outfit,sans-serif">?</text><rect x="104" y="50" width="4" height="46" fill="#8A6A4A"/><rect x="212" y="50" width="4" height="46" fill="#8A6A4A"/>${tree(58,84,13,'#E8A9C2')}${tree(262,84,13,'#F2A9BE')}${ground}`;
+    case 'leisure':return `${sky('lz','#BFE3F2','#EEF8FC')}<rect y="66" width="320" height="30" fill="#77B7D9"/><path d="M0 76 q20-5 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#fff" stroke-opacity=".6" stroke-width="2" fill="none"/><rect y="90" width="320" height="22" fill="#F4E1B8"/><circle cx="250" cy="28" r="14" fill="#F5C443"/><path d="M130 92V50" stroke="#8A6A4A" stroke-width="3"/><path d="M100 54 A32 22 0 0 1 162 54Z" fill="#E9643B"/><path d="M100 54 q8-6 15.5 0 q7.75-6 15.5 0 q7.75-6 15.5 0 q7.75-6 15.5 0" fill="#FBEDE2"/><path d="M196 92 q2-26 -4-40" stroke="#8A6A4A" stroke-width="4" fill="none"/><path d="M192 52 q-16-4-24 6M192 52 q16-6 24 4M192 52 q-8-12-20-12M192 52 q10-12 22-8" stroke="#3F8E5A" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  }return sky('x','#eee','#fff');
+}
+function heroArt(){return `<svg viewBox="0 0 640 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+  <defs><linearGradient id="hs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5EEE1"/><stop offset="1" stop-color="#F7EBD8"/></linearGradient></defs>
+  <rect width="640" height="180" fill="url(#hs)"/>
+  <path d="M60 120 L160 60 L230 96 L320 40 L410 90 L480 56 L560 100 L640 70 V180 H60Z" fill="#9EC59A"/>
+  <path d="M60 134 L150 94 L240 122 L340 82 L430 116 L530 92 L640 112 V180 H60Z" fill="#7FB07F"/>
+  <path d="M250 176 C330 150 380 150 420 128 S520 90 600 60" stroke="#E9DCC0" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <path d="M250 176 C330 150 380 150 420 128 S520 90 600 60" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 10" fill="none"/>
+  <circle cx="600" cy="56" r="16" fill="#F5C443" stroke="#E9643B" stroke-width="4"/><path d="M600 40V16" stroke="#6E4522" stroke-width="3"/><path d="M600 16h22l-5 6 5 6h-22z" fill="#E9643B"/>
+  ${[[300,108,'#F4E4C8','#D9764A'],[460,92,'#F7EEDC','#22987A'],[540,82,'#F4E4C8','#2E7DC0']].map(([x,y,w,r])=>`<rect x="${x}" y="${y}" width="36" height="28" fill="${w}"/><path d="M${x-4} ${y+2} L${x+18} ${y-14} L${x+40} ${y+2}Z" fill="${r}"/><rect x="${x+13}" y="${y+14}" width="10" height="14" fill="#B07A42"/>`).join('')}
+  ${tree(200,124,22,'#F2A9BE')}${tree(380,136,16,'#F6BDCB')}${tree(512,126,16,'#F2A9BE')}${tree(628,120,20,'#F2A9BE')}
+  <circle cx="420" cy="34" r="16" fill="#fff" fill-opacity=".7"/><circle cx="440" cy="30" r="12" fill="#fff" fill-opacity=".7"/>
+ </svg>`;}
+
+/* ================= view helpers ================= */
+const pnTxt=i=>esc(S.players[i].name);
+const money=v=>`${v<0?'−':''}$${Math.abs(v)}`;
+const sgn=v=>v>0?`+${v}`:v<0?`−${-v}`:'±0';
+const dcls=v=>v>0?'up':v<0?'down':'flat';
+function myTurn(){if(!S||S.phase!=='action'||S.cur==null)return false;const pi=S.cur,p=S.players[pi];if(p.ai||S.viewer!==pi||!$('#overlay').hidden||UI.pending)return false;if(NET.role==='client')return !!(S.await&&S.await.type==='act'&&S.await.seat===pi);return !p.remote;}
+function viewerP(){return S.viewer!=null?S.players[S.viewer]:null;}
+function peekUpcoming(p){if(!p||!p.peek)return [];return p.peek.cards.map((c,k)=>({c,idx:p.peek.from+k})).filter(x=>x.idx>=S.np);}
+function newsMoveTxt(n){return n.swan?'景氣直接跌到蕭條':n.mv===0?'景氣停在原地':`景氣時鐘前進 ${n.mv} 格`;}
+function predictZone(p){const up=peekUpcoming(p);let pos=S.pos;return up.map(x=>{const n=NEWS_DEF[x.c];if(n.swan)pos=pos<6?6:pos;else pos=(pos+n.mv)%8;return {n,z:zoneOf(pos).n};});}
+function intelHTML(p){
+  const pr=predictZone(p);if(!pr.length)return '';
+  return `<div class="intel"><div class="ilab">${ICONS.lock}私人情報：研究室看到的新聞</div>
+   <div class="peek">${pr.map((x,k)=>`<div>${k===0?'下一輪':'下下輪'}：<b>${esc(x.n.n)}</b><br>${newsMoveTxt(x.n)} → <b>${x.z}</b></div>`).join('')}</div>
+   <div class="inote" style="margin-top:8px"><span>只有 ${esc(p.name)} 知道</span><span class="stamp">內部研究</span></div></div>`;
+}
+function dreamHTML(p){
+  if(!p.dreams||!p.dreams.length)return '';
+  return `<div class="dream"><div class="ilab">${ICONS.star}我的人生夢想（祕密）</div><ul>${p.dreams.map(id=>{const d=DREAMS[DI[id]];const ok=dreamOK(p,id);return `<li><b>${d.n}</b> ${d.pts} 分：${d.d}${ok?' <span class="ok">目前達成</span>':''}</li>`;}).join('')}</ul></div>`;
+}
+const HEADLINES={pick:'選擇你的人生起點',action:'安排你的時間',event:'人生總有意外',settle:'年度結算',end:'退休了！',idle:'財富自由之路'};
+
+/* ================= render ================= */
+function render(){
+  if(!S||SIM)return;
+  let st='';for(let i=1;i<=ROUNDS;i++){if(i>1)st+=`<span class="link ${i<=S.r?'done':''}"></span>`;st+=`<span class="step ${i<S.r?'done':i===S.r&&S.phase!=='idle'&&S.phase!=='pick'?'now':''}">${ageOf(i)}歲</span>`;}
+  $('#steps').innerHTML=st;
+  $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">LIFE ${S.r?S.r:0}/${ROUNDS}</div><h2>${HEADLINES[S.phase]||HEADLINES.action}<span class="qbadge">${S.phase==='idle'?'準備開局':S.phase==='pick'?'22 歲出社會':S.phase==='end'?'62 歲退休':'第 '+S.r+' 輪 · '+ageOf(S.r)+' 歲'}</span></h2>${swoosh}</div>`;
+  renderBoard();renderSpaces();renderMarket();renderFeed();renderStmt();renderDesk();renderPlayers();
+  NET.publish();
+}
+function clockSVG(){
+  const cx=100,cy=100,R=78,r=50;let segs='';
+  const pt=(a,rad)=>[cx+rad*Math.cos(a),cy+rad*Math.sin(a)];
+  for(let k=0;k<8;k++){const a0=-Math.PI/2+k*Math.PI/4+0.025,a1=-Math.PI/2+(k+1)*Math.PI/4-0.025;
+    const [x0,y0]=pt(a0,R),[x1,y1]=pt(a1,R),[x2,y2]=pt(a1,r),[x3,y3]=pt(a0,r);const z=zoneOf(k),on=k===S.pos;
+    segs+=`<path d="M${x0} ${y0} A${R} ${R} 0 0 1 ${x1} ${y1} L${x2} ${y2} A${r} ${r} 0 0 0 ${x3} ${y3}Z" fill="${z.col}" fill-opacity="${on?1:.45}" stroke="${on?'#1F2B27':'none'}" stroke-width="${on?2.5:0}"/>`;}
+  const lab=['復甦','繁榮','衰退','蕭條'].map((n,i)=>{const a=-Math.PI/2+(i*2+1)*Math.PI/4;const [x,y]=pt(a,R+13);return `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" font-weight="900" fill="#1F2B27">${n}</text>`;}).join('');
+  const am=-Math.PI/2+(S.pos+0.5)*Math.PI/4;const [hx,hy]=pt(am,r-8);
+  return `<svg viewBox="-12 -12 224 224" role="img" aria-label="景氣時鐘：${zone().n}">${segs}${lab}<circle cx="${cx}" cy="${cy}" r="${r-4}" fill="#FFFBF4"/><path d="M${cx} ${cy} L${hx} ${hy}" stroke="#1F2B27" stroke-width="4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="6" fill="#E9643B"/><text x="${cx}" y="${cy+26}" text-anchor="middle" font-size="16" font-weight="900" fill="#1F2B27">${zone().n}${(S.pos&1)+1}</text></svg>`;
+}
+function renderBoard(){
+  const n=S.curNews;const z=zone();
+  const tk=(name,v,d,unit='')=>`<div class="trk"><dt>${name}</dt><dd><span class="v num">${v}${unit}</span><span class="d num ${dcls(d)} ${dcls(d)}">${d>0?'▲ '+d:d<0?'▼ '+(-d):'± 0'}</span></dd></div>`;
+  $('#mboard').innerHTML=`<div class="clock">${clockSVG()}</div><div class="mside">
+    <div class="news"><span class="nlab">NEWS</span><div><b>${n?esc(n.n):'等待開局'}</b><span>${n?`${newsMoveTxt(n)}，現在是「${z.n}」：大盤 ${sgn(z.mkt)}、成長股 ${sgn(z.gro)}、房市 ${sgn(z.house*10)}%、黃金 ${sgn(z.gold)}${isDep()?'；每人擲骰，擲出 1 這輪失業':''}${isDown()?'；債券可用 $11 賣出':''}`:'每輪翻一張新聞卡推動景氣時鐘，價格跟著景氣變。'}</span></div></div>
+    <dl class="tracks" style="margin:0">${tk('大盤／指數基金','$'+S.mkt,S.dl.mkt)}${tk('成長股','$'+S.gro,S.dl.gro)}${tk('房市','',S.dl.house*10,'').replace('<span class="v num"></span>',`<span class="v num">${S.house>=0?'+':''}${S.house*10}%</span>`)}${tk('黃金','$'+S.gold,S.dl.gold)}</dl>
+    <div class="note">通膨已累計 +${S.infl}（第 3、5、7 輪結束各 +1）。REITs $${reitP()}、債券 $10。</div></div>`;
+}
+function spaceAvail(pi,sp){return pi!=null?canPlace(pi,sp):{ok:true};}
+function renderSpaces(){
+  const mine=myTurn(),pi=mine?S.cur:null;
+  $('#spH').innerHTML=`${ICONS.dice}行動格<small>${S.phase==='action'&&S.cur!=null?`輪到 ${pnTxt(S.cur)}，還有 ${S.players[S.cur].left} 個時間棋`:'每人每輪 3 個時間棋，輪流放'}</small>`;
+  $('#spaces').innerHTML=SPACES.map(s=>{
+    const occ=S.occ[s.id]||[],cap=spCap(s.id),av=mine?spaceAvail(pi,s.id):{ok:true},sel=mine&&UI.sp===s.id;
+    const capTxt=cap>=99?'不限':`${occ.length}/${cap}`;const full=cap<99&&occ.length>=cap;
+    return `<button class="sp ${mine&&av.ok?'pick':''} ${mine&&!av.ok?'off':''} ${sel?'sel':''}" data-sp="${s.id}" ${mine&&av.ok?'':'tabindex="-1"'} aria-pressed="${sel}" type="button">
+      <div class="art"><svg viewBox="0 0 320 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${scene(s.art)}</svg>${sel?`<span class="check">${ICONS.check}</span>`:''}</div>
+      <div class="body"><h3>${s.n}<span class="cap ${full?'full':''}">${capTxt}</span></h3><p>${s.d}</p>${mine&&!av.ok?`<span class="need">${av.why}</span>`:s.need?`<span class="need">${s.need}</span>`:''}
+      <div class="occ">${occ.map(i=>avatar(i)).join('')}</div></div></button>`;}).join('');
+}
+function invCard(c,slot){
+  if(c==null)return `<div class="ic empty">空位</div>`;
+  const C=INV[c];
+  const head=C.t==='prop'?`<div class="ih">${ICONS.house}房產</div>`:C.t==='pat'?`<div class="ih" style="background:#7A5AD3">${ICONS.idea}特殊資產</div>`:`<div class="ih" style="background:#D7542B">${ICONS.shop}小生意</div>`;
+  const body=C.t==='prop'?`<div class="kv"><span>房價<b>$${C.p}</b></span><span>租金<b>${C.rent}</b></span><span>現值<b>$${propVal(c)}</b></span></div><div class="kv"><span>頭期 2 成<b>$${C.p-Math.floor(C.p*0.8/10)*10}</b></span></div>`
+    :C.t==='pat'?`<div class="kv"><span>價格<b>$${C.p}</b></span><span>每輪<b>${C.inc}</b></span></div>`
+    :`<div class="kv"><span>成本<b>$${C.p}</b></span><span>經理費<b>${C.fee}</b></span></div><div class="kv"><span>擲骰收入 ${C.tiers.map(v=>v||'倒').join('／')}</span></div>`;
+  return `<div class="ic">${head}<div class="ib"><h4>${C.n}</h4>${body}<span class="note">知識 ${C.k}${C.note?' · '+C.note:''}</span></div></div>`;
+}
+function oppCard(o){
+  if(!o)return `<div class="ic empty">空位</div>`;
+  const D=OPP[o.c],v=viewerP();const known=D.kind==='gen'&&v&&v.know>=2&&o.t!=null;
+  return `<div class="ic opp ${D.kind==='spec'?'spec':''}"><div class="ih">${D.kind==='spec'?ICONS.dice:ICONS.flame}${D.kind==='spec'?'投機':'機會卡'}</div><div class="ib"><h4>${esc(D.n)}</h4>
+    ${D.flags.length?`<div class="flags">${D.flags.map(f=>`<span class="flag">${FLAGS[f]}</span>`).join('')}</div>`:''}
+    <span class="note">${esc(D.d)}</span>${known?`<span class="truth ${o.t?'t':'f'}">查證：${o.t?'是真的':'是陷阱'}</span>`:D.kind==='gen'?'<span class="note">真假未知（知識 2 可查證）</span>':''}</div></div>`;
+}
+function renderMarket(){
+  $('#mkH').innerHTML=`${ICONS.house}投資市場<small>每輪結束最左邊的卡離場、補新卡</small>`;
+  $('#mrow').innerHTML=S.row.map((c,i)=>invCard(c,i)).join('')+'<span class="gap" aria-hidden="true"></span>'+S.opp.map(o=>oppCard(o)).join('');
+}
+function renderFeed(){
+  const feed=S.log.slice(0,16).map(l=>{
+    const who=l.a!=null&&S.players[l.a]?avatar(l.a):`<span class="ic">${l.c==='q'?ICONS.spark:l.c==='k'?ICONS.flame:ICONS.bars}</span>`;
+    return `<li class="${l.c}"><span class="qtag">${l.r?ageOf(l.r)+'歲':'開局'}</span>${who}<span class="txt">${l.h}</span></li>`;}).join('');
+  $('#feed').innerHTML=`<h3>${ICONS.bars}人生動態</h3><ul class="feedlist">${feed||'<li><span class="txt" style="grid-column:1/-1;color:var(--muted)">每個決定都會出現在這裡。</span></li>'}</ul>`;
+}
+function ledger(title,rows,tot,empty){return `<div class="ledger"><h5><span>${title}</span></h5><dl>${rows.length?rows.map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join(''):`<div class="none">${empty}</div>`}${tot!=null?`<div class="tot"><dt>合計</dt><dd>${tot}</dd></div>`:''}</dl></div>`;}
+function renderStmt(){
+  if(!S.players[0]||S.players[0].job==null){$('#stmt').innerHTML=`<h2 class="sec-h" style="margin-top:0">${ICONS.bars}財務報表</h2><p class="note">開局後，每個人的收入、支出、資產和負債都會公開在這裡。</p>`;return;}
+  let t=UI.tab;if(t==null||!S.players[t])t=S.viewer!=null?S.viewer:S.cur!=null?S.cur:0;
+  const p=S.players[t],ex=expenses(p),pa=passive(p),sal=p.quit?0:baseSal(p);
+  const pct=Math.min(100,ex.total?Math.round(pa.total/ex.total*100):0),free=pa.total>=ex.total;
+  const inc=[[p.quit?'薪水（已辭職）':`薪水（${job(p).n} Lv${p.lvl}）`,(p.job==='sales'||p.job==='creator')&&!p.quit?`約 $${sal}`:'$'+sal]];
+  if(p.married)inc.push(['伴侶收入','$2']);const ab=activeBiz(p);if(ab)inc.push(['小生意（自己經營）','$'+ab]);
+  pa.rows.forEach(r=>inc.push([r[0]+'（被動）','$'+r[1]]));
+  const as=[];if(p.cash||true)as.push(['現金','$'+p.cash]);
+  ASSETS.forEach(a=>{if(p[a.k])as.push([`${a.n} ×${p[a.k]}`,'$'+p[a.k]*a.price()]);});
+  p.props.forEach(x=>as.push([INV[x.c].n+(x.vac?'（空置）':x.occ?'（占用）':''),'$'+propVal(x.c)]));
+  p.biz.forEach(b=>as.push([`${INV[b.c].n}（收入 ${b.inc}${b.mgr?'、請經理':'、自己顧'}）`,'$'+Math.floor(INV[b.c].p/2)]));
+  p.style.forEach(k=>{if(STYLE[k].res)as.push([STYLE[k].n,'$'+STYLE[k].res]);});
+  p.recv.forEach(x=>as.push([`親戚還款（${ageOf(x.r)} 歲）`,'$'+x.amt]));
+  if(p.policy)as.push(['投資型保單已繳','$'+p.policy.paid]);
+  const debts=[];p.props.forEach(x=>{if(x.loan)debts.push([`房貸：${INV[x.c].n}`,'$'+x.loan]);});if(p.loan)debts.push(['信貸','$'+p.loan]);if(p.cc)debts.push(['卡債','$'+p.cc]);
+  $('#stmt').innerHTML=`<h2 class="sec-h" style="margin-top:0">${ICONS.bars}財務報表<small>所有人的報表都公開</small></h2>
+   <div class="tabs">${S.players.map((q,i)=>`<button data-tab="${i}" class="${i===t?'on':''}">${avatar(i)}${esc(q.name)}</button>`).join('')}</div>
+   <div class="meter"><div class="ml"><span>財務自由進度：被動收入 <b class="num">$${pa.total}</b> ／ 支出 <b class="num">$${ex.total}</b></span><span>${free?'<span class="badge-free">已達成財務自由</span>':`還差 $${ex.total-pa.total}`}</span></div><div class="bar2 ${free?'free':''}"><i style="width:${pct}%"></i></div></div>
+   <div class="cols">${ledger('每輪收入',inc,null,'')}${ledger('每輪支出',ex.rows.map(r=>[r[0],'$'+r[1]]),'$'+ex.total,'')}${ledger('資產與負債',as.concat(debts.map(d=>[d[0],'−'+d[1]])),'淨資產 '+money(netWorth(p)),'')}</div>
+   <div class="chiprow">${Object.keys(INS).map(k=>`<span class="chip ${hasIns(p,k)?'ins':'off'}">${INS[k].n}</span>`).join('')}${p.dca?'<span class="chip up">定期定額</span>':''}<span class="chip">知識 ${p.know}</span><span class="chip">幸福 ${p.happy}</span>${p.married?'<span class="chip">已婚</span>':''}${p.kids?`<span class="chip">小孩 ${p.kids}</span>`:''}${p.bk?`<span class="chip down">破產 ${p.bk} 次</span>`:''}</div>`;
+}
+function renderPlayers(){
+  const cur=S.phase==='action'?S.cur:-1;
+  $('#players').innerHTML=S.players.map((p,i)=>{
+    const ex=p.job?expenses(p).total:0,pa=p.job?passive(p).total:0,pct=ex?Math.min(100,Math.round(pa/ex*100)):0,tot=p.job?workersFor(p):3;
+    return `<div class="pl ${i===cur?'cur':''}">${avatar(i)}<div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?`<span class="tag">AI·${PERS[p.pers]}</span>`:p.remote?'<span class="tag">連線</span>':''}${p.badge?'<span class="badge-free">自由</span>':''}</div>
+      <div class="fig"><span>${p.job?job(p).n+' Lv'+p.lvl:'選職業中'}</span><span>現金<b>$${p.cash}</b></span><span>幸福<b>${p.happy}</b></span><span>知識<b>${p.know}</b></span></div>
+      <div class="fig"><span>被動 $${pa}／支出 $${ex}</span>${S.phase==='action'?`<span class="dotsrow" aria-label="剩 ${p.left} 個時間棋">${Array.from({length:Math.max(tot,p.left)},(_,k)=>`<i class="${k<p.left?'':'u'}"></i>`).join('')}</span>`:''}</div>
+      <div class="mini ${pa>=ex&&ex?'free':''}"><i style="width:${pct}%"></i></div></div></div>`;}).join('');
+}
+
+/* ---------- desk ---------- */
+function initArgs(sp){
+  const p=S.players[S.cur];
+  switch(sp){
+    case 'broker':return {d:{}};
+    case 'realty':{const b=rowCards('prop').filter(x=>INV[x.c].k<=p.know);return b.length?{mode:'buy',slot:b[0].i,loan:p.cc?0:Math.floor(INV[b[0].c].p*0.8/10)*10}:{mode:'sell',idx:0};}
+    case 'startup':{const b=rowCards(['biz','pat']).filter(x=>INV[x.c].k<=p.know);return {slot:b.length?b[0].i:null,mgr:true};}
+    case 'bank':return {loan:0,dca:p.dca};
+    case 'insure':return {ins:{...p.ins}};
+    case 'opp':{const i=S.opp.findIndex(o=>o);return {slot:i};}
+    case 'leisure':return {kind:'relax'};
+  }return {};
+}
+function radio(attr,on,title,sub,val,dis){return `<button class="radio ${on?'on':''}" ${attr} ${dis?'disabled':''} type="button"><span class="rb"></span><span class="rt"><b>${title}</b>${sub?`<span>${sub}</span>`:''}</span>${val!=null?`<span class="rv">${val}</span>`:''}</button>`;}
+function spForm(pi){
+  const p=S.players[pi],sp=UI.sp,a=UI.a,v=validArgs(pi,sp,a);let h='',sum='';
+  switch(sp){
+    case 'work':sum=`賺 <b>$${otGain(p)}</b>，幸福 −${p.ot?2:1}`;h=`<div class="dnote">用時間換錢有上限，而且很累。加班越多，幸福掉越快。</div>`;break;
+    case 'study':sum=`付 <b>$${studyCost(p)}</b>，${p.lvl<MAX_LVL?`Lv${p.lvl}→Lv${p.lvl+1}，薪水 $${baseSal(p)}→$${baseSal({...p,lvl:p.lvl+1})}，`:''}知識 +1`;h=`<div class="dnote">投資自己通常是最早、報酬最高的投資：越早進修，加薪領得越久。</div>`;break;
+    case 'research':sum='偷看接下來 2 則新聞，知識 +1';h=`<div class="dnote">看到的新聞只有你知道。景氣可以觀察，但很難精準抓時機。</div>`;break;
+    case 'broker':{const first=!(S.occ.broker||[]).length;const r=brokerCalc(pi,a.d,first);
+      h=`<div class="frm">${ASSETS.map(as=>{const n=a.d[as.k]|0,canB=!(as.k==='gro'&&p.know<1&&p.job!=='eng');return `<div class="frow"><div class="fl"><b>${as.n} $${as.price()}${as.k==='bond'&&bondSell()!==10?`（賣 $${bondSell()}）`:''}</b><span>持有 ${p[as.k]} · ${as.inc}${canB?'':' · 需要知識 1'}</span></div><div class="mini-step"><button data-bd="${as.k}:-1" ${n<=-p[as.k]?'disabled':''} aria-label="少一份">−</button><b>${n>0?'+'+n:n}</b><button data-bd="${as.k}:1" ${!canB&&n>=0?'disabled':''} aria-label="多一份">+</button></div></div>`;}).join('')}</div>`;
+      sum=`${first?'第一位免手續費':'手續費 $1'} · 現金 $${p.cash} → <b>$${r.after}</b>`;break;}
+    case 'realty':{const buys=rowCards('prop');
+      h=`<div class="dlab">買房</div><div class="frm">${buys.length?buys.map(({c,i})=>{const C=INV[c];return radio(`data-rs="${i}"`,a.mode==='buy'&&a.slot===i,C.n,`租金 ${C.rent} · 知識 ${C.k}`,'$'+C.p,p.know<C.k);}).join(''):'<div class="dnote">市場上沒有房子</div>'}</div>`;
+      if(a.mode==='buy'&&a.slot!=null&&S.row[a.slot]!=null){const C=INV[S.row[a.slot]],max=p.cc?0:Math.floor(C.p*0.8/10)*10;
+        h+=`<div class="frow"><div class="fl"><b>房貸 $${a.loan}</b><span>頭期 $${C.p-a.loan} · 每輪利息 ${Math.floor(a.loan/10)} · 淨租金 ${C.rent-Math.floor(a.loan/10)}</span></div><div class="mini-step"><button data-loan="-10" ${a.loan<=0?'disabled':''}>−</button><b>${a.loan}</b><button data-loan="10" ${a.loan>=max?'disabled':''}>+</button></div></div>`;}
+      if(p.props.length)h+=`<div class="dlab">或賣房</div><div class="frm">${p.props.map((x,k)=>radio(`data-rsell="${k}"`,a.mode==='sell'&&a.idx===k,INV[x.c].n,`現值 $${propVal(x.c)} − 房貸 $${x.loan}`,money(propVal(x.c)-x.loan))).join('')}</div>`;
+      sum=a.mode==='sell'?'賣掉後租金收入也跟著消失':v.ok?`付頭期 <b>$${v.cost}</b>，現金剩 $${p.cash-v.cost}`:'';break;}
+    case 'startup':{const bz=rowCards(['biz','pat']);
+      h=`<div class="frm">${bz.map(({c,i})=>{const C=INV[c];return radio(`data-su="${i}"`,a.slot===i,C.n,C.t==='pat'?`每輪 ${C.inc}，終局歸零 · 知識 ${C.k}`:`擲骰 ${C.tiers.map(x=>x||'倒').join('/')} · 經理費 ${C.fee} · 知識 ${C.k}`,'$'+C.p,p.know<C.k||p.cash<C.p);}).join('')}</div>`;
+      const C=a.slot!=null&&S.row[a.slot]!=null?INV[S.row[a.slot]]:null;
+      if(C&&C.t==='biz')h+=`<div class="frow"><div class="fl"><b>誰來經營？</b><span>${a.mgr?`請經理：每輪付 ${C.fee}，收入算被動收入`:'自己顧：省經理費，但算主動收入，下輪少 1 個時間棋'}</span></div><div class="sw"><button data-mgr="1" class="${a.mgr?'on':''}">請經理</button><button data-mgr="0" class="${a.mgr?'':'on'}">自己顧</button></div></div>`;
+      sum=C?`付 <b>$${C.p}</b>${C.t==='biz'?'，擲骰決定每輪收入，擲到「倒」就倒閉':''}`:'';break;}
+    case 'bank':{const cap=loanCap(p);
+      h=`<div class="frow"><div class="fl"><b>借信貸 $${a.loan}</b><span>已借 $${p.loan}／上限 $${cap} · 每 10 每輪利息 2${p.cc?' · 有卡債不能借':''}</span></div><div class="mini-step"><button data-bl="-10" ${a.loan<=0?'disabled':''}>−</button><b>${a.loan}</b><button data-bl="10" ${p.loan+a.loan+10>cap||p.cc?'disabled':''}>+</button></div></div>
+        <div class="frow"><div class="fl"><b>定期定額</b><span>每輪結算自動用大盤價買 1 份指數基金，免手續費</span></div><div class="sw"><button data-dca="1" class="${a.dca?'on':''}">開</button><button data-dca="0" class="${a.dca?'':'on'}">關</button></div></div>`;
+      sum=a.loan?`現金 +$${a.loan}，每輪多 ${Math.floor(a.loan/10)*2} 利息`:'';break;}
+    case 'insure':{h=`<div class="frm">${Object.keys(INS).map(k=>{const free=k==='med'&&p.job==='nurse';return `<div class="frow"><div class="fl"><b>${INS[k].n}${free?'（護理師免費）':''}</b><span>${INS[k].d} · 保費每輪 ${free?0:1}</span></div>${free?'':`<div class="sw"><button data-ins="${k}:1" class="${a.ins[k]?'on':''}">保</button><button data-ins="${k}:0" class="${a.ins[k]?'':'on'}">不保</button></div>`}</div>`;}).join('')}</div>`;
+      const n=Object.keys(INS).filter(k=>a.ins[k]&&!(k==='med'&&p.job==='nurse')).length;sum=`之後每輪保費 <b>$${n}</b>`;break;}
+    case 'opp':{h=`<div class="frm">${S.opp.map((o,i)=>{if(!o)return '';const D=OPP[o.c];const known=D.kind==='gen'&&p.know>=2;return radio(`data-os="${i}"`,a.slot===i,esc(D.n),D.flags.length?`紅旗 ${D.flags.length} 面：${D.flags.map(f=>FLAGS[f]).join('、')}`:known?(o.t?'查證：是真的':'查證：是陷阱'):D.kind==='spec'?'投機，看骰子':'真假未知',null);}).join('')}</div>`;
+      sum='拿到卡後再決定要不要做';break;}
+    case 'leisure':{h=`<div class="frm">${radio('data-lz="relax"',a.kind==='relax','好好休息','付 $1，幸福 +2','$1',p.cash<1)}${Object.entries(STYLE).map(([k,s])=>radio(`data-lz="style:${k}"`,a.kind==='style'&&a.item===k,s.n,`幸福 +${s.h}${s.exp?`，每輪支出 +${s.exp}`:''}${s.note?'，'+s.note:''}${s.once&&p.style.includes(k)?'（已擁有）':''}`,'$'+s.cost,p.cash<s.cost||s.once&&p.style.includes(k))).join('')}${radio('data-lz="donate"',a.kind==='donate','捐款','付 $5，幸福 +3','$5',p.cash<5)}</div>`;
+      sum=a.kind==='style'&&STYLE[a.item].exp?'生活風格卡會讓之後每輪支出變高':'';break;}
+  }
+  return `<div class="dlab">${SPN(sp)}</div>${h}${sum?`<div class="dnote">${sum}</div>`:''}${!v.ok&&v.why?`<div class="dnote warn">${v.why}</div>`:''}
+   <button class="confirm" id="btnConfirm" ${v.ok?'':'disabled'}>確認 ${ICONS.arrow}</button><button class="passbtn" id="btnCancel">換一個行動格</button>`;
+}
+function hasDebt(p){return p.cc>0||p.loan>0||p.props.some(x=>x.loan>0);}
+function renderDesk(){
+  let h=leafDeco;
+  if(S.phase==='action'&&S.cur!=null){
+    const pi=S.cur,p=S.players[pi];
+    if(myTurn()){
+      h+=`<div class="dhead"><h2>你的下一步</h2><span class="pill">輪到你了</span></div><div class="dsub">${esc(p.name)} · 還有 ${p.left} 個時間棋 · 現金 $${p.cash}</div>`;
+      h+=UI.sp?spForm(pi):`<div class="empty"><b>選一個行動格</b>點左邊的行動格，放下一個時間棋。</div>`;
+      if(!UI.sp&&hasDebt(p))h+=`<button class="repaybtn" id="btnRepay">還款（不佔時間棋）</button>`;
+    }else{
+      const mine=pi===S.viewer&&UI.pending;
+      h+=`<div class="dhead"><h2>${mine?'送出中':p.ai?'對手行動中':p.remote||NET.role==='client'?'等待對手':'換人操作'}</h2><span class="pill soft">${ageOf(S.r)} 歲</span></div>`;
+      h+=`<div class="think">${avatar(pi)}<div><b>${esc(p.name)}</b><div>${mine?'等待房主確認<span class="dots"></span>':p.ai?'正在盤算<span class="dots"></span>':p.remote||NET.role==='client'?'正在自己的手機上思考<span class="dots"></span>':'等待交接裝置'}</div></div></div>`;
+      if(NET.role==='host'&&p.remote)h+=`<button class="passbtn" id="btnTakeover">${esc(p.name)} 斷線了？改由 AI 代打</button>`;
+    }
+  }else if(S.phase==='action'){h+=`<div class="dhead"><h2>新的一年</h2><span class="pill">${ageOf(S.r)} 歲</span></div><div class="empty"><b>先看本輪新聞</b>景氣時鐘轉動後，大家輪流放時間棋。</div>`;}
+  else if(S.phase==='event'){h+=`<div class="dhead"><h2>人生事件</h2><span class="pill">${ageOf(S.r)} 歲</span></div><div class="empty"><b>每個人抽一張人生事件</b>有保險的人只付保險後的金額。</div>`;}
+  else if(S.phase==='settle'){h+=`<div class="dhead"><h2>年度結算</h2><span class="pill">第 ${S.r} 輪</span></div><div class="empty"><b>收入 − 支出 = 現金流</b>看看誰的被動收入追上支出了。</div>`;}
+  else if(S.phase==='end'){const w=S.players.map((p,i)=>({i,t:score(i).total})).sort((a,b)=>b.t-a.t)[0];
+    h+=`<div class="dhead"><h2>遊戲結束</h2><span class="pill">冠軍</span></div><div class="think">${avatar(w.i)}<div><b>${pnTxt(w.i)}</b><div>自由分 ${w.t}</div></div></div><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button><button class="passbtn" id="btnReview">看報表回顧</button>`;}
+  else if(S.phase==='pick'){h+=`<div class="dhead"><h2>人生起點</h2></div><div class="empty"><b>每個人選擇職業和夢想</b>職業決定薪水和特殊能力，夢想是祕密目標。</div>`;}
+  else h+=`<div class="dhead"><h2>準備開局</h2></div><div class="empty"><b>設定玩家後開始</b>2 到 5 人，可以混搭 AI 對手。</div>`;
+  if(S.phase==='action'&&S.viewer!=null&&S.players[S.viewer]){const v=S.players[S.viewer];h+=intelHTML(v)+dreamHTML(v);}
+  if(NET.role==='host'||NET.role==='client')h+=`<div class="roombar"><span>線上房間</span><b class="num">${esc(NET.code)}</b><span>${NET.role==='host'?'你是房主':'你是 '+esc(S.players[S.viewer]?S.players[S.viewer].name:'')}</span></div>`;
+  $('#desk').innerHTML=h;
+}
+
+/* ================= modals ================= */
+let modalCb=null;
+function openModal(html,cb){if(SIM)return;$('#modal').innerHTML=html;$('#overlay').hidden=false;modalCb=cb;const f=$('#modal .primary');f&&f.focus({preventScroll:true});}
+function closeModal(){if(SIM)return;$('#overlay').hidden=true;$('#modal').innerHTML='';modalCb=null;}
+$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b&&!b.disabled&&modalCb)modalCb(b.dataset.m,b);});
+const tipHTML=t=>t?`<div class="tip"><b>理財小教室：</b>${t}</div>`:'';
+function handoff(pi,why,cb){
+  openModal(`<div class="handoff">${avatar(pi)}</div><h2>請把裝置交給 ${esc(S.players[pi].name)}</h2><p class="sub">${why}。其他玩家請別偷看，接下來會顯示 ${esc(S.players[pi].name)} 的祕密夢想和研究情報。</p>
+   <div class="acts"><button class="btn primary" data-m="go">我是 ${esc(S.players[pi].name)}，開始</button></div>`,()=>{closeModal();cb();});
+}
+function choiceModal(pi,spec,cb){
+  const p=S.players[pi];
+  openModal(`<h2>${esc(spec.title)}</h2>${humans().length>1||NET.role?`<p class="sub">${avatar(pi).replace('class="av"','class="av" style="width:28px;height:28px;display:inline-block;vertical-align:middle"')} ${esc(p.name)} 請選擇</p>`:''}
+    <p class="sub">${spec.body}</p>
+    ${spec.flags&&spec.flags.length?`<div class="flags" style="margin-bottom:10px">${spec.flags.map(f=>`<span class="flag">${ICONS.flag.replace('<svg','<svg width="12" height="12"')}${FLAGS[f]}</span>`).join('')}</div>`:''}
+    ${spec.truth!=null?`<p><span class="truth ${spec.truth?'t':'f'}">你的知識夠，查證結果：${spec.truth?'這是真的機會':'這是陷阱'}</span></p>`:spec.unknown?'<p class="note">你的知識不到 2，無法查證這張卡是真是假。</p>':''}
+    <div class="opts">${spec.opts.map((o,i)=>`<button class="btn opt" data-m="o:${i}" ${o.dis?'disabled':''}><div class="lft"><b>${esc(o.l)}</b>${o.d?`<br><span>${esc(o.d)}</span>`:''}</div><span class="go">${o.dis?'不可用':'選擇 →'}</span></button>`).join('')}</div>
+    ${spec.opp?'':tipHTML(spec.tip)}`,m=>{if(!m.startsWith('o:'))return;const v=+m.slice(2);closeModal();
+      if(spec.opp&&spec.tip&&!SIM){render();return openModal(`<h2>${esc(spec.title)}</h2>${tipHTML(spec.tip)}<div class="acts"><button class="btn primary" data-m="ok">知道了</button></div>`,()=>{closeModal();cb(v);});}
+      cb(v);});
+}
+function pickModal(pi,next){
+  const p=S.players[pi];let jsel=UI.pj||p.jobOpts[0],ds=UI.pd||[];
+  const draw=()=>{
+    openModal(`<h2>${esc(p.name)}，選擇你的人生起點</h2><p class="sub">職業決定起始現金、薪水和特殊能力。夢想三選二，是只有你知道的祕密目標，終局達成就加分。</p>
+     <div class="field"><span>職業（二選一）</span></div><div class="opts">${p.jobOpts.map(id=>{const j=JOBS[JI[id]];return `<button class="btn opt ${jsel===id?'sel':''}" data-m="j:${id}" style="${jsel===id?'border-color:var(--green);border-width:3px;background:var(--card)':''}"><div class="lft"><b>${j.n}</b><br><span>起始現金 $${j.cash} · 薪水 ${id==='sales'?'底薪 3＋擲骰':id==='creator'?'3＋擲骰':'$'+j.sal} · 生活費 ${j.live} · 每升一級 +${j.inc}<br>${j.ab}</span></div><span class="go">${jsel===id?'已選':'選擇'}</span></button>`;}).join('')}</div>
+     <div class="field"><span>人生夢想（選 2 個，已選 ${ds.length}）</span></div><div class="opts">${p.dreamOpts.map(id=>{const d=DREAMS[DI[id]],on=ds.includes(id);return `<button class="btn opt" data-m="d:${id}" style="${on?'border-color:var(--green);border-width:3px;background:var(--card)':''}"><div class="lft"><b>${d.n}（${d.pts} 分）</b><br><span>${d.d}</span></div><span class="go">${on?'已選':'選擇'}</span></button>`;}).join('')}</div>
+     <div class="acts"><button class="btn primary" data-m="go" ${ds.length===2?'':'disabled'}>就這樣決定</button></div>`,m=>{
+      if(m.startsWith('j:')){jsel=m.slice(2);draw();}
+      else if(m.startsWith('d:')){const id=m.slice(2);if(ds.includes(id))ds=ds.filter(x=>x!==id);else{ds=ds.concat(id);if(ds.length>2)ds=ds.slice(-2);}draw();}
+      else if(m==='go'&&ds.length===2){closeModal();if(NET.role==='client'){NET.send({t:'pick',job:jsel,dreams:ds});return;}applyPick(pi,jsel,ds);next();}
+    });};
+  draw();
+}
+function roundModal(){
+  const n=S.curNews,z=zone(),hs=humans();
+  const infl=INFL_ROUNDS.includes(S.r)?`<p class="note">這輪結束時會通膨：生活費 +1。</p>`:'';
+  const un=n.unemp&&n.unemp.length?`<div class="dnote warn" style="background:var(--down-bg);color:var(--down);border-radius:10px;padding:8px 12px;margin-top:10px">${n.unemp.map(i=>esc(S.players[i].name)).join('、')} 在蕭條中失業，這輪沒有薪水。</div>`:'';
+  openModal(`<h2>第 ${S.r} 輪 · ${ageOf(S.r)} 歲</h2><p class="sub">新聞：<b>${esc(n.n)}</b>。${newsMoveTxt(n)}，現在是「${z.n}」。</p>
+    <div class="tablewrap"><table class="res"><thead><tr><th>價格</th><th>現在</th><th>這輪變化</th></tr></thead><tbody>
+    <tr><td>大盤／指數基金</td><td>$${S.mkt}</td><td class="${dcls(S.dl.mkt)}">${sgn(S.dl.mkt)}</td></tr><tr><td>成長股</td><td>$${S.gro}</td><td class="${dcls(S.dl.gro)}">${sgn(S.dl.gro)}</td></tr>
+    <tr><td>房市</td><td>${S.house>=0?'+':''}${S.house*10}%</td><td class="${dcls(S.dl.house)}">${sgn(S.dl.house*10)}%</td></tr><tr><td>黃金</td><td>$${S.gold}</td><td class="${dcls(S.dl.gold)}">${sgn(S.dl.gold)}</td></tr></tbody></table></div>
+    ${un}${infl}${tipHTML(n.swan?'黑天鵝是沒人料得到的大事件。這時候有現金、沒被迫賣的人，才有機會撿便宜。':z.n==='繁榮'?'景氣好的時候大家都覺得會一直好下去，這時更要記得留預備金。':z.n==='蕭條'?'蕭條時恐慌賣出會把帳面虧損變成真的虧損。長期來看，大盤是往上走的。':z.n==='衰退'?'股票跌的時候債券通常比較穩，這就是資產配置的用處。':'景氣循環會一再發生：復甦、繁榮、衰退、蕭條。')}
+    <div class="acts"><button class="btn primary" data-m="go">${NET.role==='client'?'知道了':'開始安排時間'}</button></div>`,()=>{closeModal();if(NET.role==='client')return;proceed();});
+}
+function eventsModal(){
+  const rows=S.order.map(pi=>{const E=EVENTS[S.evDraw[pi]];return `<div class="evrow">${avatar(pi)}<div><h4>${pnTxt(pi)}：${E.n}<span class="cat">${E.cat}</span></h4><p>${esc(S.evRes[pi]||'')}</p></div></div>`;}).join('');
+  openModal(`<h2>人生事件 · ${ageOf(S.r)} 歲</h2><p class="sub">先投資、後抽事件：行動時把錢花光的人，遇到意外就得拋售或欠卡債。</p><div class="evlist">${rows}</div>
+    ${tipHTML('保險是把一次可能很大的損失，換成每輪固定的小支出。不用全買，買你最承受不起的。')}
+    <div class="acts"><button class="btn primary" data-m="go">${NET.role==='client'?'知道了，等房主繼續':'年度結算'}</button></div>`,()=>{closeModal();if(NET.role==='client')return;settlePhase();});
+}
+function settleModal(){
+  const rows=S.order.map(pi=>{const r=S.setRes[pi];if(!r)return '';const p=S.players[pi];
+    return `<tr><td>${pnTxt(pi)}${r.free?' <span class="badge-free">自由</span>':''}</td><td>${r.unemp||r.laid?'0（沒薪水）':p.quit?'0（辭職）':'$'+r.sal+(r.roll?`<span class="note">（骰 ${r.roll}）</span>`:'')}</td><td>$${r.pa}</td><td>$${r.ab+r.fam}</td><td>$${r.ex}</td><td class="${dcls(r.cf)}">${sgn(r.cf)}</td><td><b>$${p.cash}</b></td></tr>`;}).join('');
+  const last=S.r>=ROUNDS;
+  openModal(`<h2>年度結算 · ${ageOf(S.r)} 歲</h2><p class="sub">收入（薪水＋被動收入＋其他）減掉支出，就是這輪的現金流。被動收入追上支出，就是財務自由。</p>
+    <div class="tablewrap"><table class="res"><thead><tr><th>玩家</th><th>薪水</th><th>被動</th><th>其他</th><th>支出</th><th>現金流</th><th>現金</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${INFL_ROUNDS.includes(S.r)?'<p class="note" style="margin-top:10px">通膨：所有人生活費 +1。薪水不漲的話，生活會越來越緊。</p>':''}
+    ${S.players.some(p=>p.dca)?'<p class="note">開了定期定額的人，已經自動用大盤價買進 1 份基金。</p>':''}
+    <div class="acts"><button class="btn primary" data-m="go">${NET.role==='client'?'知道了，等房主繼續':last?'退休，看最終結算':`進入第 ${S.r+1} 輪（${ageOf(S.r+1)} 歲）`}</button></div>`,()=>{if(NET.role==='client'){closeModal();return;}endRound();});
+}
+function chartSVG(){
+  const W=600,H=220,pad=34,n=ROUNDS;const all=S.players.flatMap(p=>p.hist);const mx=Math.max(20,...all),mn=Math.min(0,...all);
+  const X=i=>pad+i*(W-pad-12)/(n-1),Y=v=>H-24-(v-mn)/(mx-mn)*(H-44);
+  const cols=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'];
+  const grid=[0,0.25,0.5,0.75,1].map(t=>{const v=Math.round(mn+(mx-mn)*t);return `<line x1="${pad}" x2="${W-12}" y1="${Y(v)}" y2="${Y(v)}" stroke="#E5D9C3"/><text x="${pad-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="#6E7068">${v}</text>`;}).join('');
+  const xs=Array.from({length:n},(_,i)=>`<text x="${X(i)}" y="${H-6}" text-anchor="middle" font-size="11" fill="#6E7068">${ageOf(i+1)}</text>`).join('');
+  const lines=S.players.map((p,k)=>`<path d="${p.hist.map((v,i)=>`${i?'L':'M'}${X(i)} ${Y(v)}`).join('')}" fill="none" stroke="${cols[k]}" stroke-width="3" stroke-linejoin="round"/>${p.hist.length?`<circle cx="${X(p.hist.length-1)}" cy="${Y(p.hist.at(-1))}" r="4" fill="${cols[k]}"/>`:''}`).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="每位玩家的淨資產變化">${grid}${xs}${lines}</svg><div class="chips" style="margin-top:4px">${S.players.map((p,k)=>`<span class="chip" style="background:${cols[k]};color:#fff">${esc(p.name)}</span>`).join('')}</div>`;
+}
+function lessons(i){
+  const p=S.players[i],L=[];
+  if(p.st.scam)L.push(`被詐騙或押錯單一股票損失 $${p.st.scam}。`);
+  if(p.st.ccInt)L.push(`付了 $${p.st.ccInt} 的卡債利息。`);
+  if(p.st.ins)L.push(`保險幫忙擋掉 $${p.st.ins} 的損失。`);
+  if(p.st.panic)L.push(`被迫 7 折拋售資產 ${p.st.panic} 次。`);
+  if(p.st.fees)L.push(`證券行手續費共 $${p.st.fees}。`);
+  if(p.firstFree)L.push(`${ageOf(p.firstFree)} 歲達成財務自由。`);
+  if(p.style.length)L.push(`生活風格卡讓每輪支出多了 $${p.style.reduce((a,k)=>a+STYLE[k].exp,0)}。`);
+  return L.length?L.join(' '):'穩穩地走完了人生。';
+}
+function endGame(){
+  S.phase='end';S.cur=null;clearSave();render();
+  const rows=S.players.map((p,i)=>({i,...score(i)})).sort((a,b)=>b.total-a.total||passive(S.players[b.i]).total-passive(S.players[a.i]).total);
+  const w=rows[0];
+  if(SIM)return;
+  openModal(`<h2>62 歲，退休了</h2><p class="sub">自由分＝淨資產每 5 得 1 分＋財務自由 10 分（第一個達成再 +3）＋幸福＋夢想。淨資產低於 30 扣 8 分。</p>
+   <div class="win">${esc(S.players[w.i].name)} 勝出</div>
+   <div class="tablewrap"><table class="res"><thead><tr><th>玩家</th><th>淨資產</th><th>資產分</th><th>自由</th><th>幸福</th><th>夢想</th><th>其他</th><th>自由分</th></tr></thead><tbody>
+   ${rows.map((r,k)=>`<tr><td>${k+1}. ${pnTxt(r.i)}</td><td>${money(r.nw)}</td><td>${r.nwPts}</td><td>${r.free+r.first}</td><td>${r.happy}</td><td>${r.dreamPts}</td><td>${r.retire+r.bk}</td><td><b>${r.total}</b></td></tr>`).join('')}
+   </tbody></table></div>
+   <h3 style="margin-top:18px;font-size:18px;font-weight:900">報表回顧：淨資產變化</h3>${chartSVG()}
+   <h3 style="margin-top:18px;font-size:18px;font-weight:900">每個人學到的一課</h3>
+   <div class="lessons">${rows.map(r=>`<div><b>${pnTxt(r.i)}</b>：夢想 ${r.dreams.map(d=>`${DREAMS[DI[d.id]].n}${d.ok?'（達成）':'（未達成）'}`).join('、')}。${lessons(r.i)}</div>`).join('')}</div>
+   <div class="acts">${LOBBY?`<a class="btn ghost" href="${LOBBY}">← 回大廳</a>`:''}<button class="btn" data-m="setup">更改設定</button><button class="btn primary" data-m="again">再來一局</button></div>`,
+   m=>{if(NET.role){NET.leave();showSetup();return;}if(m==='again'){closeModal();setupGame(S.cfg);}else showSetup();});
+}
+function repayModal(pi){
+  const p=S.players[pi];
+  const opts=[];
+  if(p.cc)opts.push({k:'cc',l:`還卡債 $${Math.min(p.cc,p.cash)}`,d:`欠 $${p.cc}，每輪利息 ${Math.ceil(p.cc/10)*4}，利息最高，最該先還`,amt:Math.min(p.cc,p.cash)});
+  if(p.loan){opts.push({k:'loan',l:'還信貸 $10',d:`欠 $${p.loan}，每 10 每輪利息 2`,amt:Math.min(10,p.loan)});if(p.loan>10)opts.push({k:'loan',l:`還清信貸 $${p.loan}`,d:'',amt:p.loan});}
+  p.props.forEach((x,i)=>{if(x.loan){opts.push({k:'mort',idx:i,l:`還${INV[x.c].n}房貸 $10`,d:`欠 $${x.loan}，每 10 每輪利息 1`,amt:Math.min(10,x.loan)});}});
+  openModal(`<h2>還款</h2><p class="sub">還款不佔時間棋。現金 $${p.cash}。先還利率最高的債。</p>
+   <div class="opts">${opts.map((o,i)=>`<button class="btn opt" data-m="r:${i}" ${o.amt<=0||o.amt>p.cash?'disabled':''}><div class="lft"><b>${o.l}</b>${o.d?`<br><span>${o.d}</span>`:''}</div><span class="go">還款 →</span></button>`).join('')||'<p class="note">沒有負債。</p>'}</div>
+   ${tipHTML('卡債 40%、信貸 20%、房貸 10%。多出來的錢先還最貴的債，就是穩賺的報酬。')}
+   <div class="acts"><button class="btn primary" data-m="done">完成</button></div>`,m=>{
+    if(m==='done'){closeModal();render();return;}
+    const o=opts[+m.slice(2)];if(!o)return;
+    if(NET.role==='client'){NET.send({t:'repay',kind:o.k,amt:o.amt,idx:o.idx});closeModal();return;}
+    repay(pi,o.k,o.amt,o.idx);render();repayModal(pi);});
+}
+
+/* ================= setup ================= */
+function showSetup(){
+  clearTimeout(timer);
+  const sv=loadSave();const n=setupCfg.n;
+  const seats=setupCfg.seats.slice(0,n).map((s,i)=>`<div class="seat">${avatar(i)}<input id="seat${i}" data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>
+    ${s.ai?`<div class="field" style="margin:-4px 0 4px 54px;justify-content:flex-start"><span class="note">AI 個性</span><div class="seg">${Object.keys(PERS).map(k=>`<button data-m="pp:${i}:${k}" class="${(s.pers||AI_PERS[(i+3)%4])===k?'on':''}">${PERS[k]}</button>`).join('')}</div></div>`:''}`).join('');
+  openModal(`<div class="setup-art">${heroArt()}</div><h2>財富自由之路</h2><p class="sub">從 22 歲玩到 62 歲。每輪只有 3 個時間棋，要在加班、進修、投資、買房、創業和生活之間取捨。讓被動收入蓋過支出，同時過得快樂，自由分最高的人贏。</p>
+   <div class="pitch"><div><b>景氣時鐘</b>復甦、繁榮、衰退、蕭條輪流來，研究室可以偷看下一則新聞。</div><div><b>知識與詐騙</b>知識不夠不能碰複雜投資，紅旗越多越可疑。</div><div><b>錢與幸福</b>計分算淨資產、財務自由、幸福和祕密夢想。</div></div>
+   <div class="field"><span>玩家人數</span><div class="seg">${[2,3,4,5].map(k=>`<button data-m="n:${k}" class="${k===n?'on':''}">${k} 人</button>`).join('')}</div></div>
+   <div class="seats">${seats}</div>
+   <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===setupCfg.speed?'on':''}">${k}</button>`).join('')}</div></div>
+   <p class="note">多位人類玩家可以共用同一台裝置輪流操作，換人時會遮住祕密夢想和研究情報。金額單位 $1 約等於現實的 1 萬元。</p>
+   <div class="acts">${LOBBY?`<a class="btn ghost" href="${LOBBY}">← 回大廳</a>`:''}<button class="btn" data-m="rules">先看規則</button>${NET.available()?(lsGet(NET_CLIENT_KEY)?`<button class="btn" data-m="rejoin">回到房間 ${esc(lsGet(NET_CLIENT_KEY).code)}</button>`:'')+'<button class="btn" data-m="join">加入房間</button><button class="btn" data-m="host">線上開房</button>':''}${sv&&sv.phase==='action'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+  (m)=>{
+    readSeats();
+    if(m.startsWith('n:')){setupCfg.n=+m.slice(2);showSetup();}
+    else if(m.startsWith('h:')||m.startsWith('a:')){setupCfg.seats[+m.slice(2)].ai=m[0]==='a';showSetup();}
+    else if(m.startsWith('pp:')){const [,i,k]=m.split(':');setupCfg.seats[+i].pers=k;showSetup();}
+    else if(m.startsWith('sp:')){setupCfg.speed=m.slice(3);SPEED=SPEEDS[setupCfg.speed];showSetup();}
+    else if(m==='rules')showRules();
+    else if(m==='host')NET.hostLobby();
+    else if(m==='join')NET.joinPrompt();
+    else if(m==='rejoin')NET.rejoin();
+    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;const hs=humans();S.viewer=hs.length===1?hs[0].id:null;(S.online?NET.resumeHost():Promise.resolve()).then(()=>{render();proceed();});}
+    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];
+      const cfg=setupCfg.seats.slice(0,setupCfg.n).map((s,i)=>({name:(s.name||'').trim()||(s.ai?AI_NAMES[i%4]:'玩家'+(i+1)),ai:s.ai,pers:s.pers||AI_PERS[(i+3)%4]}));
+      setupGame(cfg);}
+  });
+}
+function readSeats(){document.querySelectorAll('[data-seat]').forEach(inp=>{setupCfg.seats[+inp.dataset.seat].name=inp.value;});}
+
+/* ================= rules ================= */
+function showRules(){
+  $('#rulesModal').innerHTML=`<h2>遊戲規則</h2><div class="rules">
+  <p><b>目標：</b>從 22 歲玩到 62 歲（${ROUNDS} 輪，每輪 5 年）。退休時「自由分」最高的人贏。金額 $1 約等於現實的 1 萬元。</p>
+  <h3>開局</h3><ul><li>每人從 2 張職業卡選 1 張，決定起始現金、薪水、生活費和特殊能力。</li><li>從 3 張夢想卡選 2 張當祕密目標。</li><li>每人知識 1、幸福 3。</li></ul>
+  <h3>每輪四個階段</h3><ol>
+   <li><b>新聞：</b>翻一張新聞卡，景氣時鐘前進 0–2 格（黑天鵝直接跳到蕭條）。依時鐘所在區域調整價格：
+    <div class="tablewrap"><table class="res"><thead><tr><th>區域</th><th>大盤</th><th>成長股</th><th>房市</th><th>黃金</th><th>其他</th></tr></thead><tbody>
+    <tr><td>復甦</td><td>+2</td><td>+3</td><td>+10%</td><td>−1</td><td></td></tr><tr><td>繁榮</td><td>+3</td><td>+6</td><td>+10%</td><td>−1</td><td>加班 +1；業務 +2</td></tr>
+    <tr><td>衰退</td><td>−1</td><td>−2</td><td>0</td><td>+2</td><td>債券可用 $11 賣</td></tr><tr><td>蕭條</td><td>−2</td><td>−5</td><td>−20%</td><td>+2</td><td>每人擲骰，1 就失業一輪</td></tr></tbody></table></div></li>
+   <li><b>行動：</b>上一輪現金流最低的人先開始，輪流放 1 個時間棋到行動格並馬上執行。每人每輪 3 個時間棋；財務自由 +1、辭職再 +1、幸福低於 0 −1、自己經營小生意 −1。有名額的格子滿了就不能放。還款隨時可做，不佔時間棋。</li>
+   <li><b>人生事件：</b>每人抽一張，有保險就只付保險後的金額。</li>
+   <li><b>結算：</b>收入（薪水＋被動收入＋伴侶收入＋自己經營的小生意）減支出（生活費、生活風格、家庭、小孩、利息、保費、經理費）。定期定額自動買 1 份基金。第 3、5、7 輪結束通膨：生活費 +1。</li></ol>
+  <h3>行動格</h3><ul>${SPACES.map(s=>`<li><b>${s.n}</b>（${spCapTxt(s.id)}）：${s.d}${s.need?`。${s.need}`:''}</li>`).join('')}</ul>
+  <h3>資產</h3><ul><li><b>債券</b> $10，配息 1，不會虧。<b>指數基金</b>價格跟大盤，配息 1。<b>成長股</b>波動是大盤兩倍，不配息。<b>REITs</b> 價格 10×(1＋房市%)，配息 1。<b>黃金</b>不配息，景氣差時漲。</li>
+   <li><b>房產</b>收租金，可辦最多 8 成房貸（每 10 每輪利息 1），賣出價＝房價×(1＋房市%)。</li><li><b>小生意</b>開店時擲骰決定每輪收入，擲到「倒」就倒閉但知識 +1。請經理要付經理費，收入才算被動收入；自己顧則下輪少 1 個時間棋。</li></ul>
+  <h3>借款與卡債</h3><ul><li>房貸每 10 收 1、信貸每 10 收 2、卡債每 10 收 4（未滿 10 以 10 計）。有卡債就不能借房貸和信貸。</li>
+   <li>付不出錢時，自己選：7 折拋售資產，或把差額記成卡債。卡債超過 ${BANKRUPT_CC} 就破產重生：資產負債清空、現金 $5、知識 +1、扣 10 分，繼續玩。</li></ul>
+  <h3>財務自由</h3><p>結算時被動收入 ≥ 總支出，就拿到財務自由徽章：之後每輪多 1 個時間棋，也可以選擇辭職再多 1 個（不再領薪水，不能回頭）。被動收入跌回支出以下，徽章就失效。</p>
+  <h3>機會卡與詐騙</h3><p>機會卡有真有假。知識 2 以上可以先查證。印著 2 面以上紅旗（保證獲利、限時搶購、拉人頭、高報酬零風險）的一定是詐騙。</p>
+  <h3>計分</h3><ul><li>淨資產每 $5 得 1 分（小生意以成本一半計，專利終局歸零，老師加退休金 4）。</li><li>終局財務自由 +10，全場第一個達成再 +3。</li><li>每點幸福 1 分。</li><li>達成的夢想卡分數。</li><li>淨資產低於 30 扣 8 分；每次破產扣 10 分。</li></ul>
+  <p class="note">app 版暫不支援玩家之間的交易和借貸。</p>
+  </div><div class="acts"><button class="btn primary" id="closeRules">知道了</button></div>`;
+  $('#rulesOv').hidden=false;$('#closeRules').focus({preventScroll:true});
+}
+function spCapTxt(sp){const m={study:2,realty:2,research:2,opp:2,startup:1};return sp==='broker'?'名額＝人數':m[sp]?`名額 ${m[sp]}`:'不限';}
+$('#rulesOv').addEventListener('click',e=>{if(e.target.id==='closeRules'||e.target.id==='rulesOv')$('#rulesOv').hidden=true;});
+$('#btnRules').addEventListener('click',showRules);
+$('#btnNew').addEventListener('click',()=>{if(NET.role==='client')return;showSetup();});
+
+/* ================= input ================= */
+$('#spaces').addEventListener('click',e=>{
+  const b=e.target.closest('[data-sp]');if(!b||!myTurn())return;
+  const sp=b.dataset.sp;if(!canPlace(S.cur,sp).ok)return;
+  UI.sp=sp;UI.a=initArgs(sp);render();
+  if(innerWidth<=1040){const d=$('#desk');const r=d.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)d.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}
+});
+$('#stmt').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){UI.tab=+b.dataset.tab;renderStmt();}});
+$('#desk').addEventListener('click',e=>{
+  const t=e.target;
+  if(t.closest('#btnAgain')){if(NET.role){NET.leave();showSetup();}else setupGame(S.cfg);return;}
+  if(t.closest('#btnReview')){endGame();return;}
+  if(t.closest('#btnTakeover')){NET.takeover();return;}
+  if(t.closest('#btnRepay')){repayModal(S.cur);return;}
+  if(!myTurn())return;
+  const pi=S.cur,p=S.players[pi],a=UI.a;
+  if(t.closest('#btnCancel')){UI.sp=null;UI.a={};render();return;}
+  if(t.closest('#btnConfirm')){if(!validArgs(pi,UI.sp,a).ok||!canPlace(pi,UI.sp).ok)return;
+    const sp=UI.sp,args=JSON.parse(JSON.stringify(a));
+    if(NET.role==='client'){NET.send({t:'place',sp,a:args});return;}
+    doPlace(pi,sp,args);return;}
+  let q;
+  if(q=t.closest('[data-bd]')){const [k,dv]=q.dataset.bd.split(':');const n=(a.d[k]|0)+(+dv);if(n<-p[k])return;a.d[k]=n;if(!n)delete a.d[k];}
+  else if(q=t.closest('[data-rs]')){const i=+q.dataset.rs;a.mode='buy';a.slot=i;a.loan=p.cc?0:Math.floor(INV[S.row[i]].p*0.8/10)*10;}
+  else if(q=t.closest('[data-rsell]')){a.mode='sell';a.idx=+q.dataset.rsell;}
+  else if(q=t.closest('[data-loan]')){a.loan=Math.max(0,(a.loan|0)+(+q.dataset.loan));}
+  else if(q=t.closest('[data-su]')){a.slot=+q.dataset.su;}
+  else if(q=t.closest('[data-mgr]')){a.mgr=q.dataset.mgr==='1';}
+  else if(q=t.closest('[data-bl]')){a.loan=Math.max(0,(a.loan|0)+(+q.dataset.bl));}
+  else if(q=t.closest('[data-dca]')){a.dca=q.dataset.dca==='1';}
+  else if(q=t.closest('[data-ins]')){const [k,v]=q.dataset.ins.split(':');a.ins[k]=v==='1';}
+  else if(q=t.closest('[data-os]')){a.slot=+q.dataset.os;}
+  else if(q=t.closest('[data-lz]')){const v=q.dataset.lz;if(v.startsWith('style:')){a.kind='style';a.item=v.slice(6);}else{a.kind=v;a.item=null;}}
+  else return;
+  render();
+});
+/* ================= online multiplayer =================
+   Host-authoritative: the host's device runs the game engine and publishes a public snapshot.
+   Remote players push actions; the host validates and applies them.
+   Each remote player's secrets (dreams, research peeks, card checks) are end-to-end encrypted (ECDH P-256 + AES-GCM),
+   so the shared room data never reveals them. Transport: Firebase Realtime Database,
+   or a same-browser BroadcastChannel transport for testing (?net=local). */
+const FIREBASE_CONFIG={"apiKey":"AIzaSyDX3vaUkNRwUVzY_0c_rcjlIz_cjlg_mmk","authDomain":"board-games-2c64d.firebaseapp.com","databaseURL":"https://board-games-2c64d-default-rtdb.asia-southeast1.firebasedatabase.app","projectId":"board-games-2c64d","storageBucket":"board-games-2c64d.firebasestorage.app","messagingSenderId":"1038938536228","appId":"1:1038938536228:web:931536e62f82f37fc91bb1"};
+const NET_HOST_KEY='wealthroad-net-host', NET_CLIENT_KEY='wealthroad-net-client';
+const rid=(n=12)=>Array.from(crypto.getRandomValues(new Uint8Array(n)),b=>'abcdefghijkmnpqrstuvwxyz23456789'[b%32]).join('');
+const b64=u=>btoa(String.fromCharCode(...u));
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const EC={name:'ECDH',namedCurve:'P-256'};
+const Crypto={
+  async gen(){const k=await crypto.subtle.generateKey(EC,true,['deriveKey']);return {priv:await crypto.subtle.exportKey('jwk',k.privateKey),pub:await crypto.subtle.exportKey('jwk',k.publicKey)};},
+  async derive(privJwk,pubJwk){const priv=await crypto.subtle.importKey('jwk',privJwk,EC,false,['deriveKey']);const pub=await crypto.subtle.importKey('jwk',pubJwk,EC,false,[]);
+    return crypto.subtle.deriveKey({name:'ECDH',public:pub},priv,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);},
+  async enc(key,obj){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(obj)));return b64(iv)+'.'+b64(new Uint8Array(ct));},
+  async dec(key,s){const [iv,ct]=s.split('.');const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(iv)},key,unb64(ct));return JSON.parse(new TextDecoder().decode(pt));},
+};
+function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+/* --- transports: set / on(value) / push / onAdd / remove --- */
+function LocalTx(){
+  const bc=new BroadcastChannel('wr-net');const subs=[];
+  const K=p=>'wrnet:'+p;
+  const get=p=>{try{const v=localStorage.getItem(K(p));return v==null?null:JSON.parse(v);}catch(e){return null;}};
+  const fire=(m)=>subs.forEach(s=>{if(s.type==='v'&&s.path===m.path&&m.op==='set')s.cb(m.val);if(s.type==='a'&&m.op==='add'&&s.path===m.path&&!s.seen.has(m.key)){s.seen.add(m.key);s.cb(m.key,m.val);}});
+  bc.onmessage=e=>fire(e.data);
+  const send=m=>{fire(m);bc.postMessage(m);};
+  return {
+    set(p,v){localStorage.setItem(K(p),JSON.stringify(v));send({op:'set',path:p,val:v});},
+    on(p,cb){const s={type:'v',path:p,cb};subs.push(s);const v=get(p);if(v!=null)setTimeout(()=>cb(v));return ()=>subs.splice(subs.indexOf(s),1);},
+    push(p,v){const key=Date.now().toString(36)+rid(4);const list=get(p+'/__list')||{};list[key]=v;localStorage.setItem(K(p+'/__list'),JSON.stringify(list));send({op:'add',path:p,key,val:v});},
+    onAdd(p,cb){const s={type:'a',path:p,cb,seen:new Set()};subs.push(s);const list=get(p+'/__list')||{};setTimeout(()=>Object.keys(list).forEach(k=>{if(!s.seen.has(k)){s.seen.add(k);cb(k,list[k]);}}));return ()=>subs.splice(subs.indexOf(s),1);},
+    remove(p){const i=p.lastIndexOf('/');const base=p.slice(0,i),key=p.slice(i+1);const list=get(base+'/__list');if(list&&list[key]!==undefined){delete list[key];localStorage.setItem(K(base+'/__list'),JSON.stringify(list));}else localStorage.removeItem(K(p));},
+  };
+}
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('load '+src));document.head.appendChild(s);});}
+async function FirebaseTx(){
+  if(!window.firebase){
+    const bases=['https://www.gstatic.com/firebasejs/10.12.2/','https://cdn.jsdelivr.net/npm/firebase@10.12.2/'];
+    let lastErr;
+    for(const base of bases){try{await loadScript(base+'firebase-app-compat.js');await loadScript(base+'firebase-database-compat.js');lastErr=null;break;}catch(e){lastErr=e;}}
+    if(lastErr)throw new Error('無法載入連線元件');
+  }
+  if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+  const db=firebase.database();
+  return {
+    set(p,v){return db.ref(p).set(v);},
+    on(p,cb){const r=db.ref(p);const f=s=>{const v=s.val();if(v!=null)cb(v);};r.on('value',f);return ()=>r.off('value',f);},
+    push(p,v){return db.ref(p).push(v);},
+    onAdd(p,cb){const r=db.ref(p);const f=s=>cb(s.key,s.val());r.on('child_added',f);return ()=>r.off('child_added',f);},
+    remove(p){return db.ref(p).remove();},
+  };
+}
+
+const GAME_ID='wealth-road';
+const NET={
+  role:null, code:null, seat:null, pid:null, tx:null, offs:[], ver:0, keys:{}, secret:null, mkey:null, mopen:false, joins:[], hostKP:null, lastPub:null, nseats:4,
+  pending:null, pendingPick:null, askId:0, lastSec:{}, curT:{}, newsSeen:0,
+  available(){return !!LOBBY&&typeof crypto!=='undefined'&&!!crypto.subtle&&(!!FIREBASE_CONFIG||/[?&]net=local/.test(location.search));},
+  async ensureTx(){if(this.tx)return this.tx;this.tx=/[?&]net=local/.test(location.search)?LocalTx():await FirebaseTx();return this.tx;},
+  off(){this.offs.forEach(f=>{try{f();}catch(e){}});this.offs=[];},
+  leave(){
+    if(this.role==='host'&&this.tx&&this.code){try{this.tx.set(`rooms/${this.code}/meta`,JSON.stringify({status:'closed',game:GAME_ID}));}catch(e){}lsSet(NET_HOST_KEY,null);}
+    if(this.role==='client')lsSet(NET_CLIENT_KEY,null);
+    this.off();Object.assign(this,{role:null,code:null,seat:null,pid:null,keys:{},secret:null,mkey:null,mopen:false,joins:[],lastPub:null,pending:null,pendingPick:null,lastSec:{},curT:{},newsSeen:0});
+  },
+  fail(err){console.error(err);openModal(`<h2>連線失敗</h2><p class="sub">${esc(err&&err.message||err)}。請確認網路後再試一次。</p><div class="acts"><button class="btn primary" data-m="ok">回到設定</button></div>`,()=>{this.leave();showSetup();});},
+
+  /* ---------- host ---------- */
+  async hostLobby(){
+    try{await this.ensureTx();}catch(e){return this.fail(e);}
+    readSeats();this.leave();
+    this.role='lobby';this.code=String(1000+Math.floor(Math.random()*9000));this.joins=[];this.nseats=Math.max(2,setupCfg.n);
+    this.hostKP=await Crypto.gen();
+    this.hostName=(setupCfg.seats[0].name||'').trim();if(!this.hostName||this.hostName==='你')this.hostName='房主';
+    this.writeMeta('lobby');
+    this.offs.push(this.tx.onAdd(`rooms/${this.code}/joins`,(k,v)=>{
+      let j;try{j=JSON.parse(v);}catch(e){return;}
+      if(this.role!=='lobby'||!j||!j.pid||this.joins.some(x=>x.pid===j.pid))return;
+      if(this.joins.length>=4)return;
+      j.name=String(j.name||'玩家').slice(0,10);this.joins.push(j);
+      if(this.nseats<this.joins.length+1)this.nseats=this.joins.length+1;
+      this.writeMeta('lobby');this.lobbyModal();
+    }));
+    this.lobbyModal();
+  },
+  writeMeta(status){this.tx.set(`rooms/${this.code}/meta`,JSON.stringify({status,game:GAME_ID,host:this.hostName,hostPub:this.hostKP&&this.hostKP.pub,players:[this.hostName,...this.joins.map(j=>j.name)],t:Date.now()}));},
+  lobbyModal(){
+    const n=this.nseats,min=this.joins.length+1;
+    const rows=[`<div class="seat">${avatar(0)}<b>${esc(this.hostName)}（你，房主）</b><span class="tag">已就位</span></div>`]
+      .concat(this.joins.map((j,i)=>`<div class="seat">${avatar(i+1)}<b>${esc(j.name)}</b><span class="tag">已加入</span></div>`));
+    for(let i=min;i<n;i++)rows.push(`<div class="seat">${avatar(i)}<b style="color:var(--muted)">${AI_NAMES[(i-1)%4]}（AI 補位）</b><span class="tag">AI</span></div>`);
+    openModal(`<h2>線上房間已開好</h2><p class="sub">請朋友打開桌遊大廳 →《財富自由之路》→「加入房間」，輸入下面的房號。每個人的夢想和研究情報只會出現在自己的手機上。</p>
+      <div class="roomcode num" aria-label="房號">${this.code.split('').map(d=>`<span>${d}</span>`).join('')}</div>
+      <div class="field"><span>總人數（空位由 AI 補上）</span><div class="seg">${[2,3,4,5].map(k=>`<button data-m="ns:${k}" class="${k===n?'on':''}" ${k<min?'disabled':''}>${k} 人</button>`).join('')}</div></div>
+      <div class="seats">${rows.join('')}</div>
+      <p class="note">${this.joins.length?`已有 ${this.joins.length} 位朋友加入。`:'等待朋友加入中……也可以直接開始，跟 AI 玩。'}</p>
+      <div class="acts"><button class="btn" data-m="cancel">取消房間</button><button class="btn primary" data-m="go">開始遊戲（${n} 人）</button></div>`,
+    m=>{if(m.startsWith('ns:')){this.nseats=+m.slice(3);this.lobbyModal();}else if(m==='cancel'){this.leave();showSetup();}else if(m==='go')this.startHosting();});
+  },
+  async startHosting(){
+    closeModal();SPEED=SPEEDS[setupCfg.speed];
+    const cfg=[{name:this.hostName,ai:false}];
+    this.joins.forEach(j=>cfg.push({name:j.name,ai:false,remote:true,pid:j.pid}));
+    for(let i=cfg.length;i<this.nseats;i++)cfg.push({name:AI_NAMES[(i-1)%4],ai:true,pers:AI_PERS[(i-1)%4]});
+    this.keys={};
+    for(let i=1;i<=this.joins.length;i++){try{this.keys[i]=await Crypto.derive(this.hostKP.priv,this.joins[i-1].pub);}catch(e){console.error(e);}}
+    this.role='host';this.writeMeta('playing');
+    lsSet(NET_HOST_KEY,{code:this.code,hostKP:this.hostKP,joins:this.joins,hostName:this.hostName});
+    this.listenActions();
+    setupGame(cfg);
+    S.online={code:this.code};save();
+  },
+  async resumeHost(){
+    const h=lsGet(NET_HOST_KEY);if(!h||!S.online||h.code!==S.online.code)return false;
+    try{await this.ensureTx();}catch(e){this.fail(e);return false;}
+    Object.assign(this,{role:'host',code:h.code,hostKP:h.hostKP,joins:h.joins,hostName:h.hostName,lastSec:{}});
+    this.keys={};
+    for(const [i,p] of S.players.entries()){if(p.remote){const j=h.joins.find(x=>x.pid===p.pid);if(j)try{this.keys[i]=await Crypto.derive(h.hostKP.priv,j.pub);}catch(e){}}}
+    this.writeMeta('playing');this.listenActions();return true;
+  },
+  listenActions(){
+    this.offs.push(this.tx.onAdd(`rooms/${this.code}/actions`,(k,v)=>{this.tx.remove(`rooms/${this.code}/actions/${k}`);let a;try{a=JSON.parse(v);}catch(e){return;}this.handleAction(a);}));
+  },
+  ask(pi,spec,cb){
+    const id=++this.askId;this.pending={id,seat:pi,cb,spec};
+    if(spec.truth!=null)this.curT[pi]={id,t:spec.truth};
+    S.await={type:'choice',seat:pi,id,title:spec.title,body:spec.body,flags:spec.flags||[],unknown:!!spec.unknown,opts:spec.opts,tip:spec.tip||'',opp:!!spec.opp};
+    render();
+  },
+  askPick(pi,next){this.pendingPick={seat:pi,next};S.await={type:'pick',seat:pi};render();},
+  resolveChoice(v){const P=this.pending;if(!P)return;this.pending=null;delete this.curT[P.seat];S.await=null;P.cb(v);if(!SIM)render();},
+  handleAction(a){
+    if(this.role!=='host'||!S||!a)return;
+    const seat=S.players.findIndex(p=>p.remote&&p.pid===a.pid);if(seat<0)return;
+    const w=S.await;
+    if(a.t==='repay'&&S.phase==='action'){if(repay(seat,a.kind,a.amt,a.idx))render();return;}
+    if(!w||w.seat!==seat)return;
+    if(w.type==='act'&&a.t==='place'&&S.phase==='action'&&S.cur===seat){
+      const sp=String(a.sp);if(SPI[sp]==null||!canPlace(seat,sp).ok||!validArgs(seat,sp,a.a).ok)return;
+      S.await=null;doPlace(seat,sp,a.a||{});
+    }else if(w.type==='choice'&&a.t==='choice'&&this.pending&&+a.id===this.pending.id){
+      const v=+a.v,o=this.pending.spec.opts[v];if(!o||o.dis)return;this.resolveChoice(v);
+    }else if(w.type==='pick'&&a.t==='pick'&&this.pendingPick&&this.pendingPick.seat===seat){
+      const P=this.pendingPick;this.pendingPick=null;S.await=null;applyPick(seat,String(a.job),Array.isArray(a.dreams)?a.dreams.map(String):[]);P.next();
+    }
+  },
+  takeover(){ // host converts a stalled remote player to AI
+    if(this.role!=='host'||!S.await)return;const w=S.await,p=S.players[w.seat];if(!p.remote)return;
+    p.remote=false;p.ai=true;p.pers=p.pers||'bal';p.name=p.name+'（AI 代打）';log(`${pn(w.seat)} 斷線，改由 AI 代打`,'k');
+    if(w.type==='act'){S.await=null;proceed();}
+    else if(w.type==='choice'&&this.pending){const sp=this.pending.spec;let v=0;try{v=sp.ai?sp.ai():0;}catch(e){}this.resolveChoice(v);}
+    else if(w.type==='pick'&&this.pendingPick){const P=this.pendingPick;this.pendingPick=null;S.await=null;aiPick(w.seat);P.next();}
+  },
+  _pubQueued:false,
+  publish(){
+    if(this.role!=='host'||!S||this._pubQueued)return;
+    this._pubQueued=true;
+    setTimeout(()=>{this._pubQueued=false;if(this.role!=='host'||!S)return;
+      const pub=JSON.parse(JSON.stringify(S));delete pub.cfg;delete pub.viewer;delete pub.inv;delete pub.oppDeck;delete pub.evDeck;
+      if(pub.phase!=='end'){pub.news=pub.news.map((x,i)=>i<pub.np?x:null);pub.opp=pub.opp.map(o=>o&&{c:o.c,t:null});
+        pub.players.forEach(p=>{p.peek=null;p.dreams=p.dreams.map(()=>null);p.dreamOpts=[];if(p.policy)p.policy.t=null;});}
+      pub.v=++this.ver;
+      this.tx.set(`rooms/${this.code}/state`,JSON.stringify(pub));
+      this.pushSecrets();
+    },0);
+  },
+  async pushSecrets(){
+    for(const [i,p] of S.players.entries()){
+      if(!p.remote||!this.keys[i])continue;
+      const sec={peek:p.peek,dreams:p.dreams,dreamOpts:p.dreamOpts,oppT:p.know>=2?S.opp.map(o=>o?o.t:null):null,curT:this.curT[i]||null,policyT:p.policy?p.policy.t:null};
+      const js=JSON.stringify(sec);if(this.lastSec[i]===js)continue;this.lastSec[i]=js;
+      try{const ct=await Crypto.enc(this.keys[i],sec);this.tx.set(`rooms/${this.code}/sec/${p.pid}`,ct);}catch(e){console.error(e);}
+    }
+  },
+
+  /* ---------- client ---------- */
+  joinPrompt(){
+    readSeats();
+    const nm=(setupCfg.seats[0].name||'').trim();
+    openModal(`<h2>加入房間</h2><p class="sub">輸入房主畫面上的 4 位數房號。</p>
+      <div class="field"><span>房號</span><input id="joinCode" class="codein num" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off" placeholder="0000"></div>
+      <div class="field"><span>你的名字</span><input id="joinName" class="codein" maxlength="10" value="${esc(nm==='你'?'':nm)}" placeholder="例如：小明"></div>
+      <p class="note" id="joinErr"></p>
+      <div class="acts"><button class="btn" data-m="back">返回</button><button class="btn primary" data-m="join">加入</button></div>`,
+    m=>{if(m==='back')return showSetup();const code=($('#joinCode').value||'').trim(),name=($('#joinName').value||'').trim()||'玩家';
+      if(!/^\d{4}$/.test(code)){$('#joinErr').textContent='房號是 4 位數字。';return;}
+      this.joinRoom(code,name);});
+    setTimeout(()=>{const i=$('#joinCode');i&&i.focus();});
+  },
+  async joinRoom(code,name){
+    try{await this.ensureTx();}catch(e){return this.fail(e);}
+    this.leave();
+    const kp=await Crypto.gen();
+    const info={code,pid:rid(),name,kp};
+    lsSet(NET_CLIENT_KEY,info);
+    this.tx.push(`rooms/${code}/joins`,JSON.stringify({pid:info.pid,name,pub:kp.pub}));
+    this.attachClient(info);
+  },
+  async rejoin(){const info=lsGet(NET_CLIENT_KEY);if(!info)return showSetup();try{await this.ensureTx();}catch(e){return this.fail(e);}this.attachClient(info);},
+  attachClient(info){
+    this.off();
+    Object.assign(this,{role:'client',code:info.code,pid:info.pid,seat:null,secret:null,mkey:null,mopen:false,lastPub:null,info,newsSeen:0});
+    let meta=null,key=null;
+    this.waitModal(null);
+    this.offs.push(this.tx.on(`rooms/${info.code}/meta`,async v=>{
+      try{meta=JSON.parse(v);}catch(e){return;}
+      if(meta.game!==GAME_ID){this.leave();openModal(`<h2>房號不對</h2><p class="sub">這個房號是別款遊戲的房間，請確認房主開的是《財富自由之路》。</p><div class="acts"><button class="btn primary" data-m="ok">回到設定</button></div>`,()=>showSetup());return;}
+      if(meta.status==='closed'){this.leave();openModal(`<h2>房間已關閉</h2><p class="sub">房主結束了這個房間。</p><div class="acts"><button class="btn primary" data-m="ok">回到設定</button></div>`,()=>showSetup());return;}
+      if(!key&&meta.hostPub){try{key=await Crypto.derive(info.kp.priv,meta.hostPub);this.aes=key;this.trySecret();}catch(e){console.error(e);}}
+      if(this.seat==null)this.waitModal(meta);
+    }));
+    this.offs.push(this.tx.on(`rooms/${info.code}/sec/${info.pid}`,v=>{this.secretRaw=v;this.trySecret();}));
+    this.offs.push(this.tx.on(`rooms/${info.code}/state`,v=>{let pub;try{pub=JSON.parse(v);}catch(e){return;}
+      if(this.lastPub&&pub.v<=this.lastPub.v&&pub.v>2)return;
+      const seat=pub.players.findIndex(p=>p.pid===info.pid);
+      if(seat<0){if(pub.phase!=='idle'){this.leave();openModal(`<h2>來不及加入</h2><p class="sub">這個房間的遊戲已經開始，沒有你的座位。</p><div class="acts"><button class="btn primary" data-m="ok">回到設定</button></div>`,()=>showSetup());}return;}
+      const first=this.seat==null;this.seat=seat;this.lastPub=pub;if(first&&!$('#overlay').hidden)closeModal();this.sync();}));
+  },
+  async trySecret(){if(!this.aes||!this.secretRaw)return;try{this.secret=await Crypto.dec(this.aes,this.secretRaw);if(this.lastPub)this.sync();}catch(e){console.error(e);}},
+  waitModal(meta){
+    if(this.seat!=null)return;
+    const list=meta&&meta.players?meta.players.map((n,i)=>`<div class="seat">${avatar(i)}<b>${esc(n)}</b><span class="tag">${i===0?'房主':'已加入'}</span></div>`).join(''):'<p class="note">連線中……</p>';
+    openModal(`<h2>已加入房間 ${esc(this.code)}</h2><p class="sub">等房主按下開始。你的夢想和研究情報只會出現在這支手機上。</p><div class="seats">${list}</div>
+      <div class="acts"><button class="btn" data-m="leave">離開房間</button></div>`,()=>{this.leave();showSetup();});
+  },
+  sync(){
+    const pub=JSON.parse(JSON.stringify(this.lastPub));const prev=S&&S.online&&S.online.client?S:null;
+    S=pub;S.online={code:this.code,client:true};S.viewer=this.seat;S.inv=[];S.oppDeck=[];S.evDeck=[];
+    const me=S.players[this.seat],sec=this.secret;
+    if(sec&&S.phase!=='end'){me.peek=sec.peek;me.dreams=sec.dreams||[];me.dreamOpts=sec.dreamOpts||[];if(sec.oppT)S.opp.forEach((o,i)=>{if(o)o.t=sec.oppT[i];});if(me.policy)me.policy.t=sec.policyT;}
+    if(!prev||prev.phase!==S.phase||prev.r!==S.r||prev.cur!==S.cur||(prev.players[this.seat]&&prev.players[this.seat].left!==me.left)){UI.sp=null;UI.a={};UI.pending=false;}
+    if(UI.pending&&!(S.await&&S.await.type==='act'&&S.await.seat===this.seat))UI.pending=false;
+    const w=S.await;
+    let key=null;
+    if(w&&w.seat===this.seat&&w.type==='choice')key='c'+w.id;
+    else if(w&&w.seat===this.seat&&w.type==='pick')key=(sec&&sec.dreamOpts&&sec.dreamOpts.length)?'p':null;
+    else if(S.phase==='event'&&S.evDone)key='e'+S.r;
+    else if(S.phase==='settle'&&S.setDone)key='s'+S.r;
+    else if(S.phase==='end')key='end';
+    else if(S.phase==='action'&&this.newsSeen!==S.r)key='n'+S.r;
+    if(key!==this.mkey){if(this.mopen&&!$('#overlay').hidden)closeModal();this.mkey=key;this.mopen=false;}
+    render();
+    if(key&&!this.mopen){this.mopen=true;
+      if(key[0]==='c'){const spec={...w,truth:sec&&sec.curT&&sec.curT.id===w.id?sec.curT.t:null};choiceModal(this.seat,spec,v=>{NET.send({t:'choice',id:w.id,v});});}
+      else if(key==='p'){UI.pj=null;UI.pd=null;pickModal(this.seat,()=>{});}
+      else if(key[0]==='e')eventsModal();
+      else if(key[0]==='s')settleModal();
+      else if(key==='end')endGame();
+      else if(key[0]==='n'){this.newsSeen=S.r;roundModal();}
+    }
+  },
+  resync(){if(this.role==='client'&&this.lastPub){this.mkey=null;this.mopen=false;this.sync();}},
+  send(a){if(this.role!=='client')return;if(a.t==='place'){UI.pending=true;render();}this.tx.push(`rooms/${this.code}/actions`,JSON.stringify({...a,pid:this.pid,ts:Date.now()}));},
+};
+
+/* ================= boot ================= */
+window.__wr={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;},
+  sim(n,opt){ // headless AI-only games for balance testing
+    const saved=S,savedSim=SIM;SIM=true;const out=[];
+    try{for(let g=0;g<n;g++){
+      const np=(opt&&opt.np)||4;const pers=(opt&&opt.pers)||AI_PERS;
+      setupGame(Array.from({length:np},(_,i)=>({name:'AI'+i,ai:true,pers:pers[i%pers.length]})));
+      const sc=S.players.map((p,i)=>({i,pers:p.pers,job:p.job,...score(i),pa:passive(p).total,ex:expenses(p).total,firstFree:p.firstFree,bk:p.bk,happyV:p.happy,cc:p.cc,props:p.props.length,biz:p.biz.length,fund:p.fund,bond:p.bond,gro:p.gro,lvl:p.lvl,know:p.know,quit:p.quit,st:p.st}));
+      out.push({sc,winner:sc.slice().sort((a,b)=>b.total-a.total)[0].i,mkt:S.mkt,gro:S.gro,house:S.house,pos:S.pos});
+    }}finally{SIM=savedSim;S=saved;}
+    return out;}};
+(function boot(){
+  S={players:[newPlayer(0,{name:'—',ai:true},['eng','nurse'],[])],r:0,pos:0,mkt:10,gro:10,house:0,gold:10,infl:0,news:[],np:0,inv:[],row:[2,5,0,8,10],oppDeck:[],opp:[{c:5,t:null},{c:0,t:null}],
+     log:[],firstFree:null,phase:'idle',viewer:null,dl:{mkt:0,gro:0,house:0,gold:0},curNews:null,occ:{},order:[0],ti:0,cur:null,evRes:[],setRes:[],evDeck:[]};
+  render();showSetup();
+})();
+</script>
+<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("../../sw.js",{scope:"../../"}).catch(()=>{}));</script>
+</body>
+</html>
