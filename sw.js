@@ -1,6 +1,6 @@
 // 桌遊大廳 service worker：先用快取、背景更新，讓遊戲離線也能玩。
 // 新增遊戲時把檔案加進 PRECACHE，並把 VERSION 加一。
-const VERSION = 'v8';
+const VERSION = 'v9';
 const CACHE = 'board-games-' + VERSION;
 const FONT_CACHE = 'board-games-fonts';
 const PRECACHE = [
@@ -18,7 +18,9 @@ const PRECACHE = [
   './games/unsigned/',
   './games/unsigned/index.html',
   './games/seven-days/',
-  './games/seven-days/index.html'
+  './games/seven-days/index.html',
+  './games/wealth-road/',
+  './games/wealth-road/index.html'
 ];
 
 self.addEventListener('install', e => {
