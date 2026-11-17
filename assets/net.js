@@ -73,7 +73,14 @@ const localHumans=()=>S.players.filter(p=>!p.ai&&!p.remote);
 
 /* ---------- presence banner (floating, independent of each game's layout) ---------- */
 (function(){
-  const css=`.netbanner{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;width:min(520px,calc(100vw - 24px));display:flex;flex-direction:column;gap:6px;pointer-events:none}
+  const css=`.roomcode{display:flex;gap:10px;justify-content:center;margin:6px 0 4px}
+.roomcode span{width:54px;height:66px;display:grid;place-items:center;font-size:36px;font-weight:800;background:var(--green,#1E5641);color:var(--green-ink,#FFF8EC);border-radius:14px;box-shadow:0 4px 0 #123A2B}
+.codein{font:inherit;font-weight:800;font-size:20px;padding:9px 14px;border:1.5px solid var(--line2,#d9c9ad);border-radius:12px;background:var(--paper,#fff);color:var(--ink,#222);width:min(220px,100%)}
+.roombar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:700;opacity:.9;border-top:1px solid rgba(255,255,255,.2);padding-top:12px;margin-top:12px}
+.roombar b{font-size:20px;letter-spacing:.12em;background:rgba(255,255,255,.14);border-radius:8px;padding:0 10px}
+.roombar .linkbtn{margin-left:auto;background:none;border:0;color:inherit;font:inherit;font-weight:800;text-decoration:underline;cursor:pointer;padding:4px}
+.netsent{font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px;margin-top:10px}
+.netbanner{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;width:min(520px,calc(100vw - 24px));display:flex;flex-direction:column;gap:6px;pointer-events:none}
 .netbanner>div{pointer-events:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#2B2622;color:#FFF8EC;border-radius:14px;padding:9px 14px;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);line-height:1.4}
 .netbanner>div.ok{background:#1F5C45}
 .netbanner .t{flex:1;min-width:0}
@@ -398,6 +405,10 @@ const NET={
     this.paint();
   },
   resync(){if(this.role==='client'&&this.lastPub){this.mkey=null;this.mopen=false;this.sync();}},
+  /* small helpers for games: who is this seat from my point of view */
+  isMe(i){return this.client?i===this.seat:!(S.players[i]&&(S.players[i].ai||S.players[i].remote));},
+  waitTitle(p){return p.ai?'對手出招':(p.remote||this.client)?'等待對手':'換人操作';},
+  waitSub(p,aiTxt){return p.ai?aiTxt:(p.remote||this.client)?'正在自己的手機上思考':'等待交接裝置';},
   _n:0,
   async send(a){
     if(this.role!=='client')return;
