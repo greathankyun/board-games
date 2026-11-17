@@ -119,6 +119,56 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "中元普渡",
+      "url": "games/pudu/",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "台北租屋大逃殺",
+      "url": "games/taipei-rent/",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "魔法學院期末考",
+      "url": "games/magic-exam/",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "夾娃娃大師",
+      "url": "games/claw-master/",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "時空當鋪",
+      "url": "games/time-pawn/",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

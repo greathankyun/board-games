@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>魔法學院期末考</title>
+<meta name="description" content="原創擲骰填表遊戲：每題擲骰，所有人同時在考卷上勾咒語格，湊成排、星座、航線或變形陣就能施法加分。四個科目、單人模式、可列印考卷。">
+<meta name="theme-color" content="#1E5641">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="桌遊大廳">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Outfit:wght@600;700;800&display=swap">
+<style>
+:root{
+  --paper:#F5EEE1; --paper2:#EFE6D4; --card:#FFFBF4; --ink:#1F2B27; --muted:#6E7068; --line:#E5D9C3; --line2:#D9CBB1;
+  --green:#1E5641; --green2:#28704F; --green-ink:#F3F7EF; --yellow:#F5C443; --yellow-ink:#2A2310;
+  --orange:#E9643B; --pink:#F7DDD3; --pink2:#EFC6B8; --up:#2C8F4E; --up-bg:#D5EEDA; --down:#C8432F; --down-bg:#F7DAD3; --flat-bg:#ECE5D7;
+  --red:#D7542B; --red-bg:#F8DCCF; --blue:#2E7DC0; --blue-bg:#D6E7F5; --violet:#7A5AD3; --violet-bg:#E4DCF7; --gold:#D19A17; --gold-bg:#F6E7BE;
+  --p0:#E58FA0; --p1:#8B67D6; --p2:#4F9E61; --p3:#E0922F; --p4:#3E9CC4; --p5:#C8573E; --p6:#6C7A3A; --p7:#5C6BC0;
+  --scrim:rgba(40,32,20,.45);
+  --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+  --f-num:'Outfit','Noto Sans TC',system-ui,sans-serif;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;font-weight:500}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(rgba(120,90,40,.07) 1px,transparent 1px);background-size:5px 5px}
+.wrap{position:relative;z-index:1;max-width:1600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 28px}
+h1,h2,h3,h4{text-wrap:balance;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+svg{display:block}
+
+/* header */
+.top{display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap;padding-block:6px 12px;border-bottom:1.5px solid var(--line2)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand svg{width:44px;height:44px;flex:none}
+.brand h1{font-size:clamp(26px,3.4vw,38px);font-weight:900;letter-spacing:.06em;line-height:1}
+.brand small{font-family:var(--f-num);font-size:12px;letter-spacing:.42em;color:var(--ink);font-weight:600;margin-left:6px}
+.homelink{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:900;color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);border-radius:12px;padding:7px 12px;background:var(--card)}.homelink svg{width:18px;height:18px}
+.vsep{width:1.5px;align-self:stretch;background:var(--line2);margin-block:6px}
+.steps{display:flex;align-items:center;flex:1;min-width:0;justify-content:center}
+.step{font-family:var(--f-num);font-weight:700;font-size:15px;padding:5px 14px;border-radius:999px;border:1.5px solid var(--line2);background:var(--card);color:var(--ink);white-space:nowrap}
+.step.done{color:var(--muted);background:var(--paper2)}
+.step.now{background:var(--green);border-color:var(--green);color:var(--green-ink);font-size:17px;padding:6px 18px}
+.link{flex:1;min-width:8px;max-width:56px;height:2px;background:repeating-linear-gradient(90deg,var(--line2) 0 4px,transparent 4px 8px)}
+.link.done{background:var(--green)}
+.tops{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:12px;cursor:pointer;font-weight:700;line-height:1.2;text-decoration:none}
+.btn svg{width:18px;height:18px}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.dark,.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.ghost{background:transparent}
+
+/* layout */
+.board{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,430px);grid-template-areas:"hero desk" "main desk";grid-template-rows:auto 1fr;gap:14px 18px;margin-top:12px;align-items:start}
+.hero{grid-area:hero;position:relative;min-height:140px;display:flex;align-items:center;overflow:hidden;border-radius:18px}
+.hero-txt{position:relative;z-index:2;padding:8px 0 10px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-family:var(--f-num);font-weight:600;letter-spacing:.32em;font-size:13px}
+.eyebrow::after{content:"";width:80px;height:1.5px;background:var(--ink)}
+.hero h2{font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:.03em;line-height:1.15;margin-top:6px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.swoosh{display:block;width:150px;height:14px;margin-top:-2px}
+.qbadge{position:relative;font-size:17px;font-weight:900;border:2px solid var(--ink);border-radius:999px;padding:3px 14px;background:var(--card);letter-spacing:.04em}
+.hero-art{position:absolute;right:0;top:0;bottom:0;width:min(62%,640px);z-index:1;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 28%);mask-image:linear-gradient(90deg,transparent 0%,#000 28%)}
+.hero-art svg{width:100%;height:100%}
+main{grid-area:main;min-width:0}
+.sect{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:900;padding-bottom:10px;border-bottom:1.5px solid var(--line2);margin:0 0 12px}
+.sect svg{width:26px;height:26px;color:var(--orange)}
+.sect{flex-wrap:wrap}
+.sect small{font-size:13px;color:var(--muted);font-weight:700;margin-left:auto}
+@media (max-width:640px){.sect small{flex-basis:100%;margin-left:0}}
+
+/* desk */
+.desk{grid-area:desk;position:sticky;top:max(10px,env(safe-area-inset-top,0px));background:var(--green);color:var(--green-ink);border-radius:26px;padding:24px 24px 22px;overflow:hidden;display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 40px rgba(20,60,45,.25)}
+.desk .leaf{position:absolute;right:-30px;top:-20px;width:190px;height:190px;opacity:.9;pointer-events:none}
+.desk>*{position:relative}
+.dhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dhead h2{font-size:clamp(26px,2.6vw,36px);font-weight:900;letter-spacing:.04em;line-height:1.1}
+.pill{background:var(--orange);color:#fff;font-weight:900;border-radius:999px;padding:5px 14px;font-size:15px;white-space:nowrap}
+.pill.soft{background:rgba(255,255,255,.16)}
+.dsub{font-weight:700;font-size:15px;margin-top:-6px;opacity:.9}
+.dlab{font-size:14px;opacity:.9;font-weight:900;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.dlab small{font-weight:700;opacity:.8;font-size:12px}
+.dnote{font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px}
+.dnote.warn{background:rgba(233,100,59,.28)}
+.confirm{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:none;border-radius:16px;background:var(--yellow);color:var(--yellow-ink);font-size:22px;font-weight:900;padding:13px;cursor:pointer;box-shadow:0 4px 0 #C99A1E;letter-spacing:.06em}
+.confirm svg{width:24px;height:24px}
+.confirm:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #C99A1E}
+.confirm:disabled{opacity:.5;cursor:not-allowed}
+.passbtn{width:100%;border:2px solid rgba(255,255,255,.85);background:transparent;color:var(--green-ink);border-radius:14px;font-weight:900;font-size:17px;padding:10px;cursor:pointer}
+.passbtn:hover{background:rgba(255,255,255,.08)}
+.empty{border:2px dashed rgba(255,255,255,.35);border-radius:16px;padding:20px 16px;text-align:center;font-weight:700;opacity:.92}
+.empty b{display:block;font-size:19px;margin-bottom:4px}
+.think{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.1);border-radius:16px;padding:14px}
+.think .av{width:56px;height:56px;flex:none}
+.think b{font-size:19px}
+.dots::after{content:"…";display:inline-block;animation:blink 1.1s steps(3) infinite}
+@keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+.chooser{display:flex;flex-wrap:wrap;gap:6px}
+.chooser button{border:2px solid rgba(255,255,255,.55);background:transparent;color:var(--green-ink);border-radius:12px;padding:7px 12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:40px}
+.chooser button .av{width:24px;height:24px}
+.chooser button.on{background:var(--card);color:var(--ink);border-color:var(--card)}
+.chooser button:disabled{opacity:.35;cursor:not-allowed}
+.chooser button.red.on{background:var(--red);border-color:var(--red);color:#fff}
+.chooser button.blue.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chooser.big button{flex:1;justify-content:center;font-size:16px}
+.opt2{display:flex;flex-direction:column;gap:6px}
+.opt2 button{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;border:2px solid rgba(255,255,255,.4);background:transparent;color:var(--green-ink);border-radius:12px;padding:9px 12px;cursor:pointer}
+.opt2 button b{font-weight:900;font-size:15px}
+.opt2 button span{font-size:12px;opacity:.85}
+.opt2 button.on{background:var(--card);color:var(--ink);border-color:var(--card)}
+.opt2 button.on span{opacity:1;color:var(--muted)}
+.opt2 button:disabled{opacity:.35;cursor:not-allowed}
+.dsec{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+
+/* private note card */
+.intel{position:relative;background:var(--pink);color:var(--ink);border-radius:14px;padding:14px 16px 12px;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.intel::after{content:"";position:absolute;right:0;top:0;width:28px;height:28px;background:linear-gradient(225deg,var(--green) 50%,var(--pink2) 50%);border-bottom-left-radius:8px}
+.intel .ilab{display:flex;align-items:center;gap:8px;font-weight:900;color:#B24A35;font-size:16px;padding-bottom:8px;border-bottom:1.5px solid var(--pink2)}
+.intel .ilab svg{width:20px;height:20px}
+.intel ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.intel li{font-size:13.5px;line-height:1.45;display:flex;gap:8px;align-items:flex-start}
+.intel li .rt{font-family:var(--f-num);font-weight:700;font-size:11px;border:1.5px solid var(--pink2);border-radius:6px;padding:0 5px;background:var(--card);white-space:nowrap;margin-top:1px}
+.intel li.void{opacity:.45;text-decoration:line-through}
+.intel .inote{font-size:12.5px;color:#5B4A40;margin-top:8px}
+.intel .big{font-size:22px;font-weight:900;margin:8px 0 2px}
+.stamp{border:1.5px solid #B24A35;color:#B24A35;border-radius:8px;padding:1px 9px;font-weight:900;font-size:12px;white-space:nowrap;display:inline-block;transform:rotate(-3deg)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:900;padding:1px 9px;border-radius:8px;background:var(--flat-bg);color:var(--ink);white-space:nowrap}
+.chip.red{background:var(--red);color:#fff}.chip.blue{background:var(--blue);color:#fff}.chip.violet{background:var(--violet);color:#fff}
+.chip.gold{background:var(--gold-bg);color:#6B4D07}.chip.green{background:var(--up-bg);color:var(--up)}.chip.down{background:var(--down-bg);color:var(--down)}
+
+/* feed */
+.feed{margin-top:18px}
+.feedlist{list-style:none;margin:0;padding:0;overflow:auto;max-height:320px}
+.feedlist li{display:grid;grid-template-columns:auto 34px minmax(0,1fr);gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.qtag{font-family:var(--f-num);font-weight:700;font-size:12px;border:1.5px solid var(--line2);border-radius:6px;padding:1px 6px;background:var(--card)}
+.feedlist .av{width:34px;height:34px}
+.feedlist .txt{font-size:13.5px;line-height:1.45;min-width:0}
+.feedlist .ic{width:34px;height:34px;border-radius:50%;background:var(--paper2);display:grid;place-items:center;color:var(--green)}
+.feedlist .ic svg{width:18px;height:18px}
+.feedlist li.q .txt{font-weight:900;color:var(--green)}
+.feedlist li.k .txt{color:#8A4A12}
+.pn{font-weight:900;color:var(--ink)}
+
+/* players strip */
+.players{margin-top:18px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));padding:8px;gap:6px;box-shadow:0 8px 20px rgba(90,70,30,.06)}
+.pl{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;position:relative;min-width:0}
+.pl.cur{background:var(--pink)}
+.pl .av{width:52px;height:52px;flex:none}
+.pl .nm{font-size:17px;font-weight:900;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:700;border:1.5px solid var(--line2);border-radius:6px;padding:0 5px;color:var(--muted);background:var(--card)}
+.pl .fig{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.pl .fig b{font-family:var(--f-num);font-weight:800;color:var(--ink);font-size:16px;margin-left:3px}
+
+/* responsive */
+@media (max-width:1040px){
+  .board{grid-template-columns:minmax(0,1fr);grid-template-areas:"hero" "desk" "main"}
+  .desk{position:relative;top:0}
+  .hero-art{width:70%;opacity:.55}
+}
+@media (max-width:640px){
+  .vsep{display:none}
+  .steps{order:3;flex-basis:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px}
+  .step{padding:4px 10px;font-size:13px}.step.now{padding:5px 12px;font-size:15px}
+  .brand small{display:none}
+  .desk{padding:20px 16px;border-radius:22px}
+  .tops .btn{padding:8px 11px}
+}
+
+/* modals */
+.overlay{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--card);color:var(--ink);border-radius:24px;border:1.5px solid var(--line);width:min(660px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:24px;box-shadow:0 30px 70px rgba(40,30,10,.3)}
+.modal h2{font-size:27px;font-weight:900;margin-bottom:6px;letter-spacing:.03em}
+.modal .sub{color:var(--muted);margin:0 0 14px}
+.modal .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.modal .acts .btn{padding:10px 20px;font-size:16px}
+.modal .intel::after{background:linear-gradient(225deg,var(--card) 50%,var(--pink2) 50%)}
+.seats{display:flex;flex-direction:column;gap:10px}
+.seat{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center}
+.seat .av{width:44px;height:44px}
+.seat input{font:inherit;font-weight:700;padding:9px 12px;border:1.5px solid var(--line2);border-radius:12px;background:var(--paper);color:var(--ink);min-width:0;width:100%}
+.seg{display:inline-flex;border:1.5px solid var(--line2);border-radius:12px;overflow:hidden;background:var(--paper);flex-wrap:wrap}
+.seg button{border:none;background:transparent;color:var(--muted);padding:8px 12px;cursor:pointer;font-weight:700}
+.seg button.on{background:var(--green);color:var(--green-ink)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;flex-wrap:wrap}
+.field>span{font-weight:900;font-size:16px}
+.note{font-size:12px;color:var(--muted)}
+.pitch{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 6px}
+.pitch div{background:var(--paper);border-radius:14px;padding:12px;font-size:13px;color:var(--muted)}
+.pitch b{display:block;color:var(--ink);font-size:15px;font-weight:900;margin-bottom:2px}
+.setup-art{height:120px;margin:-24px -24px 16px;overflow:hidden;border-radius:24px 24px 0 0}
+.setup-art svg{width:100%;height:100%}
+.rules{font-size:15px;line-height:1.8}
+.rules h3{font-size:19px;font-weight:900;margin:18px 0 6px;color:var(--green)}
+.rules p,.rules li{max-width:64ch}
+.rules ol,.rules ul{padding-left:1.3em;margin:6px 0}
+.rules table{border-collapse:collapse;font-size:14px;margin:6px 0;width:100%}
+.rules td,.rules th{border-top:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.rules th{font-size:12px;color:var(--muted)}
+.handoff .av{width:84px;height:84px;margin-bottom:10px}
+table.res{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+table.res th{font-size:12px;color:var(--muted);text-align:right;font-weight:700;padding:4px 6px}
+table.res td{text-align:right;padding:8px 6px;border-top:1px solid var(--line);font-family:var(--f-num);font-weight:700;font-variant-numeric:tabular-nums}
+table.res th:first-child,table.res td:first-child{text-align:left;font-family:var(--f-body)}
+.tablewrap{overflow-x:auto}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+.win{font-size:32px;font-weight:900;color:var(--green);margin:4px 0}
+.revlist{display:flex;flex-direction:column;gap:8px}
+.rev{border:1.5px solid var(--line2);border-radius:14px;padding:10px 14px;background:var(--paper);display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.rev h4{font-size:16px;font-weight:900}
+.rev .kn{font-size:12.5px;color:var(--muted);font-weight:700}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none}.btn{transition:none}}
+
+/* Layout: the exam sheet (5x5 spell grid with row/column scores) on the left, dice and the mark button on the right desk. */
+.paper{background:#FFFDF7;border:1.5px solid var(--line2);border-radius:18px;padding:14px;box-shadow:0 2px 0 var(--line);background-image:repeating-linear-gradient(0deg,transparent 0 27px,rgba(46,125,192,.08) 27px 28px)}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) 44px;gap:6px;max-width:520px;margin:0 auto}
+.cell{aspect-ratio:1;border-radius:12px;border:2px solid var(--line2);background:var(--card);position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:var(--f-num);font-weight:800;font-size:clamp(16px,3.6vw,24px);color:var(--ink);padding:0;cursor:default;min-width:0}
+.cell .el{position:absolute;top:4px;left:5px;width:14px;height:14px;border-radius:50%}
+.cell .sp{position:absolute;bottom:3px;right:4px;font-size:12px;line-height:1}
+.cell.marked{background:var(--ink);color:#FFFDF7;border-color:var(--ink)}
+.cell.marked::after{content:"";position:absolute;inset:18%;border:3px solid var(--yellow);border-radius:50%;transform:rotate(-8deg)}
+.cell.legal{cursor:pointer;border-color:var(--green);box-shadow:0 0 0 2px rgba(30,86,65,.25)}
+.cell.legal:hover{background:#EAF3EC}
+.cell.sel{background:var(--yellow);border-color:var(--ink)}
+.cell.grp0{box-shadow:inset 0 -5px 0 #E58FA0}.cell.grp1{box-shadow:inset 0 -5px 0 #8B67D6}.cell.grp2{box-shadow:inset 0 -5px 0 #4F9E61}.cell.grp3{box-shadow:inset 0 -5px 0 #E0922F}.cell.grp4{box-shadow:inset 0 -5px 0 #3E9CC4}
+.side{display:flex;align-items:center;justify-content:center;font-family:var(--f-num);font-weight:800;color:var(--muted);font-size:14px;border:1.5px dashed var(--line2);border-radius:10px}
+.side.done{background:var(--up-bg);color:var(--up);border-style:solid}
+.dice{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.die{width:58px;height:58px;border-radius:14px;background:var(--card);color:var(--ink);display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:28px;box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.die.el{color:#fff;font-size:15px;font-family:var(--f-body);font-weight:900}
+.die.roll{animation:roll .45s ease-out}
+@keyframes roll{0%{transform:rotate(-200deg) scale(.6)}100%{transform:none}}
+.mana{display:flex;gap:4px}.mana i{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.18)}.mana i.on{background:#9DD3F5;box-shadow:0 0 8px #9DD3F5}
+.subjects{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.subjects button{border:1.5px solid var(--line2);background:var(--paper);border-radius:14px;padding:10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.subjects button b{font-size:16px;font-weight:900}.subjects button span{font-size:12px;color:var(--muted)}
+.subjects button.on{border-color:var(--green);background:#EAF3EC;box-shadow:0 0 0 2px var(--green)}
+.miss{display:flex;gap:4px;align-items:center}.miss i{width:16px;height:16px;border:2px solid currentColor;border-radius:4px;opacity:.6}.miss i.on{background:var(--orange);border-color:var(--orange);opacity:1}
+.grade{font-family:var(--f-num);font-weight:800;font-size:44px;color:var(--green);line-height:1}
+.cell.legal.c1{border-style:dashed;border-color:#2E7DC0;box-shadow:none}
+.cell.legal.c2{border-style:dotted;border-color:#7A5AD3;box-shadow:none}
+.cell .cost{position:absolute;top:3px;right:5px;font-size:11px;color:#2E7DC0;font-family:var(--f-body);font-weight:900}
+.stat .chip{white-space:normal}
+.qdice{display:flex;gap:6px;align-items:center;justify-content:center;margin-bottom:10px;flex-wrap:wrap;font-weight:900;font-size:13px;color:var(--muted)}
+.qdice .die{width:40px;height:40px;font-size:20px;border-radius:10px;border:1.5px solid var(--line2);box-shadow:0 2px 0 var(--line2)}
+.qdice .die.el{font-size:13px;border:none}
+.brand small{display:none}
+.step{padding:4px 10px}.step.now{padding:5px 12px}.link{max-width:18px}
+#print{display:none}
+@media print{
+  body{background:#fff}body::before{display:none}
+  .wrap,.overlay{display:none!important}
+  #print{display:block}
+  .psheet{page-break-after:always;padding:10mm;font-family:var(--f-body);color:#000}
+  .psheet h2{font-size:22pt;margin:0 0 2mm}.psheet p{font-size:10pt;margin:0 0 4mm}
+  .psheet .grid{grid-template-columns:repeat(5,22mm) 14mm;gap:2mm;max-width:none;margin:0}
+  .psheet .cell{width:22mm;height:22mm;border:1.2pt solid #000;border-radius:3mm;font-size:16pt}
+  .psheet .side{border:1pt dashed #000;color:#000}
+  .psheet .boxes{display:flex;gap:6mm;margin-top:6mm;font-size:11pt;flex-wrap:wrap}
+  .psheet .boxes span{border:1pt solid #000;padding:2mm 4mm;border-radius:2mm}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="homelink" href="../../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>大廳</a>
+    <div class="brand"><svg viewBox="0 0 56 48" aria-hidden="true"><rect x="8" y="6" width="32" height="38" rx="3" fill="#FFFBF4" stroke="#1E5641" stroke-width="4"/><path d="M15 17h18M15 25h18M15 33h10" stroke="#1E5641" stroke-width="3" stroke-linecap="round"/><path d="M44 4l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#E9643B"/></svg><h1>魔法學院期末考</h1><small>SPELL EXAM</small></div>
+    <span class="vsep"></span>
+    <nav class="steps" id="steps" aria-label="進度"></nav>
+    <span class="vsep"></span>
+    <div class="tops">
+      <button class="btn" id="btnRules" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>規則</button>
+      <button class="btn dark" id="btnNew" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新遊戲</button>
+    </div>
+  </header>
+  <div class="board">
+    <section class="hero" id="hero"></section>
+    <aside class="desk" id="desk" aria-live="polite"></aside>
+    <main>
+      <h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span id="sheettitle">考卷</span><small id="sheetnote"></small></h3>
+      <div id="sheet"></div>
+      <div class="stat" id="legend" style="margin-top:10px"></div>
+      <section class="feed"><h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>考場紀錄</h3><div id="feed"></div></section>
+
+    </main>
+  </div>
+  <section class="players" id="players" aria-label="玩家"></section>
+</div>
+<div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script>
+'use strict';
+const LOBBY='../../';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+const pick=a=>a[Math.random()*a.length|0];
+const SPEEDS={快:250,中:650,慢:1200};
+let SPEED=650, timer=null;
+function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+const ICONS={
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>',
+  bars:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>',
+  gavel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6M11 7l6 6M12.5 5.5l-5 5 4 4 5-5M9.5 12.5 3 19"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>',
+  skull:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3a8 8 0 0 0-5 14.2V20h10v-2.8A8 8 0 0 0 12 3z"/><circle cx="9" cy="11.5" r="1.6" fill="currentColor"/><circle cx="15" cy="11.5" r="1.6" fill="currentColor"/><path d="M10 20v-2M14 20v-2"/></svg>',
+};
+const AVATARS=[
+ `<circle cx="32" cy="32" r="32" fill="#F6C6CF"/><ellipse cx="24" cy="17" rx="5.5" ry="14" fill="#fff" transform="rotate(-12 24 17)"/><ellipse cx="24" cy="18" rx="2.6" ry="10" fill="#F2A0B0" transform="rotate(-12 24 18)"/><ellipse cx="40" cy="17" rx="5.5" ry="14" fill="#fff" transform="rotate(12 40 17)"/><ellipse cx="40" cy="18" rx="2.6" ry="10" fill="#F2A0B0" transform="rotate(12 40 18)"/><ellipse cx="32" cy="40" rx="16" ry="14" fill="#fff"/><circle cx="26" cy="38" r="2.2" fill="#3A2A2A"/><circle cx="38" cy="38" r="2.2" fill="#3A2A2A"/><ellipse cx="32" cy="43.5" rx="2.4" ry="1.7" fill="#E9798F"/><circle cx="22" cy="44" r="2.6" fill="#F8C4CE"/><circle cx="42" cy="44" r="2.6" fill="#F8C4CE"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#CDBCF0"/><path d="M10 64c2-14 10-20 22-20s20 6 22 20z" fill="#7A5236"/><path d="M18 34c0-12 7-20 15-20s14 7 14 16c0 6-3 10-6 12l-8 2-11-3c-3-2-4-4-4-7z" fill="#fff"/><path d="M38 30c6 0 11 2 12 6-2 0-3 1-5 3-1-3-4-4-7-4z" fill="#F4B63B"/><circle cx="34" cy="27" r="2.6" fill="#2A2320"/><path d="M29 23l9 2" stroke="#2A2320" stroke-width="2.2" stroke-linecap="round"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#CFE6CB"/><path d="M14 14l9 12h18l9-12 1 18c0 12-9 20-19 20s-19-8-19-20z" fill="#E98A3A"/><path d="M17 18l5 7M47 18l-5 7" stroke="#B85A1E" stroke-width="3" stroke-linecap="round"/><path d="M15 33c4 0 11 4 17 13 6-9 13-13 17-13-1 11-8 19-17 19S16 44 15 33z" fill="#fff"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><circle cx="32" cy="45" r="2.6" fill="#2A2320"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#F4D3A0"/><path d="M12 64c2-11 9-15 20-15s18 4 20 15z" fill="#5E7F55"/><circle cx="32" cy="36" r="13" fill="#F2C49B"/><path d="M8 27c8-3 40-3 48 0-4 2-44 2-48 0z" fill="#8A5A2E"/><path d="M19 26c1-9 6-13 13-13s12 4 13 13z" fill="#B07A42"/><rect x="19" y="22" width="26" height="4" fill="#6E4522"/><circle cx="27" cy="36" r="1.9" fill="#2A2320"/><circle cx="37" cy="36" r="1.9" fill="#2A2320"/><path d="M27 42c3 3 7 3 10 0" stroke="#8A4A2A" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#C3E2EE"/><path d="M14 22l6 6M50 22l-6 6" stroke="#6B5444" stroke-width="4" stroke-linecap="round"/><ellipse cx="32" cy="40" rx="18" ry="19" fill="#8C6E58"/><ellipse cx="32" cy="46" rx="11" ry="11" fill="#D9C2A5"/><circle cx="24.5" cy="34" r="7" fill="#fff"/><circle cx="39.5" cy="34" r="7" fill="#fff"/><circle cx="25" cy="34" r="3.2" fill="#2A2320"/><circle cx="39" cy="34" r="3.2" fill="#2A2320"/><path d="M29.5 39l2.5 4 2.5-4z" fill="#F0A93B"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#F3C9A8"/><path d="M14 14l8 14M50 14l-8 14" stroke="#4A4A4A" stroke-width="7" stroke-linecap="round"/><ellipse cx="32" cy="38" rx="18" ry="16" fill="#5A5A5E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#EDE6DC"/><circle cx="25" cy="35" r="2.6" fill="#F4D35E"/><circle cx="39" cy="35" r="2.6" fill="#F4D35E"/><path d="M29.5 41.5h5l-2.5 2.5z" fill="#E77F8B"/><path d="M14 42h8M14 46h8M42 42h8M42 46h8" stroke="#DCD6CC" stroke-width="1.2"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
+];
+const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
+const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
+function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
+
+/* modals */
+let modalCb=null;
+function openModal(html,cb){$('#modal').innerHTML=html;$('#overlay').hidden=false;$('#modal').scrollTop=0;modalCb=cb;const f=$('#modal .primary');f&&f.focus({preventScroll:true});}
+function closeModal(){$('#overlay').hidden=true;$('#modal').innerHTML='';modalCb=null;}
+$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b&&!b.disabled&&modalCb)modalCb(b.dataset.m,b);});
+function showRulesHTML(html){
+  $('#rulesModal').innerHTML=`<h2>遊戲規則</h2><div class="rules">${html}</div><div class="acts"><button class="btn primary" id="closeRules">知道了</button></div>`;
+  $('#rulesOv').hidden=false;$('#rulesModal').scrollTop=0;$('#closeRules').focus({preventScroll:true});
+}
+$('#rulesOv').addEventListener('click',e=>{if(e.target.id==='closeRules'||e.target.id==='rulesOv')$('#rulesOv').hidden=true;});
+function feedHTML(log,tag,emptyTxt){
+  const items=log.slice(0,40).map(l=>{
+    const who=l.a!=null&&S.players[l.a]?avatar(l.a):`<span class="ic">${l.c==='q'?ICONS.spark:l.c==='k'?ICONS.gavel:ICONS.bars}</span>`;
+    return `<li class="${l.c||''}"><span class="qtag">${tag(l)}</span>${who}<span class="txt">${l.h}</span></li>`;}).join('');
+  return `<ul class="feedlist">${items||`<li><span class="txt" style="grid-column:1/-1;color:var(--muted)">${emptyTxt}</span></li>`}</ul>`;
+}
+function setupSeatsHTML(cfg,min,max){
+  return `<div class="field"><span>玩家人數</span><div class="seg">${Array.from({length:max-min+1},(_,k)=>k+min).map(k=>`<button data-m="n:${k}" class="${k===cfg.n?'on':''}">${k} 人</button>`).join('')}</div></div>
+   <div class="seats">${cfg.seats.slice(0,cfg.n).map((s,i)=>`<div class="seat">${avatar(i)}<input data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('')}</div>
+   <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===cfg.speed?'on':''}">${k}</button>`).join('')}</div></div>`;
+}
+function setupSeatsHandle(cfg,m,redraw){
+  document.querySelectorAll('[data-seat]').forEach(inp=>{cfg.seats[+inp.dataset.seat].name=inp.value;});
+  if(m.startsWith('n:')){cfg.n=+m.slice(2);redraw();return true;}
+  if(m.startsWith('h:')||m.startsWith('a:')){cfg.seats[+m.slice(2)].ai=m[0]==='a';redraw();return true;}
+  if(m.startsWith('sp:')){cfg.speed=m.slice(3);SPEED=SPEEDS[cfg.speed];redraw();return true;}
+  return false;
+}
+function seatsToPlayers(cfg,aiNames){return cfg.seats.slice(0,cfg.n).map((s,i)=>({name:(s.name||'').trim()||(s.ai?aiNames[i%aiNames.length]:'玩家'+(i+1)),ai:s.ai}));}
+function scrollDeskIntoView(){if(innerWidth<=1040){const d=$('#desk');const r=d.getBoundingClientRect();if(r.top<0||r.top>innerHeight*.6)d.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}
+
+
+/* ================= constants ================= */
+const ROUNDS=12, MAX_MANA=5, START_MANA=2, MISS_PEN=2;
+const ELS=[{n:'火',c:'#D7542B'},{n:'水',c:'#2E7DC0'},{n:'木',c:'#2F8F5B'},{n:'光',c:'#D19A17'}];
+const STAR=4;
+const EDIE=[0,1,2,3,STAR,STAR];
+function rng(seed){return ()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function layout(seed){
+  const r=rng(seed),combo=[];for(let n=1;n<=6;n++)for(let e=0;e<4;e++)combo.push({n,e});
+  combo.push({n:1+(r()*6|0),e:r()*4|0});
+  for(let i=combo.length-1;i>0;i--){const j=r()*(i+1)|0;[combo[i],combo[j]]=[combo[j],combo[i]];}
+  return combo;
+}
+const SUBJ={
+  potion:{n:'魔藥學',en:'POTIONS',seed:11,mana:[2,14,21],
+    d:'自由勾選。每個勾 1 分；排滿一整橫排或直行，拿那一排旁邊的分數。',
+    rowB:[5,6,8,6,5],colB:[5,6,8,6,5]},
+  astro:{n:'占星學',en:'ASTROLOGY',seed:23,mana:[5,20],
+    d:'自由勾選。連成一整個星座拿星座分數；全場第一個連成的人再 +3（同一題完成的都算）。',
+    groups:[{n:'小熊座',c:[0,1,6]},{n:'獵戶座',c:[3,4,8,9]},{n:'天蠍座',c:[10,15,16,21]},{n:'北斗七星',c:[12,13,18,19,24]},{n:'天鵝座',c:[2,7,11]}]},
+  flying:{n:'飛行學',en:'FLYING',seed:37,mana:[10,12],
+    d:'第一個勾必須在最左邊一行，之後每個勾都要貼著已經勾過的格子（八個方向都可以）。飛得越遠分越高，經過光環每個 +3。',
+    rings:[6,17,3,23,14],dist:[1,3,6,10,15]},
+  transf:{n:'變形學',en:'TRANSFIGURATION',seed:53,mana:[12],
+    d:'自由勾選。每個勾滿的 2×2 方陣 +5；勾滿一整條對角線 +10。勾到鏡子格時，左右對稱的那格也免費勾起來。',
+    mirrors:[1,10,21,18]},
+};
+Object.values(SUBJ).forEach(s=>s.cells=layout(s.seed));
+SUBJ.astro.groups.forEach(g=>g.v=g.c.length===3?6:g.c.length===4?9:13);
+const SUBJ_KEYS=Object.keys(SUBJ);
+const GRADES=[{g:'A+',min:34},{g:'A',min:29},{g:'B',min:24},{g:'C',min:19},{g:'D',min:13},{g:'F',min:-99}];
+const grade=v=>GRADES.find(x=>v>=x.min).g;
+const AI_NAMES=['妙麗喵','學霸貓頭鷹','睡過頭的龍','掃帚社社長','鍊金室友','轉學生','助教','圖書館員'];
+const SAVE_KEY='magic-exam-save-v1';
+
+/* ================= state ================= */
+let S=null, UI={};
+let setupCfg={n:2,seats:[{name:'你',ai:false}].concat(AI_NAMES.slice(0,7).map(n=>({name:n,ai:true}))),speed:'中',subj:'potion'};
+const NP=()=>S.players.length;
+const humans=()=>S.players.filter(p=>!p.ai);
+const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
+const SB=()=>SUBJ[S.subj];
+function log(html,cls=''){const m=/data-p="(\d)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,r:S.round});if(S.log.length>220)S.log.length=220;}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function clearSave(){lsSet(SAVE_KEY,null);}
+const rc=k=>[k/5|0,k%5];
+
+/* ================= rules engine ================= */
+function newSheet(){return {m:Array(25).fill(false),mana:START_MANA,miss:0,cdone:{}};}
+function adj(k){const [r,c]=rc(k),o=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(!dr&&!dc)continue;const R=r+dr,C=c+dc;if(R>=0&&R<5&&C>=0&&C<5)o.push(R*5+C);}return o;}
+function cost(sh,k,dice,subj){
+  if(sh.m[k])return -1;
+  const s=SUBJ[subj],cell=s.cells[k];
+  if(subj==='flying'){const any=sh.m.some(x=>x);if(!any&&k%5!==0)return -1;if(any&&!adj(k).some(j=>sh.m[j]))return -1;}
+  let c=0;
+  if(!dice.w.includes(cell.n)){if(dice.w.some(w=>Math.abs(w-cell.n)===1))c++;else return -1;}
+  if(dice.e!==STAR&&dice.e!==cell.e)c++;
+  return c<=sh.mana?c:-1;
+}
+function legalCells(sh,dice,subj){const out=[];for(let k=0;k<25;k++){const c=cost(sh,k,dice,subj);if(c>=0)out.push({k,c});}return out;}
+function applyMark(sh,k,c,subj,round){
+  const s=SUBJ[subj];sh.mana-=c;sh.m[k]=true;const extra=[];
+  if(s.mana.includes(k))sh.mana=Math.min(MAX_MANA,sh.mana+1);
+  if(subj==='transf'&&s.mirrors.includes(k)){const [r,cc]=rc(k),mk=r*5+(4-cc);if(!sh.m[mk]){sh.m[mk]=true;extra.push(mk);if(s.mana.includes(mk))sh.mana=Math.min(MAX_MANA,sh.mana+1);}}
+  if(subj==='astro')s.groups.forEach((g,gi)=>{if(sh.cdone[gi]==null&&g.c.every(x=>sh.m[x]))sh.cdone[gi]=round;});
+  return extra;
+}
+function subjScore(sh,subj,firsts){
+  const s=SUBJ[subj],m=sh.m,parts=[];
+  if(subj==='potion'){
+    const marks=m.filter(x=>x).length;parts.push(['勾選',marks]);
+    let rb=0,cb=0;for(let r=0;r<5;r++)if([0,1,2,3,4].every(c=>m[r*5+c]))rb+=s.rowB[r];
+    for(let c=0;c<5;c++)if([0,1,2,3,4].every(r=>m[r*5+c]))cb+=s.colB[c];
+    parts.push(['橫排',rb],['直行',cb]);
+  }else if(subj==='astro'){
+    let v=0,f=0;s.groups.forEach((g,gi)=>{if(sh.cdone[gi]!=null){v+=g.v;if(firsts&&firsts[gi]===sh.cdone[gi])f+=3;}});
+    parts.push(['星座',v],['搶先',f]);
+  }else if(subj==='flying'){
+    let far=-1;for(let k=0;k<25;k++)if(m[k])far=Math.max(far,k%5);
+    parts.push(['航程',far<0?0:s.dist[far]],['光環',s.rings.filter(k=>m[k]).length*3]);
+  }else{
+    let sq=0;for(let r=0;r<4;r++)for(let c=0;c<4;c++){const k=r*5+c;if(m[k]&&m[k+1]&&m[k+5]&&m[k+6])sq+=5;}
+    let dg=0;if([0,6,12,18,24].every(k=>m[k]))dg+=10;if([4,8,12,16,20].every(k=>m[k]))dg+=10;
+    parts.push(['方陣',sq],['對角線',dg]);
+  }
+  parts.push(['剩餘魔力',sh.mana],['失誤',-sh.miss*MISS_PEN]);
+  return {parts,total:parts.reduce((a,p)=>a+p[1],0)};
+}
+function firstsOf(st=S){
+  if(st.subj!=='astro')return null;
+  return SUBJ.astro.groups.map((_,gi)=>{const rs=st.players.map(p=>p.sh.cdone[gi]).filter(x=>x!=null);return rs.length?Math.min(...rs):null;});
+}
+
+/* ================= AI ================= */
+function potential(sh,subj){
+  const s=SUBJ[subj],m=sh.m;let v=0;
+  const left=ROUNDS-S.round;
+  const w=Math.min(1,left/6);
+  if(subj==='potion'){for(let r=0;r<5;r++){const n=[0,1,2,3,4].filter(c=>m[r*5+c]).length;v+=w*s.rowB[r]*(n/5)**2;}for(let c=0;c<5;c++){const n=[0,1,2,3,4].filter(r=>m[r*5+c]).length;v+=w*s.colB[c]*(n/5)**2;}}
+  else if(subj==='astro'){s.groups.forEach((g,gi)=>{if(sh.cdone[gi]==null){const n=g.c.filter(x=>m[x]).length;v+=w*(g.v+2)*(n/g.c.length)**2;}});}
+  else if(subj==='flying'){const fr=new Set();m.forEach((x,k)=>{if(x)adj(k).forEach(j=>{if(!m[j])fr.add(j);});});v+=w*fr.size*.4;s.rings.forEach(k=>{if(!m[k]&&fr.has(k))v+=w*1.2;});}
+  else{for(let r=0;r<4;r++)for(let c=0;c<4;c++){const k=r*5+c,n=[k,k+1,k+5,k+6].filter(x=>m[x]).length;if(n<4)v+=w*5*(n/4)**2;}
+    [[0,6,12,18,24],[4,8,12,16,20]].forEach(d=>{const n=d.filter(x=>m[x]).length;if(n<5)v+=w*10*(n/5)**3;});}
+  return v;
+}
+function aiChoose(i){
+  const p=S.players[i],sh=p.sh;
+  let best={k:-1,c:0},bv=-MISS_PEN-0.01;
+  const base=subjScore(sh,S.subj,null).total+potential(sh,S.subj);
+  legalCells(sh,S.dice,S.subj).forEach(({k,c})=>{
+    const t=JSON.parse(JSON.stringify(sh));applyMark(t,k,c,S.subj,S.round);
+    const v=subjScore(t,S.subj,null).total+potential(t,S.subj)-base-c*.25+(Math.random()-.5)*.3;
+    if(v>bv){bv=v;best={k,c};}
+  });
+  return best;
+}
+
+/* ================= flow ================= */
+function setupGame(players,subj){
+  clearTimeout(timer);
+  S={players:players.map(p=>({name:p.name,ai:p.ai,sh:newSheet()})),subj:subj||'potion',round:0,dice:null,done:[],phase:'roll',log:[],cfgPlayers:players,view:0};
+  const hs=humans();S.view=hs.length?S.players.indexOf(hs[0]):0;
+  log(`${SB().n}期末考開始，共 ${ROUNDS} 題。`,'q');
+  UI={};nextRound();
+}
+function nextRound(){
+  if(S.round>=ROUNDS){finish();return;}
+  S.round++;
+  S.dice={w:[1,2,3].map(()=>1+(Math.random()*6|0)),e:pick(EDIE)};S.done=[];S.phase='mark';S.rolled=Date.now();
+  log(`第 ${S.round} 題：骰出 ${S.dice.w.join('、')}，元素 ${S.dice.e===STAR?'星（任意）':ELS[S.dice.e].n}`,'q');
+  UI={};save();proceed();
+}
+function curP(){return S.players.findIndex((p,i)=>!S.done.includes(i));}
+function proceed(){
+  clearTimeout(timer);
+  if(!S||S.phase!=='mark')return render();
+  const i=curP();
+  if(i<0){nextRound();return;}
+  const p=S.players[i];
+  if(p.ai){render();timer=setTimeout(()=>{const ch=aiChoose(i);doMark(i,ch.k,ch.c);},humans().length?Math.min(SPEED,400):SPEED/4);return;}
+  S.view=i;UI={};render();
+}
+function doMark(i,k,c){
+  const p=S.players[i];
+  if(k<0){p.sh.miss++;log(`${pn(i)} 這題寫不出來，記一次失誤`,'k');}
+  else{const extra=applyMark(p.sh,k,c,S.subj,S.round);const cell=SB().cells[k];
+    log(`${pn(i)} 勾了 ${cell.n}${ELS[cell.e].n}${c?`（花 ${c} 魔力）`:''}${extra.length?'，鏡子讓對稱格也亮了':''}`);}
+  S.done.push(i);save();proceed();
+}
+function finish(){
+  S.phase='end';const f=firstsOf();
+  const sc=S.players.map(p=>subjScore(p.sh,S.subj,f));S.final=sc;
+  const best=Math.max(...sc.map(s=>s.total));
+  S.winners=sc.map((s,i)=>i).filter(i=>sc[i].total===best);
+  log(`交卷！${NP()>1?S.winners.map(i=>esc(S.players[i].name)).join('、')+' 拿下最高分':'成績 '+grade(best)}`,'q');
+  clearSave();render();endModal();
+}
+function endModal(){
+  const sc=S.final,labels=sc[0].parts.map(p=>p[0]);
+  openModal(`<h2>${SB().n}・成績單</h2>${NP()>1?`<div class="win">${S.winners.map(i=>esc(S.players[i].name)).join('、')} 第一名</div>`:`<div style="display:flex;gap:14px;align-items:center"><span class="grade">${grade(sc[0].total)}</span><div class="sub" style="margin:0">總分 ${sc[0].total}。A+ 要 ${GRADES[0].min} 分，A 要 ${GRADES[1].min} 分。</div></div>`}
+   <div class="tablewrap"><table class="res"><thead><tr><th>考生</th>${labels.map(l=>`<th>${l}</th>`).join('')}<th>總分</th><th>等第</th></tr></thead><tbody>
+   ${sc.map((s,i)=>({s,i})).sort((a,b)=>b.s.total-a.s.total).map(({s,i})=>`<tr><td>${esc(S.players[i].name)}</td>${s.parts.map(p=>`<td>${p[1]}</td>`).join('')}<td><b>${s.total}</b></td><td>${grade(s.total)}</td></tr>`).join('')}</tbody></table></div>
+   <div class="acts"><button class="btn" data-m="close">看看考卷</button><button class="btn" data-m="other">換一科</button><button class="btn primary" data-m="again">同一科再考</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers,S.subj);else if(m==='other'){setupCfg.subj=S.subj;showSetup();}});
+}
+
+/* ================= view ================= */
+const myTurn=()=>S&&S.phase==='mark'&&curP()>=0&&!S.players[curP()].ai&&$('#overlay').hidden;
+function cellInner(subj,k,print){
+  const s=SUBJ[subj],cell=s.cells[k];let sp='';
+  if(s.mana.includes(k))sp='✦';
+  if(subj==='flying'&&s.rings.includes(k))sp='◎';
+  if(subj==='transf'&&s.mirrors.includes(k))sp='⇋';
+  return `<span class="el" style="background:${ELS[cell.e].c}">${print?`<small style="font-size:8pt;position:absolute;top:-1px;left:16px;color:#000">${ELS[cell.e].n}</small>`:''}</span>${cell.n}${sp?`<span class="sp">${sp}</span>`:''}`;
+}
+function sheetHTML(i,interactive,print){
+  const subj=print||S.subj,s=SUBJ[subj],sh=print?newSheet():S.players[i].sh;
+  const leg=interactive?new Map(legalCells(sh,S.dice,subj).map(x=>[x.k,x.c])):new Map();
+  const grp=k=>subj==='astro'?s.groups.findIndex(g=>g.c.includes(k)):-1;
+  let h='<div class="grid">';
+  for(let r=0;r<5;r++){
+    for(let c=0;c<5;c++){const k=r*5+c,g=grp(k);
+      h+=`<button class="cell ${sh.m[k]?'marked':''} ${leg.has(k)?'legal c'+leg.get(k):''} ${UI.k===k&&interactive?'sel':''} ${g>=0?'grp'+g:''}" ${leg.has(k)?`data-k="${k}"`:'tabindex="-1"'} aria-label="${s.cells[k].n}${ELS[s.cells[k].e].n}">${cellInner(subj,k,print)}${leg.get(k)?`<span class="cost">${leg.get(k)}✦</span>`:''}</button>`;}
+    if(subj==='potion'){const done=[0,1,2,3,4].every(c=>sh.m[r*5+c]);h+=`<div class="side ${done?'done':''}">${s.rowB[r]}</div>`;}
+    else if(subj==='flying'&&r===0)h+=`<div class="side" style="grid-row:span 5;writing-mode:vertical-rl">終點 →</div>`;
+    else if(subj!=='flying')h+='<div></div>';
+  }
+  if(subj==='potion'){for(let c=0;c<5;c++){const done=[0,1,2,3,4].every(r=>sh.m[r*5+c]);h+=`<div class="side ${done?'done':''}" style="aspect-ratio:1.6">${s.colB[c]}</div>`;}h+='<div></div>';}
+  if(subj==='flying'){h+=s.dist.map(d=>`<div class="side" style="aspect-ratio:1.6">${d}</div>`).join('')+'<div></div>';}
+  h+='</div>';
+  return h;
+}
+function render(){
+  if(!S)return;
+  let st='';for(let i=1;i<=ROUNDS;i++){if(i>1)st+=`<span class="link ${i<=S.round?'done':''}"></span>`;st+=`<span class="step ${i<S.round||S.phase==='end'?'done':i===S.round&&S.phase!=='idle'?'now':''}">${i}</span>`;}
+  st+=`<span class="link ${S.phase==='end'?'done':''}"></span><span class="step ${S.phase==='end'?'now':''}">交卷</span>`;
+  $('#steps').innerHTML=st;
+  const s=SB();
+  $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">${s.en} FINAL</div><h2>${S.phase==='end'?'交卷':S.phase==='idle'?'期末考週':s.n}<span class="qbadge">${S.phase==='idle'?'準備考試':S.phase==='end'?'成績出爐':'第 '+S.round+' / '+ROUNDS+' 題'}</span></h2>${swoosh}</div>`;
+  const v=S.view??0,mine=myTurn()&&curP()===v;
+  $('#sheettitle').textContent=`${S.players[v].name} 的${s.n}考卷`;
+  $('#sheetnote').textContent=mine?'點一格發亮的格子，再點一次就寫上；虛線格要花魔力':'點下方考生可以切換考卷';
+  $('#sheet').innerHTML=`<div class="paper">${S.dice&&S.phase==='mark'?`<div class="qdice">第 ${S.round} 題 ${diceHTML(false)}</div>`:''}${sheetHTML(v,mine)}</div>`;
+  $('#legend').innerHTML=`<span class="chip">${s.d}</span>`+(S.subj==='astro'?s.groups.map((g,gi)=>{const f=firstsOf();return `<span class="chip" style="box-shadow:inset 0 -3px 0 ${['#E58FA0','#8B67D6','#4F9E61','#E0922F','#3E9CC4'][gi]}">${g.n} ${g.v} 分${f&&f[gi]!=null?'・已有人完成':''}</span>`;}).join(''):'')+`<span class="chip">✦ 魔力格 +1 魔力</span>${S.subj==='flying'?'<span class="chip">◎ 光環 +3</span>':''}${S.subj==='transf'?'<span class="chip">⇋ 鏡子：對稱格免費勾</span>':''}`;
+  renderDesk();renderPlayers();
+  $('#feed').innerHTML=feedHTML(S.log,l=>l.r?'第'+l.r+'題':'—','每一題的骰子和作答都會記在這裡。');
+}
+function diceHTML(anim){
+  const d=S.dice;if(!d)return '';
+  return `<div class="dice">${d.w.map(w=>`<span class="die ${anim?'roll':''}">${w}</span>`).join('')}<span class="die el ${anim?'roll':''}" style="background:${d.e===STAR?'linear-gradient(135deg,#D7542B,#2E7DC0,#2F8F5B,#D19A17)':ELS[d.e].c}">${d.e===STAR?'星':ELS[d.e].n}</span></div>`;
+}
+function renderDesk(){
+  let h=leafDeco;
+  if(S.phase==='mark'){
+    const i=curP(),p=S.players[i],anim=Date.now()-S.rolled<500;
+    h+=`<div class="dhead"><h2>第 ${S.round} 題</h2><span class="pill">${S.done.length}/${NP()} 人已作答</span></div>
+      <div class="dsec"><div class="dlab">這題的骰子<small>大家用同一組骰子</small></div>${diceHTML(anim)}
+      <div class="dnote">選一顆白骰的數字和元素骰的顏色，勾一格完全符合的格子。星 = 任何元素。</div></div>`;
+    if(myTurn()){
+      const sh=p.sh,L=legalCells(sh,S.dice,S.subj);
+      h+=`<div class="dsec"><div class="dlab">${esc(p.name)} 作答<small>魔力 ${sh.mana}/${MAX_MANA}</small></div><div class="mana">${Array.from({length:MAX_MANA},(_,k)=>`<i class="${k<sh.mana?'on':''}"></i>`).join('')}</div>
+        <div class="dnote">魔力用法：數字差 1 可以花 1 點湊上；元素不同可以花 1 點變色。剩下的魔力交卷時每點 1 分。</div>
+        ${UI.k!=null?`<div class="dnote">要勾 ${SB().cells[UI.k].n}${ELS[SB().cells[UI.k].e].n}${L.find(x=>x.k===UI.k).c?`，花 ${L.find(x=>x.k===UI.k).c} 魔力`:'，不用魔力'}</div>`:L.length?'<div class="dnote">在考卷上點一格發亮的格子（再點一次直接寫上）。</div>':'<div class="dnote warn">這題沒有能勾的格子，只能記失誤。</div>'}</div>
+        <button class="confirm" id="btnMark" ${UI.k!=null?'':'disabled'}>寫上答案 ${ICONS.arrow}</button>
+        <button class="passbtn" id="btnMiss">跳過這題（失誤 −${MISS_PEN}）</button>`;
+    }else{
+      h+=`<div class="think">${avatar(i)}<div><b>${esc(p.name)}</b><div>${p.ai?'振筆疾書<span class="dots"></span>':'作答中'}</div></div></div>`;
+    }
+  }else if(S.phase==='end'){
+    const w=S.winners[0];
+    h+=`<div class="dhead"><h2>交卷</h2><span class="pill">${NP()>1?'第一名':'成績'}</span></div><div class="think">${avatar(w)}<div><b>${S.winners.map(i=>esc(S.players[i].name)).join('、')}</b><div>總分 ${S.final[w].total}・等第 ${grade(S.final[w].total)}</div></div></div>
+     <button class="passbtn" id="btnResult">再看一次成績單</button><button class="confirm" id="btnAgain">同一科再考 ${ICONS.arrow}</button>`;
+  }else{
+    h+=`<div class="dhead"><h2>準備考試</h2></div><div class="empty"><b>選科目和考生</b>1 到 8 人，可以單人挑戰等第。</div>`;
+  }
+  $('#desk').innerHTML=h;
+}
+function renderPlayers(){
+  const f=firstsOf(),cur=S.phase==='mark'?curP():-1;
+  $('#players').innerHTML=S.players.map((p,i)=>{const sc=subjScore(p.sh,S.subj,f);return `<button class="pl ${i===cur?'cur':''}" data-view="${i}" style="border:none;background:${i===S.view?'var(--paper2)':'transparent'};text-align:left;cursor:pointer;font:inherit;color:inherit">${avatar(i)}<div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}${S.done&&S.done.includes(i)&&S.phase==='mark'?'<span class="tag">已作答</span>':''}</div>
+    <div class="fig"><span>分數<b>${sc.total}</b></span><span>魔力<b>${p.sh.mana}</b></span><span>失誤<b>${p.sh.miss}</b></span></div></div></button>`;}).join('');
+}
+function heroArt(){return `<svg viewBox="0 0 640 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+  <defs><linearGradient id="hs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5EEE1"/><stop offset="1" stop-color="#E4DCF7"/></linearGradient></defs>
+  <rect width="640" height="180" fill="url(#hs)"/>
+  <path d="M380 180V70l40-50 40 50v110z" fill="#C9B8E8"/><path d="M370 74l50-62 50 62z" fill="#7A5AD3"/><rect x="408" y="90" width="24" height="34" rx="12" fill="#FFF3D6"/>
+  <path d="M480 180V100l26-30 26 30v80z" fill="#D8CCF0"/><path d="M474 104l32-40 32 40z" fill="#8B67D6"/>
+  <path d="M290 180v-60l22-26 22 26v60z" fill="#D8CCF0"/><path d="M284 124l28-34 28 34z" fill="#8B67D6"/>
+  ${[[250,40],[560,30],[600,80],[330,24],[520,60]].map(([x,y])=>`<path d="M${x} ${y-7}l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#D19A17"/>`).join('')}
+  <g transform="translate(560 120) rotate(-20)"><rect x="-40" y="-3" width="80" height="6" rx="3" fill="#8A5A2E"/><path d="M40 -10l24 10-24 10z" fill="#D19A17"/></g>
+  <rect x="200" y="160" width="440" height="20" fill="#CDBCF0"/>
+ </svg>`;}
+function buildPrint(){
+  $('#print').innerHTML=SUBJ_KEYS.map(k=>{const s=SUBJ[k];return `<div class="psheet"><h2>魔法學院期末考・${s.n}</h2><p>姓名：＿＿＿＿＿＿　${s.d} ✦ 魔力格 +1 魔力${k==='flying'?'，◎ 光環 +3':''}${k==='transf'?'，⇋ 鏡子格':''}。共 ${ROUNDS} 題，每題擲 3 顆白骰和 1 顆元素骰（火、水、木、光、星、星）。</p>
+    ${sheetHTML(0,false,k)}
+    ${k==='astro'?`<p style="margin-top:4mm">${s.groups.map(g=>`${g.n}（${g.c.length} 格）${g.v} 分`).join('・')}。底線顏色代表星座。</p>`:''}
+    <div class="boxes"><span>魔力 ○○○○○（開局 2）</span><span>失誤 □□□□□□（每個 −${MISS_PEN}）</span><span>總分＿＿＿＿</span></div></div>`;}).join('');
+}
+
+/* ================= setup & rules ================= */
+function showSetup(){
+  clearTimeout(timer);
+  const sv=lsGet(SAVE_KEY);
+  openModal(`<div class="setup-art">${heroArt()}</div><h2>魔法學院期末考</h2><p class="sub">期末考週到了。每一題擲骰，全班同時在考卷上勾咒語格。格子連成排、星座、航線或變形陣，咒語就會生效。</p>
+   <div class="field"><span>考試科目</span></div>
+   <div class="subjects">${SUBJ_KEYS.map(k=>`<button data-m="sj:${k}" class="${setupCfg.subj===k?'on':''}"><b>${SUBJ[k].n}</b><span>${SUBJ[k].d}</span></button>`).join('')}</div>
+   ${setupSeatsHTML(setupCfg,1,8)}
+   <p class="note">1 人就是單人模式：挑戰等第 A+（${GRADES[0].min} 分以上）。多人時大家用同一組骰子輪流作答。也可以按「列印考卷」用紙筆玩。</p>
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="print">列印考卷</button><button class="btn" data-m="rules">先看規則</button>${sv&&sv.phase==='mark'?'<button class="btn" data-m="resume">繼續上一場</button>':''}<button class="btn primary" data-m="start">開始考試</button></div>`,
+  m=>{
+    if(setupSeatsHandle(setupCfg,m,showSetup))return;
+    if(m.startsWith('sj:')){setupCfg.subj=m.slice(3);showSetup();return;}
+    if(m==='rules')showRules();
+    else if(m==='print'){buildPrint();window.print();}
+    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;UI={};proceed();}
+    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES),setupCfg.subj);}
+  });
+}
+function showRules(){showRulesHTML(`
+  <p><b>目標：</b>${ROUNDS} 題之後，考卷分數最高的人獲勝。單人模式看等第：${GRADES.slice(0,5).map(g=>`${g.g} ≥ ${g.min}`).join('、')}。</p>
+  <h3>每一題</h3>
+  <ol><li>擲 3 顆白骰（1–6）和 1 顆元素骰（火、水、木、光、星、星）。所有人用同一組骰子。</li>
+  <li>每人在自己的考卷勾一格：格子的數字等於其中一顆白骰，而且元素等於元素骰。星可以當任何元素。</li>
+  <li>沒有能勾的格子，或不想勾，就記一次失誤（−${MISS_PEN}）。</li></ol>
+  <h3>魔力</h3>
+  <ul><li>開局 ${START_MANA} 點，最多 ${MAX_MANA} 點。勾到 ✦ 魔力格 +1。</li>
+  <li>花 1 點：數字差 1 也能勾（例如骰到 3，可以勾 2 或 4）。</li>
+  <li>花 1 點：元素不同也能勾。兩種可以一起用。</li>
+  <li>交卷時剩下的魔力每點 1 分。</li></ul>
+  <h3>四個科目</h3>
+  <ul>${SUBJ_KEYS.map(k=>`<li><b>${SUBJ[k].n}：</b>${SUBJ[k].d}</li>`).join('')}</ul>
+  <p>魔藥學的排分是 ${SUBJ.potion.rowB.join('、')}（中間的排最難也最值錢）。占星學的星座 3 格 6 分、4 格 9 分、5 格 13 分。飛行學最遠飛到第 1–5 行分別得 ${SUBJ.flying.dist.join('、')} 分。</p>
+  <h3>小撇步</h3>
+  <ul><li>一開始先拿魔力格，後面卡住時才有救。</li>
+  <li>每格的數字和元素組合幾乎不重複。先想好要湊哪一排、哪個星座，再等骰子。</li>
+  <li>飛行學一旦走錯方向很難回頭，先往光環飛。</li></ul>
+  <h3>紙筆版</h3>
+  <p>設定畫面按「列印考卷」可以印出四科空白考卷。準備 4 顆骰子（3 顆普通骰、1 顆貼上火水木光星星的骰子）和每人一支筆就能玩，人數不限。</p>`);}
+
+/* ================= input ================= */
+$('#sheet').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b||!myTurn()||curP()!==S.view)return;const k=+b.dataset.k;if(UI.k===k){const i=curP(),c=cost(S.players[i].sh,k,S.dice,S.subj);if(c>=0){UI={};doMark(i,k,c);}return;}UI.k=k;render();});
+$('#players').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(!b)return;if(myTurn()&&+b.dataset.view!==curP()){/* allow peeking at others */}S.view=+b.dataset.view;UI.k=null;render();});
+$('#desk').addEventListener('click',e=>{
+  if(e.target.closest('#btnAgain')){setupGame(S.cfgPlayers,S.subj);return;}
+  if(e.target.closest('#btnResult')){endModal();return;}
+  if(!myTurn())return;
+  const b=e.target.closest('button');if(!b||b.disabled)return;
+  const i=curP();
+  if(b.id==='btnMark'&&UI.k!=null){const c=cost(S.players[i].sh,UI.k,S.dice,S.subj);if(c>=0){const k=UI.k;UI={};doMark(i,k,c);}}
+  else if(b.id==='btnMiss'){UI={};doMark(i,-1,0);}
+});
+$('#btnRules').addEventListener('click',showRules);
+$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄這場考試？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續考</button><button class="btn primary" data-m="yes">重新開始</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();proceed();}});}else showSetup();});
+
+/* ================= boot ================= */
+document.body.insertAdjacentHTML('beforeend','<div id="print"></div>');
+window.__game={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;},subjScore,firstsOf,SUBJ};
+(function boot(){
+  S={players:[{name:'—',ai:false,sh:newSheet()}],subj:'potion',round:0,dice:null,done:[],phase:'idle',log:[],view:0};
+  render();showSetup();
+})();
+</script>
+<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("../../sw.js",{scope:"../../"}).catch(()=>{}));</script>
+</body>
+</html>
