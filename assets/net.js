@@ -299,7 +299,7 @@ const NET={
       const pub=JSON.parse(JSON.stringify(S));delete pub.viewer;delete pub.online;
       pub.series=setupCfg.series;
       GAME.strip(pub);
-      pub.wait=GAME.waiting();
+      pub._wait=GAME.waiting(); // underscore: games use their own field names (er-24 has S.wait)
       pub.v=++this.ver;S.v=pub.v;
       const js=JSON.stringify(pub);
       // secrets first, so a client never sees a new public state without its matching private view
