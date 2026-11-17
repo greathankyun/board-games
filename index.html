@@ -170,7 +170,8 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
 
 /* 桌面標語右側的遊戲盒堆疊 */
 .boxes{filter:drop-shadow(0 22px 18px rgba(40,28,18,.28))}
-.boxes .hero-art{position:absolute;inset:-20px 0 -10px;width:100%;height:calc(100% + 30px);object-fit:contain;object-position:right center}
+.boxes .hero-art{position:absolute;right:0;top:50%;transform:translateY(-50%);width:100%;height:auto}
+.boxes.has-hero{filter:none}
 .boxes.has-hero .box{display:none}
 .box{--d:14px;position:absolute;background:var(--g-bg);color:var(--g-ink);display:flex;flex-direction:column;justify-content:center;padding:0 16px;isolation:isolate}
 .box .face{position:absolute;inset:0;overflow:hidden;z-index:0;background:
