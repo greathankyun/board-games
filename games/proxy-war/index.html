@@ -790,6 +790,7 @@ const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fi
 const pnTxt=i=>esc(S.players[i].name);
 function insiderHTML(pi){
   const ev=EVT[S.events[S.players[pi].insider]];
+  if(!ev)return `<div class="intel"><div class="ilab">${ICONS.lock}私人情報</div><div class="inote"><span>內線消息傳送中<span class="dots"></span></span></div></div>`;
   return `<div class="intel"><div class="ilab">${ICONS.lock}私人情報</div>
    <div class="ititle"><h4>${ev.n}</h4><div class="chips">${evChips(ev)}</div></div>
    <div class="inote"><span>只有 ${esc(S.players[pi].name)} 知道。季末與其他 ${S.events.length-1} 張事件牌一起生效<br>（▲▼ 單位為股價格數）</span><span class="stamp">季末生效</span></div></div>`;
