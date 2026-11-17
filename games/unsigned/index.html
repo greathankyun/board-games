@@ -252,6 +252,8 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .tl.inv{background:var(--pink);color:#B24A35;border-color:var(--pink2)}
 .typecards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .typecards button{border:2px solid rgba(255,255,255,.5);background:transparent;color:var(--green-ink);border-radius:12px;padding:8px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:900}
+.rev .rpic{width:52px;height:52px;border-radius:9px;object-fit:cover;flex:none}
+.typecards .tpic{width:100%;max-width:72px;aspect-ratio:1;border-radius:9px;object-fit:cover;margin-bottom:2px}
 .typecards button small{font-size:11px;font-weight:700;opacity:.85}
 .typecards button.on{background:var(--card);color:var(--ink);border-color:var(--card)}
 .typecards button:disabled{opacity:.28;cursor:not-allowed;text-decoration:line-through}
@@ -262,6 +264,7 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .accrow{display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.08);border-radius:12px;padding:10px}
 .accrow .q{font-weight:900;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .stat{display:flex;flex-wrap:wrap;gap:6px}
+img.av{display:block;border-radius:50%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -325,7 +328,7 @@ const AVATARS=[
  `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
  `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
 ];
-const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+const avatar=i=>`<img class="av" src="../../assets/avatars/avatar-${i%8+1}.webp" alt="" aria-hidden="true"${i>=8?` style="filter:hue-rotate(${150*Math.floor(i/8)}deg) saturate(1.2)"`:''}>`;
 const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
 const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
 function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
@@ -795,7 +798,7 @@ function deliver(){
     else if(c.type==='gift'){const d=h==='charity'?4:2;t.sales+=d;fx=`銷量 +${d}`;}
     else fx='沒有效果';
     log(`${pn(c.t)} 收到第 ${k+1} 封（${cname(c.seal)}蠟）：${TYPES[c.type].n}，${fx}`,TYPES[c.type].bad?'k':'');
-    rows.push(`<div class="rev"><div style="display:flex;gap:10px;align-items:center">${sealH(c.seal,true)}<div><h4>第 ${k+1} 封 → ${esc(t.name)}</h4><div class="kn">${cname(c.seal)}色蠟封</div></div></div><span class="chip ${TYPES[c.type].bad?'down':c.type==='gift'?'green':''}">${TYPES[c.type].n}・${fx}</span></div>`);
+    rows.push(`<div class="rev"><div style="display:flex;gap:10px;align-items:center">${sealH(c.seal,true)}<img class="rpic" src="img/${c.type}.webp" alt="" loading="lazy"><div><h4>第 ${k+1} 封 → ${esc(t.name)}</h4><div class="kn">${cname(c.seal)}色蠟封</div></div></div><span class="chip ${TYPES[c.type].bad?'down':c.type==='gift'?'green':''}">${TYPES[c.type].n}・${fx}</span></div>`);
   });
   S.ch={};S.phase='deliver';S.delivHTML=rows.join('');S.delivP=S.p;render();save();
   deliverModal('進入調查與指認',()=>{closeModal();S.phase='probe';S.pr={};proceed();});
@@ -924,7 +927,7 @@ function renderDesk(){
       const forge=UI.type==='forge';
       if(UI.seal!=null&&!forge&&!pr.includes(UI.seal))UI.seal=null;
       h+=`<div class="dhead"><h2>寫一封信</h2><span class="pill">第 ${S.p} 期</span></div><div class="dsub">${esc(p.name)}・本期頭條「${hl().n}」：${hl().d}</div>
-       <div class="dsec"><div class="dlab">1. 選信件<small>每種整場只能用一次</small></div><div class="typecards">${TK.map(t=>`<button data-type="${t}" class="${UI.type===t?'on':''}" ${p.used.includes(t)?'disabled':''}>${TYPES[t].n}<small>${TYPES[t].fx}</small></button>`).join('')}</div>${UI.type?`<div class="dnote">${TYPES[UI.type].desc}</div>`:''}</div>
+       <div class="dsec"><div class="dlab">1. 選信件<small>每種整場只能用一次</small></div><div class="typecards">${TK.map(t=>`<button data-type="${t}" class="${UI.type===t?'on':''}" ${p.used.includes(t)?'disabled':''}><img class="tpic" src="img/${t}.webp" alt="" loading="lazy">${TYPES[t].n}<small>${TYPES[t].fx}</small></button>`).join('')}</div>${UI.type?`<div class="dnote">${TYPES[UI.type].desc}</div>`:''}</div>
        <div class="dsec"><div class="dlab">2. 寄給誰</div><div class="chooser">${others.map(j=>`<button data-to="${j}" class="${UI.t===j?'on':''}">${avatar(j)}${esc(S.players[j].name)}</button>`).join('')}</div></div>
        <div class="dsec"><div class="dlab">3. 蠟封顏色<small>${forge?'偽造可用任何顏色':'只能用你的兩種顏色'}</small></div><div class="sealpick">${(forge?[0,1,2,3,4,5]:pr).map(c=>`<button data-seal="${c}" class="${UI.seal===c?'on':''}">${sealH(c)}${cname(c)}</button>`).join('')}</div></div>
        <button class="confirm" id="btnSend" ${UI.type&&UI.t!=null&&UI.seal!=null?'':'disabled'}>投進郵筒 ${ICONS.arrow}</button>`;
