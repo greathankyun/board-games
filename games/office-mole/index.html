@@ -262,6 +262,11 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .rolepic{display:block;width:140px;height:140px;border-radius:14px;object-fit:cover;margin:6px auto 8px}
 .idpic{width:56px;height:56px;border-radius:10px;object-fit:cover;float:left;margin:0 8px 4px 0}
 img.av{display:block;border-radius:50%;object-fit:cover}
+.ptable .emp{padding:6px 8px;gap:4px;font-size:13px}
+.ptable .emp .hd .av{width:38px;height:38px}
+.ptable .emp .trs{gap:2px}.ptable .emp .trs .tag,.ptable .emp .trs .trt{font-size:11px;padding:0 5px}
+.ptable .emp .cl{font-size:11px;line-height:1.3}
+@media (max-width:640px){.ptable .emp{padding:5px 6px}.ptable .emp .hd{gap:5px;font-size:12px}.ptable .emp .hd .av{width:30px;height:30px}.ptable .emp .cl{display:none}.ptable .emp .trs .tag,.ptable .emp .trs .trt{font-size:10px;padding:0 3px}}
 </style>
 </head>
 <body>
@@ -281,12 +286,12 @@ img.av{display:block;border-radius:50%;object-fit:cover}
     <section class="hero" id="hero"></section>
     <aside class="desk" id="desk" aria-live="polite"></aside>
     <main>
-      <h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13M12 8c-3-5-7-3-4 0M12 8c3-5 7-3 4 0"/></svg>抽獎台<small id="scorenote"></small></h3>
+      <h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 14c3 0 6 1.5 6 5"/></svg>尾牙圓桌</h3>
+      <div id="roster"></div>
+      <h3 class="sect" style="margin-top:16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13M12 8c-3-5-7-3-4 0M12 8c3-5 7-3 4 0"/></svg>抽獎台<small id="scorenote"></small></h3>
       <div id="prizes"></div>
       <h3 class="sect" style="margin-top:16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="6" width="13" height="9" rx="2"/><path d="M16 9l5-2v8l-5-2M7 15l-2 5"/></svg>監視器線索</h3>
       <div id="clues"></div>
-      <h3 class="sect" style="margin-top:16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 14c3 0 6 1.5 6 5"/></svg>員工名冊</h3>
-      <div id="roster"></div>
       <section class="feed"><h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>尾牙現場</h3><div id="feed"></div></section>
     </main>
   </div>
@@ -294,6 +299,7 @@ img.av{display:block;border-radius:50%;object-fit:cover}
 </div>
 <div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 <div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script src="../../assets/table.js"></script>
 <script>
 'use strict';
 const LOBBY='../../';
@@ -302,7 +308,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
 const pick=a=>a[Math.random()*a.length|0];
 const SPEEDS={快:250,中:650,慢:1200};
-let SPEED=650, timer=null;
+let SPEED=650, timer=null, TBL=null;
 function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 const ICONS={
@@ -539,7 +545,7 @@ function proceed(){
     if(S.phase==='night'){S.night[cur]=aiNight(cur);}
     else if(S.phase==='talk'){applyTalk(cur,aiTalk(cur));}
     else{applyVote(cur,aiVote(cur));}
-    proceed();},S.phase==='night'?(humans().length?120:SPEED/4):(humans().length?Math.min(SPEED,500):SPEED/3));return;}
+    proceed();},S.phase==='night'?(humans().length?120:SPEED/4):(humans().length?(S.phase==='talk'?Math.max(SPEED,1300):S.phase==='vote'?Math.max(SPEED,700):Math.min(SPEED,500)):S.phase==='talk'?Math.max(SPEED,900):SPEED/3));return;}
   if(S.phase==='night'&&S.viewer!==cur){
     S.viewer=null;UI={};render();
     openModal(`<div class="handoff">${avatar(cur)}</div><h2>請把裝置交給 ${esc(p.name)}</h2><p class="sub">夜晚行動是秘密的。其他人請轉頭，不要看畫面。</p>
@@ -592,7 +598,7 @@ function applyTalk(i,t){
   else if(t.k==='mole')log(`${pn(i)}：「${t.hr?'我是人資，我查過了，':''}${pn(t.j)} 就是內鬼！」`,'k');
   else log(`${pn(i)}：「${t.hr?'我是人資，':''}${pn(t.j)} 是清白的。」`);
 }
-function applyVote(i,j){S.votes[i]=j;log(j>=0?`${pn(i)} 投給 ${pn(j)}${P(i).role==='boss'?'（老闆 2 票）':''}。`:`${pn(i)} 棄票。`);}
+function applyVote(i,j){S.votes[i]=j;if(TBL)TBL.say(i,j>=0?`我投 ${P(j).name}`:'我棄票','v');log(j>=0?`${pn(i)} 投給 ${pn(j)}${P(i).role==='boss'?'（老闆 2 票）':''}。`:`${pn(i)} 棄票。`);}
 function resolveVote(){
   const t=voteTally();const arr=Object.entries(t).sort((a,b)=>b[1]-a[1]);
   let out=null;
@@ -647,6 +653,7 @@ function render(){
   $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">YEAR-END PARTY</div><h2>${head}<span class="qbadge">${S.phase==='idle'?'準備開始':S.phase==='end'?(S.win==='mole'?'內鬼勝':'員工勝'):'第 '+S.r+' 輪'}</span></h2>${swoosh}</div>`;
   renderStage();renderDesk();
   $('#feed').innerHTML=feedHTML(S.log,l=>l.r?'第'+l.r+'輪':'—','每晚的事件、發言和投票都會記在這裡。');
+  TBL&&TBL.watch(S.log);
 }
 function renderStage(){
   $('#prizes').innerHTML=`<div class="prz">${PRIZES.map((pz,k)=>{const st=S.prizes[k].st;return `<div class="pz ${st==='stolen'?'stolen':st==='safe'?'safe':''} ${k===S.r-1&&S.phase!=='end'&&S.phase!=='idle'?'now':''}"><span class="rk">${pz.rk}</span><span class="ic">${st==='stolen'?'🙃':pz.ic}</span><b>${st==='stolen'?'銘謝惠顧':pz.n}</b><span class="vv">${pz.v} 分</span><span class="st">${st==='stolen'?'被偷換':st==='safe'?'已抽出':'待抽'}</span></div>`;}).join('')}</div>`;
@@ -655,13 +662,18 @@ function renderStage(){
   const cur=curTurn();
   const V=S.viewer;
   const tally=S.phase==='vote'?voteTally():{};
-  $('#roster').innerHTML=`<div class="ros">${S.players.map((p,i)=>{
+  const seats=S.players.map((p,i)=>{
     const trs=p.tr.map((v,t)=>{const hits=S.clues.filter(c=>c.t===t&&c.v===v).length;return `<span class="trt ${hits?'hit':''}">${trTxt(t,v)}${hits>1?'×'+hits:''}</span>`;}).join('');
     const said=p.said.filter(s=>s.r===S.r).map(s=>s.k==='sus'?`懷疑 ${esc(P(s.j).name)}`:s.k==='mole'?`${p.claimHR?'人資宣稱：':''}${esc(P(s.j).name)} 是內鬼`:`${p.claimHR?'人資宣稱：':''}${esc(P(s.j).name)} 清白`).join('；');
     const tags=[];if(p.role==='boss')tags.push('<span class="tag">老闆</span>');if(p.ai)tags.push('<span class="tag">AI</span>');if(p.publicTeam)tags.push(`<span class="tag">${p.publicTeam==='mole'?'確定是內鬼':'確定清白'}</span>`);
     let mine='';if(V!=null&&V!==i&&(S.phase==='night'||humans().length===1)){const k=knownTeam(V,i);if(k&&!p.revealed&&p.role!=='boss'&&!p.publicTeam)mine=`<span class="tag" style="background:${k==='mole'?'var(--down-bg)':'var(--up-bg)'}">${k==='mole'?'你知道：內鬼':'你知道：清白'}</span>`;}
     if(V===i&&(S.phase==='night'||humans().length===1))mine=`<span class="tag" style="background:var(--pink)">你・${ROLES[p.role].n}</span>`;
-    return `<div class="emp ${p.alive?'':'out'} ${p.revealed&&p.team==='mole'?'mole':''} ${i===cur&&S.phase!=='night'?'cur':''}" data-out="${p.revealed?(p.team==='mole'?'內鬼':ROLES[p.role].n):''}"><div class="hd">${(p.revealed||p.role==='boss')?`<img class="av" src="img/${p.role}.webp" alt="${ROLES[p.role].n}">`:avatar(i)}<span>${esc(p.name)}</span></div><div class="trs">${tags.join('')}${mine}</div><div class="trs">${trs}</div>${said?`<div class="cl">${said}</div>`:''}${tally[i]?`<div class="vb">${tally[i]} 票</div>`:''}</div>`;}).join('')}</div>`;
+    return `<div class="emp ${p.alive?'':'out'} ${p.revealed&&p.team==='mole'?'mole':''} ${i===cur&&S.phase!=='night'?'cur':''}" data-out="${p.revealed?(p.team==='mole'?'內鬼':ROLES[p.role].n):''}"><div class="hd">${(p.revealed||p.role==='boss')?`<img class="av" src="img/${p.role}.webp" alt="${ROLES[p.role].n}">`:avatar(i)}<span>${esc(p.name)}</span></div><div class="trs">${tags.join('')}${mine}</div><div class="trs">${trs}</div>${said?`<div class="cl">${said}</div>`:''}${tally[i]?`<div class="vb">${tally[i]} 票</div>`:''}</div>`;});
+  if(!TBL)TBL=PTable.mount($('#roster'));
+  const hs=humans(),me=S.viewer!=null?S.viewer:(hs.length?S.players.indexOf(hs[0]):0);
+  const pz=PRIZES[Math.min(S.r,PRIZES.length)-1];
+  const ctr={idle:'等大家入座',night:'深夜，大家都下班了…',morning:'抽獎時間',talk:'輪流發言中',vote:'投票中',rookie:'新人的委屈',end:S.win==='mole'?'內鬼得逞':'員工守住了尾牙'}[S.phase];
+  TBL.render(seats,{me,center:`<b>${ctr}</b>${pz&&S.phase!=='end'&&S.phase!=='idle'?`今晚的獎品：${pz.rk}「${pz.n}」`:''}`});
 }
 function myIntel(i){
   const p=P(i);const lines=[];
