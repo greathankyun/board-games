@@ -1,6 +1,6 @@
 // 桌遊大廳 service worker：先用快取、背景更新，讓遊戲離線也能玩。
 // 新增遊戲時把檔案加進 PRECACHE，並把 VERSION 加一。
-const VERSION = 'v8';
+const VERSION = 'v10';
 const CACHE = 'board-games-' + VERSION;
 const FONT_CACHE = 'board-games-fonts';
 const PRECACHE = [
@@ -13,6 +13,12 @@ const PRECACHE = [
   './icons/apple-touch-icon.png',
   './games/proxy-war/',
   './games/proxy-war/index.html',
+  './games/blank-agents/',
+  './games/blank-agents/index.html',
+  './games/unsigned/',
+  './games/unsigned/index.html',
+  './games/seven-days/',
+  './games/seven-days/index.html',
   './games/wealth-road/',
   './games/wealth-road/index.html'
 ];
