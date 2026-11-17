@@ -12,7 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="桌遊大廳">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}img.av{display:block;border-radius:50%;object-fit:cover}
+</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Outfit:wght@600;700;800&display=swap">
@@ -91,6 +92,7 @@ main{grid-area:main;min-width:0}
 .co.sel{border:3px solid var(--green);box-shadow:0 0 0 3px rgba(30,86,65,.12),0 12px 26px rgba(30,86,65,.18)}
 .co .art{height:112px;position:relative;overflow:hidden}
 .co .art svg{width:100%;height:100%}
+.co .art .emb{position:absolute;right:10px;top:8px;bottom:8px;height:calc(100% - 16px);aspect-ratio:1;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.7);object-fit:cover}
 .check{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;background:var(--green);display:grid;place-items:center;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .check svg{width:18px;height:18px}
 .co .body{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px}
@@ -714,11 +716,12 @@ const AVATARS=[
  // owl
  `<circle cx="32" cy="32" r="32" fill="#C3E2EE"/><path d="M14 22l6 6M50 22l-6 6" stroke="#6B5444" stroke-width="4" stroke-linecap="round"/><ellipse cx="32" cy="40" rx="18" ry="19" fill="#8C6E58"/><ellipse cx="32" cy="46" rx="11" ry="11" fill="#D9C2A5"/><circle cx="24.5" cy="34" r="7" fill="#fff"/><circle cx="39.5" cy="34" r="7" fill="#fff"/><circle cx="25" cy="34" r="3.2" fill="#2A2320"/><circle cx="39" cy="34" r="3.2" fill="#2A2320"/><path d="M29.5 39l2.5 4 2.5-4z" fill="#F0A93B"/>`,
 ];
-const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+const avatar=i=>`<img class="av" src="../../assets/avatars/avatar-${i%8+1}.webp" alt="" aria-hidden="true"${i>=8?` style="filter:hue-rotate(${150*Math.floor(i/8)}deg) saturate(1.2)"`:''}>`;
 
 function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/><circle cx="${x-r*.25}" cy="${y-r*.55}" r="${r*.35}" fill="#fff" fill-opacity=".25"/>`;}
 function hills(c1,c2){return `<path d="M0 70 L40 40 L70 58 L110 28 L150 55 L190 34 L240 60 L280 38 L320 62 V112 H0Z" fill="${c1}"/><path d="M0 84 Q60 66 120 80 T240 76 T320 80 V112 H0Z" fill="${c2}"/>`;}
 function sky(id,a,b){return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="320" height="112" fill="url(#${id})"/>`;}
+const COMP_IMG=['star','redr','azur','gold','sail'];
 const ART=[
  // 星核科技
  ()=>`${sky('s0','#CDBEF0','#F4EFFB')}${hills('#B9A6E6','#CFE3BE')}
@@ -816,7 +819,7 @@ function renderCards(){
     const holders=S.players.map((p,i)=>p.sh[c]?`<span style="--pc:var(--p${i})">${esc(p.name)} ${p.sh[c]}</span>`:'').join('');
     const sel=mine&&UI.sel===c;
     return `<article class="co ${mine?'pick':''} ${sel?'sel':''}" data-c="${c}" style="--cc:var(--c${c})" ${mine?`tabindex="0" role="button" aria-pressed="${sel}" aria-label="選擇 ${COMPS[c].name}"`:''}>
-      <div class="art"><svg viewBox="0 0 320 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${ART[c]()}</svg>${sel?`<span class="check">${ICONS.check}</span>`:''}</div>
+      <div class="art"><svg viewBox="0 0 320 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${ART[c]()}</svg><img class="emb" src="img/${COMP_IMG[c]}.webp" alt="" loading="lazy">${sel?`<span class="check">${ICONS.check}</span>`:''}</div>
       <div class="body">
         <div class="cohead"><h3>${COMPS[c].name}</h3><span class="tick">${COMPS[c].tick}</span><span class="sector">${ICONS[SECTOR_ICON[c]]}${COMPS[c].sec}</span></div>
         <div class="prow"><span class="price">$${pr}</span><span class="delta ${d>0?'up':d<0?'down':'flat'}">${d>0?'▲ '+d:d<0?'▼ '+(-d):'± 0'}</span></div>

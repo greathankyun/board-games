@@ -251,6 +251,8 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .sect-b.me{border-style:dashed;border-color:var(--ink)}
 .sect-b .hd{display:flex;align-items:center;gap:10px}
 .sect-b .hd .av{width:44px;height:44px;flex:none}
+.sect-b .hd .sectpic{width:44px;height:44px;flex:none;border-radius:50%;object-fit:cover;margin-left:-18px;border:2px solid var(--card)}
+.chooser .ppic{width:26px;height:26px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:4px}
 .sect-b .nm{font-size:17px;font-weight:900;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .sect-b .fig{display:flex;gap:2px 10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
 .sect-b .fig b{font-family:var(--f-num);color:var(--ink);font-size:15px;margin-left:2px}
@@ -270,6 +272,7 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .stepper b{display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:20px;color:var(--yellow-ink);background:#FBE7A6}
 .ptable{font-size:13px;width:100%;border-collapse:collapse}
 .ptable td{padding:3px 4px;border-top:1px solid var(--pink2)}
+img.av{display:block;border-radius:50%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -333,7 +336,7 @@ const AVATARS=[
  `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
  `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
 ];
-const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+const avatar=i=>`<img class="av" src="../../assets/avatars/avatar-${i%8+1}.webp" alt="" aria-hidden="true"${i>=8?` style="filter:hue-rotate(${150*Math.floor(i/8)}deg) saturate(1.2)"`:''}>`;
 const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
 const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
 function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
@@ -655,6 +658,7 @@ const NP=()=>S.players.length;
 const humans=()=>S.players.filter(p=>!p.ai);
 const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
 const sect=i=>SECTS[i];
+const SECT_IMG=['wudang','emei','tangmen','gaibang','kunlun'];
 function log(html,cls=''){const m=/data-p="(\d)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,d:S.day});if(S.log.length>220)S.log.length=220;}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
 function clearSave(){lsSet(SAVE_KEY,null);}
@@ -963,7 +967,7 @@ function renderSects(){
   $('#sects').innerHTML=S.players.map((p,i)=>{
     const on=poisonsOn(i);const slots=[0,1,2].map(k=>slotHTML(on[k],S.phase==='end'?on[k]&&on[k].owner:v)).join('');
     const status=[p.coma?'<span class="chip down">昏迷中</span>':'',p.inj?`<span class="chip down">負傷 ${p.inj}</span>`:''].join('');
-    return `<div class="sect-b ${v===i&&S.phase!=='end'?'me':''}"><div class="hd">${avatar(i)}<div style="min-width:0"><div class="nm">${esc(p.name)}<span class="tag">${sect(i)}</span>${p.ai?'<span class="tag">AI</span>':''}${curTurn()===i?'<span class="tag" style="border-color:var(--orange);color:var(--orange)">行動中</span>':''}</div>
+    return `<div class="sect-b ${v===i&&S.phase!=='end'?'me':''}"><div class="hd">${avatar(i)}<img class="sectpic" src="img/${SECT_IMG[i%5]}.webp" alt="${sect(i)}徽記" loading="lazy"><div style="min-width:0"><div class="nm">${esc(p.name)}<span class="tag">${sect(i)}</span>${p.ai?'<span class="tag">AI</span>':''}${curTurn()===i?'<span class="tag" style="border-color:var(--orange);color:var(--orange)">行動中</span>':''}</div>
       <div class="fig"><span>秘笈<b>${p.pts}</b></span><span>弟子<b>${avail(i)}/${p.dis}</b></span><span>藥材<b>${p.herbs}</b></span><span>丹<b>${p.pills}</b></span><span>暗算<b>${p.assn}</b></span><span>毒<b>${p.hand.length}</b></span></div></div></div>
       <div class="mer">${slots}</div>${status?`<div class="stat" style="display:flex;gap:4px;flex-wrap:wrap">${status}</div>`:''}</div>`;
   }).join('');
@@ -1005,7 +1009,7 @@ function renderDesk(){
        <div class="dsec"><div class="dlab">派弟子<small>${purge?'運功逼毒中，今天不派人':`已派 ${used}/${a}`}</small></div><div class="alloc">${S.sites.map((s,k)=>`<div class="arow"><span>${s.n}<small>門檻 ${s.th}・${s.rw.map(r=>r==='h'?'藥材':r+'分').join('、')}</small></span><div class="stepper"><button data-al="${k}:-1" ${purge||UI.alloc[k]<=0?'disabled':''}>−</button><b>${purge?0:UI.alloc[k]}</b><button data-al="${k}:1" ${purge||used>=a?'disabled':''}>+</button></div></div>`).join('')}</div></div>
        <div class="dsec"><div class="dlab">暗算<small>剩 ${p.assn} 枚，不算武力</small></div><div class="chooser"><button data-assn="-1" class="${UI.assn==null?'on':''}">不暗算</button>${p.assn>0?S.sites.map((s,k)=>`<button data-assn="${k}" class="${UI.assn===k?'on':''}">${s.n}</button>`).join(''):''}</div></div>
        <div class="dsec"><div class="dlab">下毒<small>每天最多一份，對方經脈最多 3 格</small></div>
-        <div class="chooser"><button data-pt="" class="${!UI.plantT?'on':''}">不下毒</button>${[...new Set(p.hand)].map(t=>`<button data-pt="${t}" class="${UI.plantT===t?'on':''}">${POISON[t].n}×${p.hand.filter(x=>x===t).length}</button>`).join('')}</div>
+        <div class="chooser"><button data-pt="" class="${!UI.plantT?'on':''}">不下毒</button>${[...new Set(p.hand)].map(t=>`<button data-pt="${t}" class="${UI.plantT===t?'on':''}"><img class="ppic" src="img/${t}.webp" alt="" loading="lazy">${POISON[t].n}×${p.hand.filter(x=>x===t).length}</button>`).join('')}</div>
         ${UI.plantT?`<div class="chooser">${targets.map(j=>`<button data-ptt="${j}" class="${UI.plantTo===j?'on':''}" ${poisonsOn(j).length>=SLOTS?'disabled':''}>${avatar(j)}${esc(S.players[j].name)}</button>`).join('')}</div><div class="dnote">${POISON[UI.plantT].n}：${UI.plantT==='fake'?'沒有效果，拿來唬人勒索':POISON[UI.plantT].days+' 天後發作，'+POISON[UI.plantT].fx}</div>`:''}</div>
        ${on.length?`<div class="dsec"><div class="dlab">解毒<small>運功逼毒＝今天不派弟子</small></div><div class="opt2">${on.map(x=>`<button data-purge="${x.id}" class="${UI.purge===x.id?'on':''}" ${UI.pill===x.id?'disabled':''}><b>運功逼出 ${esc(S.players[x.owner].name)} 的毒</b><span>可能是 ${candText(x)}・⏳${x.hg}</span></button>`).join('')}${p.pills>0?on.map(x=>`<button data-pill="${x.id}" class="${UI.pill===x.id?'on':''}" ${UI.purge===x.id?'disabled':''}><b>服解毒丹解 ${esc(S.players[x.owner].name)} 的毒</b><span>不影響派弟子（剩 ${p.pills} 顆）</span></button>`).join(''):''}</div></div>`:''}
        <button class="confirm" id="btnCommit" ${UI.plantT&&UI.plantTo==null?'disabled':''}>確認出手 ${ICONS.arrow}</button>`;

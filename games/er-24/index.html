@@ -282,6 +282,7 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .steps{order:3;flex-basis:100%;justify-content:center;overflow-x:auto;padding-bottom:2px}
 @media (max-width:640px){.steps{justify-content:flex-start}}
 
+img.av{display:block;border-radius:50%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -348,7 +349,7 @@ const AVATARS=[
  `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
  `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
 ];
-const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true"${i>=AVATARS.length?` style="filter:hue-rotate(${150*Math.floor(i/AVATARS.length)}deg) saturate(1.2)"`:''}>${AVATARS[i%AVATARS.length]}</svg>`;
+const avatar=i=>`<img class="av" src="../../assets/avatars/avatar-${i%8+1}.webp" alt="" aria-hidden="true"${i>=8?` style="filter:hue-rotate(${150*Math.floor(i/8)}deg) saturate(1.2)"`:''}>`;
 const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
 const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
 function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
@@ -371,7 +372,7 @@ function feedHTML(log,tag,emptyTxt){
 }
 function setupSeatsHTML(cfg,min,max){
   return `<div class="field"><span>玩家人數</span><div class="seg">${Array.from({length:max-min+1},(_,k)=>k+min).map(k=>`<button data-m="n:${k}" class="${k===cfg.n?'on':''}">${k} 人</button>`).join('')}</div></div>
-   <div class="seats">${cfg.seats.slice(0,cfg.n).map((s,i)=>`<div class="seat">${avatar(i)}<input data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('')}</div>
+   <div class="seats">${cfg.seats.slice(0,cfg.n).map((s,i)=>`<div class="seat"><img class="av" src="img/${ROLES[i].k}.webp" alt=""><input data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('')}</div>
    <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===cfg.speed?'on':''}">${k}</button>`).join('')}</div></div>`;
 }
 function setupSeatsHandle(cfg,m,redraw){
@@ -686,7 +687,7 @@ function proceed(){
   const viewerKey=S.solo?0:i;
   if(S.viewer!==viewerKey&&humans().length>1&&!S.solo){
     S.viewer=null;render();
-    openModal(`<div class="handoff">${avatar(i)}</div><h2>請把裝置交給 ${esc(p.name)}（${ROLES[p.role].n}）</h2><p class="sub">輪到你的 3 點行動。你的處置卡只有你看得到，請不要直接說出卡名，用「我有辦法幫忙」這類說法溝通。</p>
+    openModal(`<div class="handoff"><img class="av" src="img/${ROLES[p.role].k}.webp" alt=""></div><h2>請把裝置交給 ${esc(p.name)}（${ROLES[p.role].n}）</h2><p class="sub">輪到你的 3 點行動。你的處置卡只有你看得到，請不要直接說出卡名，用「我有辦法幫忙」這類說法溝通。</p>
      <div class="acts"><button class="btn primary" data-m="go">我是 ${esc(p.name)}，開始</button></div>`,()=>{closeModal();S.viewer=viewerKey;render();scrollDeskIntoView();});
     return;
   }
@@ -760,7 +761,7 @@ function renderDesk(){
   $('#desk').innerHTML=h;
 }
 function renderPlayers(){
-  $('#players').innerHTML=S.players.map((p,i)=>{const R=ROLES[p.role];return `<div class="pl ${S.phase==='turn'&&i===S.turn?'cur':''}">${avatar(p.role)}<div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}</div>
+  $('#players').innerHTML=S.players.map((p,i)=>{const R=ROLES[p.role];return `<div class="pl ${S.phase==='turn'&&i===S.turn?'cur':''}"><img class="av" src="img/${R.k}.webp" alt="${R.n}"><div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}</div>
     <div class="fig"><span class="role"><i style="background:${R.c}"></i>${R.n}</span><span>卡<b>${p.hand.length}</b></span></div></div></div>`;}).join('');
 }
 function heroArt(){return `<svg viewBox="0 0 640 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
@@ -778,7 +779,7 @@ function showSetup(){
   clearTimeout(timer);
   const sv=lsGet(SAVE_KEY);const c=setupCfg;
   const seats=c.n===1?`<div class="seats"><div class="seat">${avatar(0)}<input data-seat="0" value="${esc(c.seats[0].name)}" maxlength="10" aria-label="玩家名稱"><span class="note">單人：醫師＋護理師</span></div></div>`
-   :`<div class="seats">${c.seats.slice(0,c.n).map((s,i)=>`<div class="seat">${avatar(i)}<input data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="${ROLES[i].n}"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('')}</div><p class="note">角色依序是：${ROLES.slice(0,c.n).map(r=>r.n).join('、')}。</p>`;
+   :`<div class="seats">${c.seats.slice(0,c.n).map((s,i)=>`<div class="seat"><img class="av" src="img/${ROLES[i].k}.webp" alt=""><input data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="${ROLES[i].n}"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('')}</div><p class="note">角色依序是：${ROLES.slice(0,c.n).map(r=>r.n).join('、')}。</p>`;
   openModal(`<div class="setup-art">${heroArt()}</div><h2>急診室24小時</h2><p class="sub">早上八點接班，到明天早上八點交班。病人一直湧進來，有人只是扭到腳，有人下一秒就會倒下。檢傷分級、搶床位、分工合作，撐到天亮。</p>
    <div class="pitch"><div><b>檢傷分級</b>病人進來時看不出輕重，先檢傷才知道是 1 級危急還是 5 級輕症。</div><div><b>惡化倒數</b>每位病人都有倒數，歸零就惡化，1 級再歸零就救不回來。</div><div><b>不怕一人指揮</b>每人的處置卡是秘密的，不能直接說卡名，每個角色只有自己最會做的事。</div></div>
    <div class="field"><span>玩家人數</span><div class="seg">${[1,2,3,4].map(k=>`<button data-m="n:${k}" class="${k===c.n?'on':''}">${k===1?'單人':k+' 人'}</button>`).join('')}</div></div>

@@ -252,7 +252,8 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .file.hid{background:repeating-linear-gradient(135deg,var(--paper2) 0 10px,#E8DDC8 10px 20px);color:var(--muted)}
 .file.self{background:var(--ink);color:#fff}
 .file.self b{font-size:30px;letter-spacing:.2em}
-.file .emb{position:absolute;right:8px;bottom:-6px;width:54px;height:54px;opacity:.28}
+.file{padding-right:74px}
+.file .emb{position:absolute;right:6px;top:6px;bottom:6px;height:calc(100% - 12px);aspect-ratio:1;object-fit:cover;border-radius:9px;border:2px solid rgba(255,255,255,.6);box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .ag .st{display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px 12px;min-height:40px;align-items:center}
 .decl{font-family:var(--f-num);font-weight:800}
 .done-tick{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--green);display:grid;place-items:center}
@@ -275,6 +276,7 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .sumlist .av{width:30px;height:30px;flex:none}
 .sumlist b{font-weight:900}
 .fd{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px rgba(255,255,255,.8)}.fd.R{background:var(--red)}.fd.B{background:var(--blue)}.fd.D{background:var(--violet)}
+img.av{display:block;border-radius:50%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -336,7 +338,7 @@ const AVATARS=[
  `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
  `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
 ];
-const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+const avatar=i=>`<img class="av" src="../../assets/avatars/avatar-${i%8+1}.webp" alt="" aria-hidden="true"${i>=8?` style="filter:hue-rotate(${150*Math.floor(i/8)}deg) saturate(1.2)"`:''}>`;
 const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
 const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
 function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
@@ -911,15 +913,11 @@ function notesHTML(i){
 function fileHTML(i){
   const p=S.players[i];
   const show=S.phase==='end'||(S.viewer!=null&&S.viewer!==i);
-  if(S.phase!=='end'&&S.viewer===i)return `<div class="file self"><span class="fk">YOUR FILE</span><b>？？？</b></div>`;
-  if(!show||!p.card)return `<div class="file hid"><span class="fk">CLASSIFIED</span><b>檔案蓋著</b></div>`;
+  if(S.phase!=='end'&&S.viewer===i)return `<div class="file self"><span class="fk">YOUR FILE</span><b>？？？</b>${emblem('X')}</div>`;
+  if(!show||!p.card)return `<div class="file hid"><span class="fk">CLASSIFIED</span><b>檔案蓋著</b>${emblem('X')}</div>`;
   return `<div class="file ${p.card}"><span class="fk">${p.card==='R'?'RED FALCON':p.card==='B'?'BLUE WHALE':'DOUBLE'}</span><b>${FN[p.card]}</b>${emblem(p.card)}</div>`;
 }
-function emblem(c){
-  if(c==='R')return '<svg class="emb" viewBox="0 0 64 64"><path d="M4 30 L30 22 L60 6 L44 30 L60 40 L34 38 L20 56 L22 36Z" fill="#fff"/></svg>';
-  if(c==='B')return '<svg class="emb" viewBox="0 0 64 64"><path d="M6 34c6-14 30-18 44-8 4-6 8-8 12-8-2 4-2 8 0 12-4 0-8-2-10-4-6 14-30 18-46 8z" fill="#fff"/></svg>';
-  return '<svg class="emb" viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="none" stroke="#fff" stroke-width="5"/><path d="M32 10v44" stroke="#fff" stroke-width="5"/></svg>';
-}
+function emblem(c){return `<img class="emb" src="img/${{R:'red',B:'blue',D:'double',X:'back'}[c]}.webp" alt="" loading="lazy">`;}
 function curTurn(){if(!S||(S.phase!=='turn'&&S.phase!=='evac')||S.sumOpen)return null;const key=S.phase==='turn'?'ch':'ev';const got=S[key]||{};
   if(NET.client)return got[NET.seat]==null&&!UI.sent?NET.seat:null;
   return order().find(j=>got[j]==null&&!isRemote(j))??null;}

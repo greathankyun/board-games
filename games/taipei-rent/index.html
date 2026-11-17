@@ -264,6 +264,8 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .offer h5{margin:0 0 4px;font-size:13px;color:var(--muted)}
 .offer ul{margin:0;padding-left:1.1em;font-weight:700}
 @media (max-width:420px){.tradebox,.offer{grid-template-columns:1fr}}
+.idpic{width:56px;height:56px;border-radius:10px;object-fit:cover;float:left;margin:0 8px 4px 0}
+img.av{display:block;border-radius:50%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -328,7 +330,7 @@ const AVATARS=[
  `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
  `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
 ];
-const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+const avatar=i=>`<img class="av" src="../../assets/avatars/avatar-${i%8+1}.webp" alt="" aria-hidden="true"${i>=8?` style="filter:hue-rotate(${150*Math.floor(i/8)}deg) saturate(1.2)"`:''}>`;
 const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
 const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
 function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
@@ -748,7 +750,7 @@ function myIntel(i){
   const p=S.players[i],g=GOALS[p.goal],h=homeRoom(i);
   return `<div class="intel"><div class="ilab">${ICONS.lock}${esc(p.name)} 的秘密</div>
    <div class="big" style="font-size:18px">${g.n}・+${g.v}</div><div class="inote">${g.d}。${g.f(i,S)?'<span class="stamp">目前達成</span>':'目前還沒達成'}</div>
-   <ul><li><span class="rt">身分</span><span><b>${ROLES[p.role].n}</b>：${ROLES[p.role].d}</span></li>
+   <ul><li><span class="rt">身分</span><span><img class="idpic" src="img/${p.role}.webp" alt=""><b>${ROLES[p.role].n}</b>：${ROLES[p.role].d}</span></li>
    <li><span class="rt">住處</span><span>${h?`${rn(h)}・月租 ${h.owner===i?'自住':rent(h)}・居住 ${comfort(h)}`:'沒有住處（睡沙發）'}</span></li></ul></div>`;
 }
 const ACT_INFO={
@@ -803,7 +805,7 @@ function renderDesk(){
   $('#desk').innerHTML=h;
 }
 function renderPlayers(){
-  $('#players').innerHTML=S.players.map((p,i)=>{const h=homeRoom(i);return `<div class="pl ${i===S.cur&&S.phase==='act'?'cur':''}">${avatar(i)}<div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}<span class="tag">${ROLES[p.role].n}</span></div>
+  $('#players').innerHTML=S.players.map((p,i)=>{const h=homeRoom(i);return `<div class="pl ${i===S.cur&&S.phase==='act'?'cur':''}"><img class="av" src="img/${p.role}.webp" alt="${ROLES[p.role].n}"><div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}<span class="tag">${ROLES[p.role].n}</span></div>
     <div class="fig"><span>現金<b>${p.money}</b></span><span>房<b>${owned(i).length}</b></span><span>居住<b>${p.comfort}</b></span>${S.phase==='end'&&S.final?`<span>總分<b>${S.final[i].total}</b></span>`:''}</div><div class="note">${h?'住 '+rn(h):'睡沙發'}</div></div></div>`;}).join('');
 }
 function heroArt(){return `<svg viewBox="0 0 640 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">

@@ -240,6 +240,7 @@ table.res th:first-child,table.res td:first-child{text-align:left;font-family:va
 .cardsrow button:disabled{opacity:.4;cursor:not-allowed}
 .prize{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
 .prize span{font-size:11px;font-weight:900;border-radius:6px;padding:0 5px;background:var(--paper2)}
+img.av{display:block;border-radius:50%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -304,7 +305,7 @@ const AVATARS=[
  `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
  `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
 ];
-const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true">${AVATARS[i%AVATARS.length]}</svg>`;
+const avatar=i=>`<img class="av" src="../../assets/avatars/avatar-${i%8+1}.webp" alt="" aria-hidden="true"${i>=8?` style="filter:hue-rotate(${150*Math.floor(i/8)}deg) saturate(1.2)"`:''}>`;
 const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
 const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
 function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
@@ -352,6 +353,7 @@ const DOLLS={
   egg:{n:'神秘扭蛋',v:0,r:22,ease:.75,w:.5,c:'#8B67D6',cnt:1},
 };
 const DK=Object.keys(DOLLS);
+const DIMG={};DK.forEach(k=>{const im=new Image();im.src=`img/${k}.webp`;DIMG[k]=im;});
 const CARDS={
   slow:{n:'慢動作',d:'這次爪子移動速度減半'},
   strong:{n:'強力爪',d:'這次抓力全滿，夾起來不會掉'},
@@ -538,6 +540,14 @@ function drawDoll(d,x,y,s=1){
   const t=DOLLS[d.t],r=d.r*s;
   ctx.save();ctx.translate(x,y);
   ctx.fillStyle='rgba(60,40,20,.15)';ctx.beginPath();ctx.ellipse(4,6,r,r*.9,0,0,7);ctx.fill();
+  const im=DIMG[d.t];
+  if(im&&im.complete&&im.naturalWidth){
+    ctx.save();ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.clip();ctx.fillStyle='#FFF8EC';ctx.fill();ctx.drawImage(im,-r*1.08,-r*1.08,r*2.16,r*2.16);ctx.restore();
+    ctx.strokeStyle=t.c||'rgba(60,40,20,.35)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.stroke();
+    ctx.font=`800 ${Math.max(13,r*.42)}px Outfit,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    const tx=d.t==='egg'?'?':d.v;ctx.fillStyle='rgba(255,255,255,.92)';ctx.beginPath();ctx.arc(r*.72,r*.72,r*.3,0,7);ctx.fill();ctx.fillStyle='#1F2B27';ctx.fillText(tx,r*.72,r*.74);
+    ctx.restore();return;
+  }
   if(d.t==='bear'){ctx.fillStyle=t.c;[[-.7,-.75],[.7,-.75]].forEach(([a,b])=>{ctx.beginPath();ctx.arc(a*r,b*r,r*.35,0,7);ctx.fill();});}
   if(d.t==='bunny'){ctx.fillStyle='#fff';[[-.35],[.35]].forEach(([a])=>{ctx.beginPath();ctx.ellipse(a*r,-r*.95,r*.2,r*.55,a*.6,0,7);ctx.fill();});}
   if(d.t==='cat'){ctx.fillStyle='#fff';ctx.strokeStyle='#E9643B';ctx.lineWidth=2;[[-1],[1]].forEach(([a])=>{ctx.beginPath();ctx.moveTo(a*r*.85,-r*.2);ctx.lineTo(a*r*.55,-r*1.05);ctx.lineTo(a*r*.15,-r*.7);ctx.fill();ctx.stroke();});}
@@ -601,7 +611,7 @@ function render(){
   $('#steps').innerHTML=st;
   $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">CLAW MACHINE</div><h2>${S.phase==='end'?'打烊結算':S.phase==='idle'?'投幣試手氣':'夾夾看'}<span class="qbadge">${S.phase==='idle'?'準備開局':S.phase==='end'?'打烊':'第 '+S.round+' 輪'}</span></h2>${swoosh}</div>`;
   $('#machinenote').textContent=S.phase==='turn'?`輪到 ${S.players[S.cur].name}`:'';
-  $('#legend').innerHTML=DK.map(k=>`<span class="chip">${DOLLS[k].n} ${k==='egg'?'1–8':DOLLS[k].v} 分</span>`).join('')+`<span class="chip down">碰倒一隻 −${KNOCK_PEN}</span>`;
+  $('#legend').innerHTML=DK.map(k=>`<span class="chip"><img src="img/${k}.webp" alt="" style="width:20px;height:20px;border-radius:50%;vertical-align:-5px;margin-right:4px">${DOLLS[k].n} ${k==='egg'?'1–8':DOLLS[k].v} 分</span>`).join('')+`<span class="chip down">碰倒一隻 −${KNOCK_PEN}</span>`;
   renderDesk();renderPlayers();
   $('#feed').innerHTML=feedHTML(S.log,l=>l.r?'第'+l.r+'輪':'—','每一次夾娃娃都會記在這裡。');
 }
