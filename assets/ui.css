@@ -1,0 +1,20 @@
+/* 遊戲群島：所有遊戲共用的版面微調（放在各遊戲自己的樣式之後載入）。 */
+
+/* 手機：標題列收成一行（大廳／規則／新遊戲改成圖示鈕），主視覺變矮，讓「你的下一步」更早出現在畫面裡 */
+@media (max-width:640px){
+  .top{gap:10px;padding-block:4px 10px}
+  .homelink{font-size:0;gap:0;padding:9px}
+  .homelink svg{width:20px;height:20px}
+  .brand{gap:8px;min-width:0;flex:1 1 0}
+  .brand h1{min-width:0}
+  .brand svg{width:32px;height:32px}
+  .brand h1{font-size:clamp(18px,5.4vw,23px);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tops{margin-left:auto;gap:8px}
+  .tops .btn{font-size:0;gap:0;padding:9px;min-width:40px;min-height:40px}
+  .tops .btn svg{width:20px;height:20px}
+  .hero{min-height:92px}
+  .hero h2{font-size:26px;gap:10px;margin-top:2px}
+}
+
+/* 觸控：避免連點放大、按鈕按下有回饋 */
+button,.btn,[data-m]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
