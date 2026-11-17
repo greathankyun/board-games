@@ -286,6 +286,7 @@ img.eraimg{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none;b
 </div>
 <div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 <div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script src="../../assets/net.js"></script>
 <script>
 'use strict';
 const LOBBY='../../';
@@ -381,7 +382,7 @@ const SAVE_KEY='time-pawn-save-v1';
 let S=null, UI={}, deskResolve=null;
 let setupCfg={n:4,seats:[{name:'你',ai:false}].concat(AI_NAMES.slice(0,4).map(n=>({name:n,ai:true}))),speed:'中'};
 const NP=()=>S.players.length;
-const humans=()=>S.players.filter(p=>!p.ai);
+const humans=()=>S.players.filter(p=>!p.ai&&!p.remote); // humans on this device
 const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
 const IT=id=>S.items[id];
 const itn=id=>`${ERAS[IT(id).era].n}・${IT(id).name}`;
@@ -398,9 +399,10 @@ function setupGame(players){
   const items={};let id=0;ERAS.forEach((e,era)=>ITEM_NAMES[era].forEach((n,k)=>{items[id]={id,era,name:n,stars:STARS[k],fake:false};id++;}));
   shuffle(Object.keys(items)).slice(0,FAKES).forEach(k=>items[k].fake=true);
   const cdeck=shuffle(COLLECTORS.map((_,k)=>k));
-  S={players:players.map(p=>({name:p.name,ai:p.ai,money:START_MONEY,items:[],known:{},sold:0})),items,deck:shuffle(Object.keys(items).map(Number)),
+  S={players:players.map(p=>({name:p.name,ai:p.ai,remote:!!p.remote,pid:p.pid||null,money:START_MONEY,items:[],known:{},sold:0})),items,deck:shuffle(Object.keys(items).map(Number)),
      cdeck,cols:cdeck.splice(0,SHOW_COLS),lotN:0,turn:1,cur:Math.random()*players.length|0,phase:'turn',clear:null,
-     outFakes:0,goneReal:0,log:[],cfgPlayers:players,viewer:null};
+     outFakes:0,goneReal:0,log:[],cfgPlayers:players,viewer:null,gid:rid(6)};
+  if(NET.host)S.online={code:NET.code};
   S.first=S.cur;
   const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;
   log('時空裂縫打開，穿越者帶著寶物上門典當。','q');
@@ -409,7 +411,12 @@ function setupGame(players){
 
 /* ================= modal helpers ================= */
 function modalP(html,handle){return new Promise(res=>{openModal(html,(m,b)=>{if(handle&&handle(m,b)===false)return;closeModal();res(m);});});}
+// a question for a friend on their own phone: sent privately, answered there
+let ASK=null;
+function remoteAsk(j,spec){return new Promise(res=>{const id=rid(4);ASK={seat:j,id,spec,res};S.askSeat=j;render();});}
+function answerAsk(v){const A=ASK;if(!A)return;ASK=null;S.askSeat=null;A.res(v);}
 async function asHuman(i){
+  if(S.players[i].remote)return;
   if(humans().length>1&&S.viewer!==i){
     S.viewer=null;render();
     await modalP(`<div class="handoff">${avatar(i)}</div><h2>請把裝置交給 ${esc(S.players[i].name)}</h2><p class="sub">接下來的資訊只有 ${esc(S.players[i].name)} 能看。</p><div class="acts"><button class="btn primary" data-m="go">我是 ${esc(S.players[i].name)}</button></div>`);
@@ -418,6 +425,7 @@ async function asHuman(i){
 }
 async function bidModal(i,title,sub,min,max,passLabel,okLabel,extra=''){
   await asHuman(i);
+  if(S.players[i].remote){const v=await remoteAsk(i,{k:'bid',title,sub,min,max,passLabel,okLabel,extra});return v==null||max<min?null:Math.max(min,Math.min(max,Math.floor(+v)||min));}
   let v=Math.min(max,Math.max(min,min));
   const html=()=>`<h2>${title}</h2><p class="sub">${sub}</p>${extra}<div class="bidrow"><button data-m="d5">−5</button><button data-m="d1">−</button><b>$${v}</b><button data-m="u1">＋</button><button data-m="u5">+5</button></div><p class="note" style="text-align:center">可用現金 $${S.players[i].money}</p>
     <div class="acts">${passLabel?`<button class="btn" data-m="pass">${passLabel}</button>`:''}<button class="btn primary" data-m="ok" ${max<min?'disabled':''}>${okLabel} $${v}</button></div>`;
@@ -486,7 +494,8 @@ function pawn(i,id){
 async function appraise(i,id){
   const p=S.players[i];p.money-=APPRAISE;p.known[id]=!IT(id).fake;
   log(`${pn(i)} 花 $${APPRAISE} 鑑定了一件寶物`);
-  if(!p.ai){await asHuman(i);await modalP(`<h2>鑑定結果</h2>${lotHTML(id)}<div class="verdict ${IT(id).fake?'fake':'real'}">${IT(id).fake?'贗品':'真品'}</div><p class="sub">只有你知道這個結果。</p><div class="acts"><button class="btn primary" data-m="ok">收好</button></div>`);}
+  if(p.remote)await remoteAsk(i,{k:'info',html:`<h2>鑑定結果</h2>${lotHTML(id)}<div class="verdict ${IT(id).fake?'fake':'real'}">${IT(id).fake?'贗品':'真品'}</div><p class="sub">只有你知道這個結果。</p>`,ok:'收好'});
+  else if(!p.ai){await asHuman(i);await modalP(`<h2>鑑定結果</h2>${lotHTML(id)}<div class="verdict ${IT(id).fake?'fake':'real'}">${IT(id).fake?'贗品':'真品'}</div><p class="sub">只有你知道這個結果。</p><div class="acts"><button class="btn primary" data-m="ok">收好</button></div>`);}
 }
 function announce(title,body){
   if(!humans().length)return Promise.resolve();
@@ -500,7 +509,8 @@ async function auction(a,id,fresh){
   const at=ATYPES[S.lotN%3];S.lotN++;
   S.lot={id,a,type:at.k,fresh};render();
   if(fresh){S.players[a].known[id]=!IT(id).fake;
-    if(!S.players[a].ai){await asHuman(a);await modalP(`<h2>新物件上門</h2>${lotHTML(id)}<p class="sub">身為拍賣人，你偷偷驗了一下：</p><div class="verdict ${IT(id).fake?'fake':'real'}">${IT(id).fake?'贗品':'真品'}</div><p class="sub">接下來用「${at.n}」拍賣。${at.d}</p><div class="acts"><button class="btn primary" data-m="ok">開拍</button></div>`);}
+    if(S.players[a].remote)await remoteAsk(a,{k:'info',html:`<h2>新物件上門</h2>${lotHTML(id)}<p class="sub">身為拍賣人，你偷偷驗了一下：</p><div class="verdict ${IT(id).fake?'fake':'real'}">${IT(id).fake?'贗品':'真品'}</div><p class="sub">接下來用「${at.n}」拍賣。${at.d}</p>`,ok:'開始拍賣'});
+    else if(!S.players[a].ai){await asHuman(a);await modalP(`<h2>新物件上門</h2>${lotHTML(id)}<p class="sub">身為拍賣人，你偷偷驗了一下：</p><div class="verdict ${IT(id).fake?'fake':'real'}">${IT(id).fake?'贗品':'真品'}</div><p class="sub">接下來用「${at.n}」拍賣。${at.d}</p><div class="acts"><button class="btn primary" data-m="ok">開拍</button></div>`);}
   }
   log(`${pn(a)} ${fresh?'拿出新物件':'轉手拍賣'}「${itn(id)}」${stars(IT(id).stars)}，${at.n}`,'q');
   let res;
@@ -559,6 +569,7 @@ async function fixedAuction(a,id){
     if(j===a)continue;const p=S.players[j];if(p.money<price)continue;
     let buy=false;
     if(p.ai){await sleep(aiDelay()*.5);buy=price<=aiValue(j,id)*.95;}
+    else if(p.remote){buy=(await remoteAsk(j,{k:'choice',html:`<h2>一口價 $${price}</h2>${lotHTML(id,j)}<p class="sub">${esc(pa.name)} 開價 $${price}。要買嗎？你有 $${p.money}。</p>`,opts:[['no','不買'],['yes','買了']]}))==='yes';}
     else{await asHuman(j);buy=(await modalP(`<h2>一口價 $${price}</h2>${lotHTML(id,j)}<p class="sub">${esc(pa.name)} 開價 $${price}。要買嗎？你有 $${p.money}。</p><div class="acts"><button class="btn" data-m="no">不買</button><button class="btn primary" data-m="yes">買了</button></div>`))==='yes';}
     if(buy)return {w:j,price};
     log(`${pn(j)} 不買`);
@@ -577,9 +588,9 @@ async function runTurn(){
     S.cur=S.clear.left[0];
   }
   const i=S.cur,p=S.players[i];
-  UI={appraised:false};render();
+  UI={};S.appr=false;render();
   if(p.ai){await sleep(aiDelay());await aiTurn(i);}
-  else{await asHuman(i);UI={appraised:false};await new Promise(r=>{deskResolve=r;render();scrollDeskIntoView();});deskResolve=null;}
+  else{await asHuman(i);UI={};await new Promise(r=>{deskResolve=r;S.desk=true;render();if(!p.remote)scrollDeskIntoView();});deskResolve=null;S.desk=false;}
   if(S.phase==='end')return;
   if(S.phase==='clear'){S.clear.left.shift();}
   else{S.cur=(S.cur+1)%NP();if(S.cur===S.first)S.turn++;}
@@ -621,11 +632,11 @@ function endModal(){
    <div class="tablewrap"><table class="res"><thead><tr><th>當鋪</th><th>賣給收藏家</th><th>現金</th></tr></thead><tbody>
    ${sc.map((s,i)=>({s,i})).sort((a,b)=>b.s.money-a.s.money).map(({s,i})=>`<tr><td>${esc(S.players[i].name)}</td><td>${s.sold} 次</td><td><b>$${s.money}</b></td></tr>`).join('')}</tbody></table></div>
    <h3 style="font-size:16px;font-weight:900;margin:14px 0 6px">這局的贗品</h3><div class="items">${fakes.map(x=>`<span class="it fake" style="--ec:${ERAS[x.era].c}">${x.name}<small>${ERAS[x.era].n}</small></span>`).join('')}</div>
-   <div class="acts"><button class="btn" data-m="close">看看當鋪</button><button class="btn primary" data-m="again">再來一局</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
+   <div class="acts"><button class="btn${NET.client?' primary':''}" data-m="close">看看當鋪</button>${NET.client?'':'<button class="btn primary" data-m="again">再來一局</button>'}</div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
 }
 
 /* ================= view ================= */
-const myTurn=()=>S&&(S.phase==='turn'||S.phase==='clear')&&deskResolve&&!S.players[S.cur].ai&&S.viewer===S.cur&&$('#overlay').hidden;
+const myTurn=()=>S&&(S.phase==='turn'||S.phase==='clear')&&(NET.client?S.desk&&S.cur===NET.seat&&!UI.sent:deskResolve&&!S.players[S.cur].remote)&&!S.lot&&!S.players[S.cur].ai&&S.viewer===S.cur&&$('#overlay').hidden;
 const ERA_IMG=['dino','ancient','voyage','steam','cyber'];
 function itemArt(id){const it=IT(id);return `<img class="eraimg" src="img/${ERA_IMG[it.era]}.webp" alt="" loading="lazy">`;}
 function itemVec(id){const it=IT(id),c=ERAS[it.era].c;return `<svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="26" fill="${c}" opacity=".18"/><path d="M28 8l5 12 13 1-10 8 3 13-11-7-11 7 3-13-10-8 13-1z" fill="${c}"/><text x="28" y="34" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">${it.stars}</text></svg>`;}
@@ -651,6 +662,7 @@ function render(){
   $('#stat').innerHTML=`<span class="chip">牌堆剩 ${S.deck.length} 件</span><span class="chip down">贗品共 ${FAKES} 件・已曝光 ${S.outFakes}</span>${ATYPES.map((t,k)=>`<span class="chip ${k===S.lotN%3?'gold':''}">${t.n}</span>`).join('')}`;
   renderDesk();renderPlayers();
   $('#feed').innerHTML=feedHTML(S.log,l=>l.t?'第'+l.t+'輪':'—','每一場拍賣和交易都會記在這裡。');
+  NET.publish();
 }
 function renderDesk(){
   let h=leafDeco;
@@ -667,7 +679,7 @@ function renderDesk(){
          <button data-mode="resell" class="${UI.mode==='resell'?'on':''}" ${p.items.length?'':'disabled'}><b>轉手拍賣</b><span>把自己的一件寶物拿出來拍賣</span></button>`}
          <button data-mode="sell" class="${UI.mode==='sell'?'on':''}" ${p.items.length?'':'disabled'}><b>賣給收藏家</b><span>選一位收藏家和符合的寶物</span></button>
          <button data-mode="pawn" class="${UI.mode==='pawn'?'on':''}" ${p.items.length?'':'disabled'}><b>典當給銀行</b><span>一件換 $星數，贗品會被沒收</span></button>
-         <button data-mode="appraise" class="${UI.mode==='appraise'?'on':''}" ${p.items.length&&p.money>=APPRAISE&&(clear||!UI.appraised)?'':'disabled'}><b>鑑定 $${APPRAISE}</b><span>偷偷看一件自己寶物的真假</span></button>
+         <button data-mode="appraise" class="${UI.mode==='appraise'?'on':''}" ${p.items.length&&p.money>=APPRAISE&&(clear||!S.appr)?'':'disabled'}><b>鑑定 $${APPRAISE}</b><span>偷偷看一件自己寶物的真假</span></button>
         </div>`;
       const sel=UI.sel||[];
       if(UI.mode==='new')h+=`<button class="confirm" id="btnGo">開拍 ${ICONS.arrow}</button>`;
@@ -677,16 +689,17 @@ function renderDesk(){
       if(clear)h+=`<button class="passbtn" id="btnDone">清倉結束</button>`;
       h+=myIntel(S.cur);
     }else{
-      h+=`<div class="dhead"><h2>${p.ai?'對手營業中':'換人中'}</h2><span class="pill soft">${S.phase==='clear'?'清倉':'第 '+S.turn+' 輪'}</span></div><div class="think">${avatar(S.cur)}<div><b>${esc(p.name)}</b><div>${p.ai?'翻著帳本<span class="dots"></span>':'等待交接裝置'}</div></div></div>`;
+      h+=`<div class="dhead"><h2>${UI.sent?'已送出':p.ai?'對手營業中':(p.remote||NET.client)?'等待對手':'換人中'}</h2><span class="pill soft">${S.phase==='clear'?'清倉':'第 '+S.turn+' 輪'}</span></div><div class="think">${avatar(S.cur)}<div><b>${esc(p.name)}</b><div>${UI.sent?'等房主確認<span class="dots"></span>':p.ai?'翻著帳本<span class="dots"></span>':(p.remote||NET.client)?'在自己的手機上盤算<span class="dots"></span>':'等待交接裝置'}</div></div></div>`;
       if(S.viewer!=null)h+=myIntel(S.viewer);
     }
   }else if(S.phase==='end'){
     h+=`<div class="dhead"><h2>打烊</h2><span class="pill">冠軍</span></div><div class="think">${avatar(S.winners[0])}<div><b>${S.winners.map(i=>esc(S.players[i].name)).join('、')}</b><div>現金 $${S.final[S.winners[0]].money}</div></div></div>
-     <button class="passbtn" id="btnResult">再看一次結算</button><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`;
+     <button class="passbtn" id="btnResult">再看一次結算</button>${NET.client?'':`<button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`}`;
   }else{
     h+=`<div class="dhead"><h2>準備開店</h2></div><div class="empty"><b>設定玩家後開始</b>3 到 5 間當鋪，可以混搭 AI。</div>`;
   }
-  $('#desk').innerHTML=h;
+  if(S.askSeat!=null&&S.players[S.askSeat]&&S.askSeat!==S.viewer)h+=`<div class="dnote">等待 ${esc(S.players[S.askSeat].name)} 決定<span class="dots"></span></div>`;
+  $('#desk').innerHTML=h+NET.barHTML();
 }
 function myIntel(i){
   const p=S.players[i],ks=Object.entries(p.known).filter(([id])=>p.items.includes(+id));
@@ -714,12 +727,13 @@ function showSetup(){
    <div class="pitch"><div><b>三種競標</b>公開喊價、密封出價、一口價輪流出現。</div><div><b>拍賣人知道真假</b>拿出新物件的人可以偷看，買家只能猜。</div><div><b>贗品風險</b>收藏家會驗貨，被抓到整筆交易作廢還要罰錢。</div></div>
    ${setupSeatsHTML(setupCfg,3,5)}
    <p class="note">多位人類玩家可以共用一台裝置。密封出價和鑑定結果會在換人時蓋起來。</p>
-   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${sv&&(sv.phase==='turn'||sv.phase==='clear')?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${NET.setupBtns()}${sv&&(sv.phase==='turn'||sv.phase==='clear')?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
   m=>{
     if(setupSeatsHandle(setupCfg,m,showSetup))return;
+    if(NET.setupHandle(m))return;
     if(m==='rules')showRules();
-    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;S.lot=null;const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;runTurn();}
-    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
+    else if(m==='resume')resumeGame(sv);
+    else if(m==='start'){NET.leave();closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
   });
 }
 function showRules(){showRulesHTML(`
@@ -752,23 +766,73 @@ $('#desk').addEventListener('click',async e=>{
   if(!myTurn())return;
   const b=e.target.closest('button');if(!b||b.disabled)return;
   const i=S.cur,p=S.players[i];
-  if(b.dataset.mode){UI={appraised:UI.appraised,mode:UI.mode===b.dataset.mode?null:b.dataset.mode,sel:[],col:null};render();return;}
-  if(b.id==='btnDone'){const r=deskResolve;deskResolve=null;log(`${pn(i)} 清倉完畢`);r&&r();return;}
+  if(b.dataset.mode){UI={mode:UI.mode===b.dataset.mode?null:b.dataset.mode,sel:[],col:null};render();return;}
+  if(b.id==='btnDone')return act({t:'done'});
   if(b.id!=='btnGo')return;
-  const mode=UI.mode,sel=UI.sel||[],col=UI.col;const r=deskResolve;
-  if(mode==='appraise'){if(p.money<APPRAISE)return;deskResolve=null;await appraise(i,sel[0]);UI={appraised:true};deskResolve=r;render();return;}
-  if(mode==='pawn'){pawn(i,sel[0]);save();if(S.phase==='clear'){UI={};render();return;}deskResolve=null;r();return;}
-  if(mode==='sell'){deskResolve=null;await sell(i,col,sel);save();if(S.phase==='clear'){UI={};deskResolve=r;render();return;}r();return;}
-  deskResolve=null;
-  if(mode==='new')await auction(i,S.deck.pop(),true);
-  else if(mode==='resell')await auction(i,sel[0],false);
-  r();
+  act({t:'go',mode:UI.mode,sel:UI.sel||[],col:UI.col});
 });
+// one entry point for a turn move: this device, or the host applying a move sent from a friend's phone
+function act(a){
+  if(NET.client){NET.send(a);UI={sent:true};render();return;}
+  applyDesk(S.cur,a);
+}
+async function applyDesk(i,a){
+  if(!deskResolve||i!==S.cur||S.lot)return;
+  const p=S.players[i],r=deskResolve,clear=S.phase==='clear';
+  if(a.t==='done'){if(!clear)return;deskResolve=null;log(`${pn(i)} 清倉完畢`);r();return;}
+  if(a.t!=='go')return;
+  const mode=a.mode,sel=[...new Set((Array.isArray(a.sel)?a.sel:[]).map(Number))].filter(id=>p.items.includes(id)),col=a.col==null?null:+a.col;
+  if(mode==='appraise'){if(p.money<APPRAISE||sel.length!==1||(!clear&&S.appr))return;deskResolve=null;await appraise(i,sel[0]);UI={};S.appr=true;deskResolve=r;render();return;}
+  if(mode==='pawn'){if(sel.length!==1)return;pawn(i,sel[0]);save();if(clear){UI={};render();return;}deskResolve=null;r();return;}
+  if(mode==='sell'){if(!S.cols.includes(col)||!setOK(col,sel))return;deskResolve=null;await sell(i,col,sel);save();if(clear){UI={};deskResolve=r;render();return;}r();return;}
+  if(clear)return;
+  if(mode==='new'){if(!S.deck.length)return;deskResolve=null;await auction(i,S.deck.pop(),true);}
+  else if(mode==='resell'){if(sel.length!==1)return;deskResolve=null;await auction(i,sel[0],false);}
+  else return;
+  r();
+}
+async function resumeGame(sv){
+  closeModal();SPEED=SPEEDS[setupCfg.speed];NET.leave();
+  if(sv.online&&!(await NET.resumeHost(sv))){sv.players.forEach(p=>{if(p.remote){p.remote=false;p.ai=true;}});delete sv.online;}
+  S=sv;S.lot=null;S.askSeat=null;S.desk=false;const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;runTurn();
+}
+function clientAskModal(A){
+  const s=A.spec,send=v=>{closeModal();NET.send({t:'ask',id:A.id,v});};
+  if(s.k==='info')return openModal(`${s.html}<div class="acts"><button class="btn primary" data-m="ok">${s.ok||'知道了'}</button></div>`,()=>send('ok'));
+  if(s.k==='choice')return openModal(`${s.html}<div class="acts">${s.opts.map(([k,l],n)=>`<button class="btn${n===s.opts.length-1?' primary':''}" data-m="${k}">${l}</button>`).join('')}</div>`,m=>send(m));
+  let v=s.min;
+  const html=()=>`<h2>${s.title}</h2><p class="sub">${s.sub}</p>${s.extra||''}<div class="bidrow"><button data-m="d5">−5</button><button data-m="d1">−</button><b>$${v}</b><button data-m="u1">＋</button><button data-m="u5">+5</button></div><p class="note" style="text-align:center">可用現金 $${S.players[NET.seat].money}</p>
+    <div class="acts">${s.passLabel?`<button class="btn" data-m="pass">${s.passLabel}</button>`:''}<button class="btn primary" data-m="ok" ${s.max<s.min?'disabled':''}>${s.okLabel} $${v}</button></div>`;
+  openModal(html(),m=>{const d={d5:-5,d1:-1,u1:1,u5:5}[m];if(d){v=Math.max(s.min,Math.min(s.max,v+d));$('#modal').innerHTML=html();return;}send(m==='ok'?v:null);});
+}
+const GAME={id:'time-pawn',name:'時空當鋪',hostKey:'time-pawn-net-host',clientKey:'time-pawn-net-client',min:3,max:5,aiNames:AI_NAMES,
+  secretHint:'鑑定結果、你偷看到的真假和密封出價只會出現在你自己的手機上。',
+  start(cfg){setupGame(cfg);},
+  strip(pub){if(pub.phase==='end')return;Object.values(pub.items).forEach(x=>{x.fake=null;});pub.deck=pub.deck.map(()=>null);pub.players.forEach(p=>{p.known={};});},
+  secret(i){return {known:S.players[i].known,ask:ASK&&ASK.seat===i?{id:ASK.id,spec:ASK.spec}:null};},
+  applySecret(seat,sec){if(S.phase==='end')return;S.players[seat].known=sec.known||{};S._ask=sec.ask||null;},
+  waiting(){if(!S||S.phase==='end')return [];if(ASK)return S.players[ASK.seat].ai?[]:[ASK.seat];if(deskResolve&&!S.players[S.cur].ai)return [S.cur];return [];},
+  action(seat,a){
+    if(a.t==='ask'){if(!ASK||ASK.seat!==seat||a.id!==ASK.id)return;answerAsk(a.v);return;}
+    applyDesk(seat,a);
+  },
+  afterTakeover(ws){ws.forEach(i=>{S.cfgPlayers[i]={name:S.players[i].name,ai:true};});
+    if(ASK&&ws.includes(ASK.seat)){const k=ASK.spec.k;answerAsk(k==='bid'?null:k==='choice'?'no':'ok');}
+    else if(deskResolve&&ws.includes(S.cur)){const i=S.cur,r=deskResolve;deskResolve=null;aiTurn(i).then(()=>r());}
+    render();},
+  resumeUI(){if(S.phase==='end')endModal();else render();},
+  clientReset(prev){if(!prev||prev.gid!==S.gid||prev.cur!==S.cur||prev.desk!==S.desk||prev.phase!==S.phase||JSON.stringify(prev.players[NET.seat].items)!==JSON.stringify(S.players[NET.seat].items)||prev.appr!==S.appr)UI={};},
+  clientModal(){
+    if(S.phase==='end')return {key:'end'+S.gid,open:endModal};
+    if(S._ask)return {key:'ask'+S._ask.id,open:()=>clientAskModal(S._ask)};
+    return null;
+  },
+};
 $('#inv').addEventListener('click',e=>{const b=e.target.closest('[data-it]');if(!b||!myTurn())return;const id=+b.dataset.it;
   if(UI.mode==='sell'){UI.sel=UI.sel.includes(id)?UI.sel.filter(x=>x!==id):UI.sel.concat(id);}else UI.sel=[id];render();});
 $('#cols').addEventListener('click',e=>{const b=e.target.closest('[data-col]');if(!b||!myTurn())return;UI.col=+b.dataset.col;render();});
 $('#btnRules').addEventListener('click',showRules);
-$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除，要重新整理頁面才會完全中止進行中的拍賣。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();location.reload();}else{closeModal();render();}});}else showSetup();});
+$('#btnNew').addEventListener('click',()=>{if(NET.online){NET.confirmLeave();return;}if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除，要重新整理頁面才會完全中止進行中的拍賣。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();location.reload();}else{closeModal();render();}});}else showSetup();});
 
 /* ================= boot ================= */
 window.__game={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;}};

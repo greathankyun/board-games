@@ -367,7 +367,11 @@ const NET={
     if(unknown)setTimeout(()=>{if(this.client&&!meta&&this.code===info.code)this.bye('找不到房間',`沒有房號 ${esc(info.code)} 的房間。請再跟房主確認一次房號。`);},8000);
     this.startHeartbeat(info.pid);
     this.offs.push(this.tx.on(`rooms/${info.code}/hb/host`,v=>{if(v==='off')this.hostSeen=Date.now()-this.DROP_MS-1;else this.hostSeen=Date.now();this.paint();}));
-    clearInterval(this.watchTimer);this.watchTimer=setInterval(()=>this.paint(),1000);
+    clearInterval(this.watchTimer);this.watchTimer=setInterval(()=>{
+      this.paint();
+      // a move the host ignored (e.g. it arrived too late) must not leave this phone stuck on "sent"
+      try{if(typeof UI!=='undefined'&&UI&&UI.sent&&this._sentAt&&Date.now()-this._sentAt>6000&&(this._pubAt||0)<this._sentAt){UI.sent=false;this.resync();}}catch(e){}
+    },1000);
     this.offs.push(this.tx.on(`rooms/${info.code}/meta`,async v=>{
       try{meta=JSON.parse(v);}catch(e){return;}
       if(meta.game!==GAME.id)return this.bye('房號不對',`這個房號是別款遊戲的房間，請確認房主開的是《${esc(GAME.name)}》。`);
@@ -380,7 +384,7 @@ const NET={
       if(this.lastPub&&pub.v<=this.lastPub.v&&pub.gid===this.lastPub.gid)return;
       const seat=pub.players.findIndex(p=>p.pid===info.pid);
       if(seat<0){if(this.seat!=null||pub.phase!=='idle')this.bye('來不及加入','這個房間的遊戲已經開始，沒有你的座位。');return;}
-      const first=this.seat==null;this.seat=seat;this.lastPub=pub;this.hostSeen=Math.max(this.hostSeen,Date.now());if(first&&!$('#overlay').hidden)closeModal();this.sync();}));
+      const first=this.seat==null;this.seat=seat;this.lastPub=pub;this._pubAt=Date.now();this.hostSeen=Math.max(this.hostSeen,Date.now());if(first&&!$('#overlay').hidden)closeModal();this.sync();}));
   },
   async trySecret(){if(!this.aes||!this.secretRaw)return;const raw=this.secretRaw;try{const s=await Crypto.dec(this.aes,raw);if(raw!==this.secretRaw)return;this.secret=s;if(this.lastPub)this.sync();}catch(e){console.error(e);}},
   waitModal(meta){
@@ -414,6 +418,7 @@ const NET={
     if(this.role!=='client')return;
     if(!this.aes){this.flashMsg('還在連線，請再按一次');return;}
     const n=Date.now()*1000+(this._n=(this._n+1)%1000);
+    this._sentAt=Date.now();
     const e=await Crypto.enc(this.aes,{...a,_n:n});
     this.tx.push(`rooms/${this.code}/actions`,JSON.stringify({pid:this.pid,e}));
   },
