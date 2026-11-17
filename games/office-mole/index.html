@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>尾牙內鬼</title>
+<meta name="description" content="原創社交推理派對遊戲：尾牙抽獎被動手腳，靠監視器線索和人資調查揪出內鬼。不需要主持人，被請走的人也能繼續投票。">
+<meta name="theme-color" content="#1E5641">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="桌遊大廳">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Outfit:wght@600;700;800&display=swap">
+<style>
+:root{
+  --paper:#F5EEE1; --paper2:#EFE6D4; --card:#FFFBF4; --ink:#1F2B27; --muted:#6E7068; --line:#E5D9C3; --line2:#D9CBB1;
+  --green:#1E5641; --green2:#28704F; --green-ink:#F3F7EF; --yellow:#F5C443; --yellow-ink:#2A2310;
+  --orange:#E9643B; --pink:#F7DDD3; --pink2:#EFC6B8; --up:#2C8F4E; --up-bg:#D5EEDA; --down:#C8432F; --down-bg:#F7DAD3; --flat-bg:#ECE5D7;
+  --red:#D7542B; --red-bg:#F8DCCF; --blue:#2E7DC0; --blue-bg:#D6E7F5; --violet:#7A5AD3; --violet-bg:#E4DCF7; --gold:#D19A17; --gold-bg:#F6E7BE;
+  --p0:#E58FA0; --p1:#8B67D6; --p2:#4F9E61; --p3:#E0922F; --p4:#3E9CC4; --p5:#C8573E; --p6:#6C7A3A; --p7:#5C6BC0;
+  --scrim:rgba(40,32,20,.45);
+  --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+  --f-num:'Outfit','Noto Sans TC',system-ui,sans-serif;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;font-weight:500}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(rgba(120,90,40,.07) 1px,transparent 1px);background-size:5px 5px}
+.wrap{position:relative;z-index:1;max-width:1600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 28px}
+h1,h2,h3,h4{text-wrap:balance;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+svg{display:block}
+
+/* header */
+.top{display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap;padding-block:6px 12px;border-bottom:1.5px solid var(--line2)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand svg{width:44px;height:44px;flex:none}
+.brand h1{font-size:clamp(26px,3.4vw,38px);font-weight:900;letter-spacing:.06em;line-height:1}
+.brand small{font-family:var(--f-num);font-size:12px;letter-spacing:.42em;color:var(--ink);font-weight:600;margin-left:6px}
+.homelink{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:900;color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);border-radius:12px;padding:7px 12px;background:var(--card)}.homelink svg{width:18px;height:18px}
+.vsep{width:1.5px;align-self:stretch;background:var(--line2);margin-block:6px}
+.steps{display:flex;align-items:center;flex:1;min-width:0;justify-content:center}
+.step{font-family:var(--f-num);font-weight:700;font-size:15px;padding:5px 14px;border-radius:999px;border:1.5px solid var(--line2);background:var(--card);color:var(--ink);white-space:nowrap}
+.step.done{color:var(--muted);background:var(--paper2)}
+.step.now{background:var(--green);border-color:var(--green);color:var(--green-ink);font-size:17px;padding:6px 18px}
+.link{flex:1;min-width:8px;max-width:56px;height:2px;background:repeating-linear-gradient(90deg,var(--line2) 0 4px,transparent 4px 8px)}
+.link.done{background:var(--green)}
+.tops{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:12px;cursor:pointer;font-weight:700;line-height:1.2;text-decoration:none}
+.btn svg{width:18px;height:18px}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.dark,.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.ghost{background:transparent}
+
+/* layout */
+.board{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,430px);grid-template-areas:"hero desk" "main desk";grid-template-rows:auto 1fr;gap:14px 18px;margin-top:12px;align-items:start}
+.hero{grid-area:hero;position:relative;min-height:140px;display:flex;align-items:center;overflow:hidden;border-radius:18px}
+.hero-txt{position:relative;z-index:2;padding:8px 0 10px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-family:var(--f-num);font-weight:600;letter-spacing:.32em;font-size:13px}
+.eyebrow::after{content:"";width:80px;height:1.5px;background:var(--ink)}
+.hero h2{font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:.03em;line-height:1.15;margin-top:6px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.swoosh{display:block;width:150px;height:14px;margin-top:-2px}
+.qbadge{position:relative;font-size:17px;font-weight:900;border:2px solid var(--ink);border-radius:999px;padding:3px 14px;background:var(--card);letter-spacing:.04em}
+.hero-art{position:absolute;right:0;top:0;bottom:0;width:min(62%,640px);z-index:1;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 28%);mask-image:linear-gradient(90deg,transparent 0%,#000 28%)}
+.hero-art svg{width:100%;height:100%}
+main{grid-area:main;min-width:0}
+.sect{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:900;padding-bottom:10px;border-bottom:1.5px solid var(--line2);margin:0 0 12px}
+.sect svg{width:26px;height:26px;color:var(--orange)}
+.sect{flex-wrap:wrap}
+.sect small{font-size:13px;color:var(--muted);font-weight:700;margin-left:auto}
+@media (max-width:640px){.sect small{flex-basis:100%;margin-left:0}}
+
+/* desk */
+.desk{grid-area:desk;position:sticky;top:max(10px,env(safe-area-inset-top,0px));background:var(--green);color:var(--green-ink);border-radius:26px;padding:24px 24px 22px;overflow:hidden;display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 40px rgba(20,60,45,.25)}
+.desk .leaf{position:absolute;right:-30px;top:-20px;width:190px;height:190px;opacity:.9;pointer-events:none}
+.desk>*{position:relative}
+.dhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dhead h2{font-size:clamp(26px,2.6vw,36px);font-weight:900;letter-spacing:.04em;line-height:1.1}
+.pill{background:var(--orange);color:#fff;font-weight:900;border-radius:999px;padding:5px 14px;font-size:15px;white-space:nowrap}
+.pill.soft{background:rgba(255,255,255,.16)}
+.dsub{font-weight:700;font-size:15px;margin-top:-6px;opacity:.9}
+.dlab{font-size:14px;opacity:.9;font-weight:900;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.dlab small{font-weight:700;opacity:.8;font-size:12px}
+.dnote{font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px}
+.dnote.warn{background:rgba(233,100,59,.28)}
+.confirm{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:none;border-radius:16px;background:var(--yellow);color:var(--yellow-ink);font-size:22px;font-weight:900;padding:13px;cursor:pointer;box-shadow:0 4px 0 #C99A1E;letter-spacing:.06em}
+.confirm svg{width:24px;height:24px}
+.confirm:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #C99A1E}
+.confirm:disabled{opacity:.5;cursor:not-allowed}
+.passbtn{width:100%;border:2px solid rgba(255,255,255,.85);background:transparent;color:var(--green-ink);border-radius:14px;font-weight:900;font-size:17px;padding:10px;cursor:pointer}
+.passbtn:hover{background:rgba(255,255,255,.08)}
+.empty{border:2px dashed rgba(255,255,255,.35);border-radius:16px;padding:20px 16px;text-align:center;font-weight:700;opacity:.92}
+.empty b{display:block;font-size:19px;margin-bottom:4px}
+.think{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.1);border-radius:16px;padding:14px}
+.think .av{width:56px;height:56px;flex:none}
+.think b{font-size:19px}
+.dots::after{content:"…";display:inline-block;animation:blink 1.1s steps(3) infinite}
+@keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+.chooser{display:flex;flex-wrap:wrap;gap:6px}
+.chooser button{border:2px solid rgba(255,255,255,.55);background:transparent;color:var(--green-ink);border-radius:12px;padding:7px 12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:40px}
+.chooser button .av{width:24px;height:24px}
+.chooser button.on{background:var(--card);color:var(--ink);border-color:var(--card)}
+.chooser button:disabled{opacity:.35;cursor:not-allowed}
+.chooser button.red.on{background:var(--red);border-color:var(--red);color:#fff}
+.chooser button.blue.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chooser.big button{flex:1;justify-content:center;font-size:16px}
+.opt2{display:flex;flex-direction:column;gap:6px}
+.opt2 button{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;border:2px solid rgba(255,255,255,.4);background:transparent;color:var(--green-ink);border-radius:12px;padding:9px 12px;cursor:pointer}
+.opt2 button b{font-weight:900;font-size:15px}
+.opt2 button span{font-size:12px;opacity:.85}
+.opt2 button.on{background:var(--card);color:var(--ink);border-color:var(--card)}
+.opt2 button.on span{opacity:1;color:var(--muted)}
+.opt2 button:disabled{opacity:.35;cursor:not-allowed}
+.dsec{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+
+/* private note card */
+.intel{position:relative;background:var(--pink);color:var(--ink);border-radius:14px;padding:14px 16px 12px;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.intel::after{content:"";position:absolute;right:0;top:0;width:28px;height:28px;background:linear-gradient(225deg,var(--green) 50%,var(--pink2) 50%);border-bottom-left-radius:8px}
+.intel .ilab{display:flex;align-items:center;gap:8px;font-weight:900;color:#B24A35;font-size:16px;padding-bottom:8px;border-bottom:1.5px solid var(--pink2)}
+.intel .ilab svg{width:20px;height:20px}
+.intel ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.intel li{font-size:13.5px;line-height:1.45;display:flex;gap:8px;align-items:flex-start}
+.intel li .rt{font-family:var(--f-num);font-weight:700;font-size:11px;border:1.5px solid var(--pink2);border-radius:6px;padding:0 5px;background:var(--card);white-space:nowrap;margin-top:1px}
+.intel li.void{opacity:.45;text-decoration:line-through}
+.intel .inote{font-size:12.5px;color:#5B4A40;margin-top:8px}
+.intel .big{font-size:22px;font-weight:900;margin:8px 0 2px}
+.stamp{border:1.5px solid #B24A35;color:#B24A35;border-radius:8px;padding:1px 9px;font-weight:900;font-size:12px;white-space:nowrap;display:inline-block;transform:rotate(-3deg)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:900;padding:1px 9px;border-radius:8px;background:var(--flat-bg);color:var(--ink);white-space:nowrap}
+.chip.red{background:var(--red);color:#fff}.chip.blue{background:var(--blue);color:#fff}.chip.violet{background:var(--violet);color:#fff}
+.chip.gold{background:var(--gold-bg);color:#6B4D07}.chip.green{background:var(--up-bg);color:var(--up)}.chip.down{background:var(--down-bg);color:var(--down)}
+
+/* feed */
+.feed{margin-top:18px}
+.feedlist{list-style:none;margin:0;padding:0;overflow:auto;max-height:320px}
+.feedlist li{display:grid;grid-template-columns:auto 34px minmax(0,1fr);gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.qtag{font-family:var(--f-num);font-weight:700;font-size:12px;border:1.5px solid var(--line2);border-radius:6px;padding:1px 6px;background:var(--card)}
+.feedlist .av{width:34px;height:34px}
+.feedlist .txt{font-size:13.5px;line-height:1.45;min-width:0}
+.feedlist .ic{width:34px;height:34px;border-radius:50%;background:var(--paper2);display:grid;place-items:center;color:var(--green)}
+.feedlist .ic svg{width:18px;height:18px}
+.feedlist li.q .txt{font-weight:900;color:var(--green)}
+.feedlist li.k .txt{color:#8A4A12}
+.pn{font-weight:900;color:var(--ink)}
+
+/* players strip */
+.players{margin-top:18px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));padding:8px;gap:6px;box-shadow:0 8px 20px rgba(90,70,30,.06)}
+.pl{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;position:relative;min-width:0}
+.pl.cur{background:var(--pink)}
+.pl .av{width:52px;height:52px;flex:none}
+.pl .nm{font-size:17px;font-weight:900;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:700;border:1.5px solid var(--line2);border-radius:6px;padding:0 5px;color:var(--muted);background:var(--card)}
+.pl .fig{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.pl .fig b{font-family:var(--f-num);font-weight:800;color:var(--ink);font-size:16px;margin-left:3px}
+
+/* responsive */
+@media (max-width:1040px){
+  .board{grid-template-columns:minmax(0,1fr);grid-template-areas:"hero" "desk" "main"}
+  .desk{position:relative;top:0}
+  .hero-art{width:70%;opacity:.55}
+}
+@media (max-width:640px){
+  .vsep{display:none}
+  .steps{order:3;flex-basis:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px}
+  .step{padding:4px 10px;font-size:13px}.step.now{padding:5px 12px;font-size:15px}
+  .brand small{display:none}
+  .desk{padding:20px 16px;border-radius:22px}
+  .tops .btn{padding:8px 11px}
+}
+
+/* modals */
+.overlay{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--card);color:var(--ink);border-radius:24px;border:1.5px solid var(--line);width:min(660px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:24px;box-shadow:0 30px 70px rgba(40,30,10,.3)}
+.modal h2{font-size:27px;font-weight:900;margin-bottom:6px;letter-spacing:.03em}
+.modal .sub{color:var(--muted);margin:0 0 14px}
+.modal .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.modal .acts .btn{padding:10px 20px;font-size:16px}
+.modal .intel::after{background:linear-gradient(225deg,var(--card) 50%,var(--pink2) 50%)}
+.seats{display:flex;flex-direction:column;gap:10px}
+.seat{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center}
+.seat .av{width:44px;height:44px}
+.seat input{font:inherit;font-weight:700;padding:9px 12px;border:1.5px solid var(--line2);border-radius:12px;background:var(--paper);color:var(--ink);min-width:0;width:100%}
+.seg{display:inline-flex;border:1.5px solid var(--line2);border-radius:12px;overflow:hidden;background:var(--paper);flex-wrap:wrap}
+.seg button{border:none;background:transparent;color:var(--muted);padding:8px 12px;cursor:pointer;font-weight:700}
+.seg button.on{background:var(--green);color:var(--green-ink)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;flex-wrap:wrap}
+.field>span{font-weight:900;font-size:16px}
+.note{font-size:12px;color:var(--muted)}
+.pitch{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 6px}
+.pitch div{background:var(--paper);border-radius:14px;padding:12px;font-size:13px;color:var(--muted)}
+.pitch b{display:block;color:var(--ink);font-size:15px;font-weight:900;margin-bottom:2px}
+.setup-art{height:120px;margin:-24px -24px 16px;overflow:hidden;border-radius:24px 24px 0 0}
+.setup-art svg{width:100%;height:100%}
+.rules{font-size:15px;line-height:1.8}
+.rules h3{font-size:19px;font-weight:900;margin:18px 0 6px;color:var(--green)}
+.rules p,.rules li{max-width:64ch}
+.rules ol,.rules ul{padding-left:1.3em;margin:6px 0}
+.rules table{border-collapse:collapse;font-size:14px;margin:6px 0;width:100%}
+.rules td,.rules th{border-top:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.rules th{font-size:12px;color:var(--muted)}
+.handoff .av{width:84px;height:84px;margin-bottom:10px}
+table.res{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+table.res th{font-size:12px;color:var(--muted);text-align:right;font-weight:700;padding:4px 6px}
+table.res td{text-align:right;padding:8px 6px;border-top:1px solid var(--line);font-family:var(--f-num);font-weight:700;font-variant-numeric:tabular-nums}
+table.res th:first-child,table.res td:first-child{text-align:left;font-family:var(--f-body)}
+.tablewrap{overflow-x:auto}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+.win{font-size:32px;font-weight:900;color:var(--green);margin:4px 0}
+.revlist{display:flex;flex-direction:column;gap:8px}
+.rev{border:1.5px solid var(--line2);border-radius:14px;padding:10px 14px;background:var(--paper);display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.rev h4{font-size:16px;font-weight:900}
+.rev .kn{font-size:12.5px;color:var(--muted);font-weight:700}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none}.btn{transition:none}}
+
+
+/* ---- game ---- */
+/* Layout: prize stage, CCTV clues and the staff roster on the left; the green desk on the right handles night actions, talk and votes. */
+.prz{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.pz{border-radius:14px;background:var(--card);border:1.5px solid var(--line2);padding:10px 8px;text-align:center;display:flex;flex-direction:column;gap:2px;align-items:center;min-width:0}
+.pz .rk{font-weight:900;font-size:13px;color:var(--muted)}
+.pz .ic{font-size:26px;line-height:1.1}
+.pz b{font-size:13.5px;font-weight:900;line-height:1.25}
+.pz .vv{font-family:var(--f-num);font-weight:800;font-size:12px;color:var(--muted)}
+.pz.stolen{background:#4A4A4A;border-color:#4A4A4A;color:#eee}.pz.stolen .rk,.pz.stolen .vv{color:#ccc}
+.pz.safe{background:var(--up-bg);border-color:var(--up-bg)}
+.pz.now{outline:3px solid var(--yellow);outline-offset:2px}
+.pz .st{font-size:11px;font-weight:900;border-radius:6px;padding:0 6px;background:var(--paper2)}
+.pz.stolen .st{background:#fff;color:#C8432F}
+@media (max-width:560px){.prz{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.cluelist{display:flex;flex-wrap:wrap;gap:8px}
+.clue{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line2);background:var(--card);border-radius:12px;padding:6px 10px;font-size:13.5px;font-weight:700}
+.clue .tv{background:#1F2B27;color:#fff;border-radius:8px;padding:1px 8px;font-weight:900}
+.clue.blk{border-style:dashed}
+.ros{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.emp{border:1.5px solid var(--line2);background:var(--card);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:5px;min-width:0;position:relative}
+.emp .hd{display:flex;align-items:center;gap:8px;font-weight:900}
+.emp .hd .av{width:36px;height:36px;flex:none}
+.emp .hd span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.emp .trs{display:flex;flex-wrap:wrap;gap:3px}
+.trt{font-size:11.5px;font-weight:900;border-radius:6px;padding:0 6px;background:var(--paper2)}
+.trt.hit{background:#1F2B27;color:#fff}
+.emp .cl{font-size:12px;color:var(--muted);font-weight:700}
+.emp.out{opacity:.62;background:var(--paper2)}
+.emp.out::after{content:attr(data-out);position:absolute;right:8px;top:8px;font-size:11px;font-weight:900;border:1.5px solid var(--down);color:var(--down);border-radius:6px;padding:0 6px;transform:rotate(4deg);background:var(--card)}
+.emp.mole.out::after{border-color:#1F2B27;color:#fff;background:#1F2B27}
+.emp.cur{outline:3px solid var(--yellow);outline-offset:1px}
+.emp .votes{display:flex;gap:2px;flex-wrap:wrap}
+.vdot{width:20px;height:20px}
+.emp .vb{font-size:12px;font-weight:900;color:var(--down)}
+.pl.out{opacity:.55}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="homelink" href="../../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>大廳</a>
+    <div class="brand"><svg viewBox="0 0 56 48" aria-hidden="true"><rect x="8" y="14" width="38" height="28" rx="3" fill="#C8432F"/><rect x="8" y="14" width="38" height="8" fill="#8E2A1C"/><rect x="24" y="14" width="6" height="28" fill="#F5C443"/><path d="M27 14c-8-12-16-4-8 0M27 14c8-12 16-4 8 0" fill="none" stroke="#F5C443" stroke-width="3"/><circle cx="44" cy="12" r="7" fill="#1F2B27"/><circle cx="44" cy="12" r="2.6" fill="#E9643B"/></svg><h1>尾牙內鬼</h1><small>OFFICE MOLE</small></div>
+    <span class="vsep"></span>
+    <nav class="steps" id="steps" aria-label="回合"></nav>
+    <span class="vsep"></span>
+    <div class="tops">
+      <button class="btn" id="btnRules" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>規則</button>
+      <button class="btn dark" id="btnNew" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新遊戲</button>
+    </div>
+  </header>
+  <div class="board">
+    <section class="hero" id="hero"></section>
+    <aside class="desk" id="desk" aria-live="polite"></aside>
+    <main>
+      <h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13M12 8c-3-5-7-3-4 0M12 8c3-5 7-3 4 0"/></svg>抽獎台<small id="scorenote"></small></h3>
+      <div id="prizes"></div>
+      <h3 class="sect" style="margin-top:16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="6" width="13" height="9" rx="2"/><path d="M16 9l5-2v8l-5-2M7 15l-2 5"/></svg>監視器線索</h3>
+      <div id="clues"></div>
+      <h3 class="sect" style="margin-top:16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 14c3 0 6 1.5 6 5"/></svg>員工名冊</h3>
+      <div id="roster"></div>
+      <section class="feed"><h3 class="sect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>尾牙現場</h3><div id="feed"></div></section>
+    </main>
+  </div>
+
+</div>
+<div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script>
+'use strict';
+const LOBBY='../../';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+const pick=a=>a[Math.random()*a.length|0];
+const SPEEDS={快:250,中:650,慢:1200};
+let SPEED=650, timer=null;
+function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+const ICONS={
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>',
+  bars:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>',
+  gavel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6M11 7l6 6M12.5 5.5l-5 5 4 4 5-5M9.5 12.5 3 19"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>',
+  skull:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3a8 8 0 0 0-5 14.2V20h10v-2.8A8 8 0 0 0 12 3z"/><circle cx="9" cy="11.5" r="1.6" fill="currentColor"/><circle cx="15" cy="11.5" r="1.6" fill="currentColor"/><path d="M10 20v-2M14 20v-2"/></svg>',
+};
+const AVATARS=[
+ `<circle cx="32" cy="32" r="32" fill="#F6C6CF"/><ellipse cx="24" cy="17" rx="5.5" ry="14" fill="#fff" transform="rotate(-12 24 17)"/><ellipse cx="24" cy="18" rx="2.6" ry="10" fill="#F2A0B0" transform="rotate(-12 24 18)"/><ellipse cx="40" cy="17" rx="5.5" ry="14" fill="#fff" transform="rotate(12 40 17)"/><ellipse cx="40" cy="18" rx="2.6" ry="10" fill="#F2A0B0" transform="rotate(12 40 18)"/><ellipse cx="32" cy="40" rx="16" ry="14" fill="#fff"/><circle cx="26" cy="38" r="2.2" fill="#3A2A2A"/><circle cx="38" cy="38" r="2.2" fill="#3A2A2A"/><ellipse cx="32" cy="43.5" rx="2.4" ry="1.7" fill="#E9798F"/><circle cx="22" cy="44" r="2.6" fill="#F8C4CE"/><circle cx="42" cy="44" r="2.6" fill="#F8C4CE"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#CDBCF0"/><path d="M10 64c2-14 10-20 22-20s20 6 22 20z" fill="#7A5236"/><path d="M18 34c0-12 7-20 15-20s14 7 14 16c0 6-3 10-6 12l-8 2-11-3c-3-2-4-4-4-7z" fill="#fff"/><path d="M38 30c6 0 11 2 12 6-2 0-3 1-5 3-1-3-4-4-7-4z" fill="#F4B63B"/><circle cx="34" cy="27" r="2.6" fill="#2A2320"/><path d="M29 23l9 2" stroke="#2A2320" stroke-width="2.2" stroke-linecap="round"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#CFE6CB"/><path d="M14 14l9 12h18l9-12 1 18c0 12-9 20-19 20s-19-8-19-20z" fill="#E98A3A"/><path d="M17 18l5 7M47 18l-5 7" stroke="#B85A1E" stroke-width="3" stroke-linecap="round"/><path d="M15 33c4 0 11 4 17 13 6-9 13-13 17-13-1 11-8 19-17 19S16 44 15 33z" fill="#fff"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><circle cx="32" cy="45" r="2.6" fill="#2A2320"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#F4D3A0"/><path d="M12 64c2-11 9-15 20-15s18 4 20 15z" fill="#5E7F55"/><circle cx="32" cy="36" r="13" fill="#F2C49B"/><path d="M8 27c8-3 40-3 48 0-4 2-44 2-48 0z" fill="#8A5A2E"/><path d="M19 26c1-9 6-13 13-13s12 4 13 13z" fill="#B07A42"/><rect x="19" y="22" width="26" height="4" fill="#6E4522"/><circle cx="27" cy="36" r="1.9" fill="#2A2320"/><circle cx="37" cy="36" r="1.9" fill="#2A2320"/><path d="M27 42c3 3 7 3 10 0" stroke="#8A4A2A" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#C3E2EE"/><path d="M14 22l6 6M50 22l-6 6" stroke="#6B5444" stroke-width="4" stroke-linecap="round"/><ellipse cx="32" cy="40" rx="18" ry="19" fill="#8C6E58"/><ellipse cx="32" cy="46" rx="11" ry="11" fill="#D9C2A5"/><circle cx="24.5" cy="34" r="7" fill="#fff"/><circle cx="39.5" cy="34" r="7" fill="#fff"/><circle cx="25" cy="34" r="3.2" fill="#2A2320"/><circle cx="39" cy="34" r="3.2" fill="#2A2320"/><path d="M29.5 39l2.5 4 2.5-4z" fill="#F0A93B"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#F3C9A8"/><path d="M14 14l8 14M50 14l-8 14" stroke="#4A4A4A" stroke-width="7" stroke-linecap="round"/><ellipse cx="32" cy="38" rx="18" ry="16" fill="#5A5A5E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#EDE6DC"/><circle cx="25" cy="35" r="2.6" fill="#F4D35E"/><circle cx="39" cy="35" r="2.6" fill="#F4D35E"/><path d="M29.5 41.5h5l-2.5 2.5z" fill="#E77F8B"/><path d="M14 42h8M14 46h8M42 42h8M42 46h8" stroke="#DCD6CC" stroke-width="1.2"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#D8E6B5"/><circle cx="18" cy="20" r="7" fill="#8A5E3C"/><circle cx="46" cy="20" r="7" fill="#8A5E3C"/><circle cx="32" cy="36" r="18" fill="#A9774E"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#E6C9A3"/><circle cx="25" cy="33" r="2.4" fill="#2A2320"/><circle cx="39" cy="33" r="2.4" fill="#2A2320"/><ellipse cx="32" cy="40" rx="3.2" ry="2.3" fill="#2A2320"/>`,
+ `<circle cx="32" cy="32" r="32" fill="#BFD0F2"/><ellipse cx="32" cy="38" rx="17" ry="19" fill="#2E3440"/><ellipse cx="32" cy="42" rx="11" ry="13" fill="#fff"/><circle cx="26" cy="32" r="2.4" fill="#2A2320"/><circle cx="38" cy="32" r="2.4" fill="#2A2320"/><path d="M28.5 37l3.5 3 3.5-3z" fill="#F0A93B"/><circle cx="26.7" cy="31.3" r=".8" fill="#fff"/><circle cx="38.7" cy="31.3" r=".8" fill="#fff"/>`,
+];
+const avatar=i=>`<svg class="av" viewBox="0 0 64 64" aria-hidden="true"${i>=AVATARS.length?` style="filter:hue-rotate(${150*Math.floor(i/AVATARS.length)}deg) saturate(1.2)"`:''}>${AVATARS[i%AVATARS.length]}</svg>`;
+const swoosh='<svg class="swoosh" viewBox="0 0 150 14" aria-hidden="true"><path d="M3 10 Q60 1 147 6" stroke="#E9643B" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
+const leafDeco='<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true"><g fill="#2E7553"><path d="M120 10c40 10 70 40 74 80-40-6-70-36-74-80z"/><path d="M60 0c30 20 44 54 36 90-30-22-44-56-36-90z" fill="#2A6B4C"/><path d="M190 120c-30 10-64 4-86-20 32-12 64-6 86 20z" fill="#327C59"/></g><g stroke="#24614A" stroke-width="2" fill="none"><path d="M124 16c20 24 40 44 66 70"/><path d="M64 8c10 26 20 50 30 76"/></g></svg>';
+function tree(x,y,r,col,trunk='#8A6A4A'){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="${trunk}"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
+
+/* modals */
+let modalCb=null;
+function openModal(html,cb){$('#modal').innerHTML=html;$('#overlay').hidden=false;$('#modal').scrollTop=0;modalCb=cb;const f=$('#modal .primary');f&&f.focus({preventScroll:true});}
+function closeModal(){$('#overlay').hidden=true;$('#modal').innerHTML='';modalCb=null;}
+$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b&&!b.disabled&&modalCb)modalCb(b.dataset.m,b);});
+function showRulesHTML(html){
+  $('#rulesModal').innerHTML=`<h2>遊戲規則</h2><div class="rules">${html}</div><div class="acts"><button class="btn primary" id="closeRules">知道了</button></div>`;
+  $('#rulesOv').hidden=false;$('#rulesModal').scrollTop=0;$('#closeRules').focus({preventScroll:true});
+}
+$('#rulesOv').addEventListener('click',e=>{if(e.target.id==='closeRules'||e.target.id==='rulesOv')$('#rulesOv').hidden=true;});
+function feedHTML(log,tag,emptyTxt){
+  const items=log.slice(0,40).map(l=>{
+    const who=l.a!=null&&S.players[l.a]?avatar(l.a):`<span class="ic">${l.c==='q'?ICONS.spark:l.c==='k'?ICONS.gavel:ICONS.bars}</span>`;
+    return `<li class="${l.c||''}"><span class="qtag">${tag(l)}</span>${who}<span class="txt">${l.h}</span></li>`;}).join('');
+  return `<ul class="feedlist">${items||`<li><span class="txt" style="grid-column:1/-1;color:var(--muted)">${emptyTxt}</span></li>`}</ul>`;
+}
+function setupSeatsHTML(cfg,min,max){
+  return `<div class="field"><span>玩家人數</span><div class="seg">${Array.from({length:max-min+1},(_,k)=>k+min).map(k=>`<button data-m="n:${k}" class="${k===cfg.n?'on':''}">${k} 人</button>`).join('')}</div></div>
+   <div class="seats">${cfg.seats.slice(0,cfg.n).map((s,i)=>`<div class="seat">${avatar(i)}<input data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('')}</div>
+   <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===cfg.speed?'on':''}">${k}</button>`).join('')}</div></div>`;
+}
+function setupSeatsHandle(cfg,m,redraw){
+  document.querySelectorAll('[data-seat]').forEach(inp=>{cfg.seats[+inp.dataset.seat].name=inp.value;});
+  if(m.startsWith('n:')){cfg.n=+m.slice(2);redraw();return true;}
+  if(m.startsWith('h:')||m.startsWith('a:')){cfg.seats[+m.slice(2)].ai=m[0]==='a';redraw();return true;}
+  if(m.startsWith('sp:')){cfg.speed=m.slice(3);SPEED=SPEEDS[cfg.speed];redraw();return true;}
+  return false;
+}
+function seatsToPlayers(cfg,aiNames){return cfg.seats.slice(0,cfg.n).map((s,i)=>({name:(s.name||'').trim()||(s.ai?aiNames[i%aiNames.length]:'玩家'+(i+1)),ai:s.ai}));}
+function scrollDeskIntoView(){if(innerWidth<=1040){const d=$('#desk');const r=d.getBoundingClientRect();if(r.top<0||r.top>innerHeight*.6)d.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}
+
+/* ================= constants ================= */
+const ROUNDS=5;
+const PRIZES=[{n:'超商禮券',ic:'🎫',v:1,rk:'五獎'},{n:'氣炸鍋',ic:'🍳',v:2,rk:'四獎'},{n:'遊戲主機',ic:'🎮',v:3,rk:'三獎'},{n:'最新手機',ic:'📱',v:4,rk:'二獎'},{n:'現金 20 萬',ic:'💰',v:5,rk:'頭獎'}];
+const TR=[['喝咖啡','喝奶茶'],['戴眼鏡','沒戴眼鏡'],['穿西裝','穿帽T']];
+const ROLES={
+  mole:{n:'內鬼',d:'每晚可以偷換今晚的獎品（換成銘謝惠顧），但會留下監視器線索。全隊整場一次「甩鍋」：讓當晚的線索變成假的。'},
+  hr:{n:'人資',d:'每晚調查一位同事，知道他是不是內鬼。'},
+  guard:{n:'保全',d:'每晚盯住一位同事。如果他今晚剛好動手，偷換會失敗，你也會知道他是內鬼。'},
+  boss:{n:'老闆',d:'身分公開、保證清白。投票算 2 票。'},
+  rookie:{n:'新人',d:'被請去倉庫盤點時，可以指定一位同事，公開他的陣營。'},
+  staff:{n:'員工',d:'沒有特殊能力。靠線索、發言和投票揪出內鬼。'},
+};
+const AI_NAMES=['小陳','Amy','阿德','佩佩','業務王','Kevin','會計姐','阿哲','小美','工讀生','Jason','秘書'];
+const SAVE_KEY='office-mole-save-v1';
+let TARGET=7;
+const targetFor=n=>n<=6?4:n<=9?7:12;
+
+/* ================= state ================= */
+let S=null, UI={};
+let setupCfg={n:7,seats:[{name:'你',ai:false}].concat(AI_NAMES.slice(0,11).map(n=>({name:n,ai:true}))),speed:'中'};
+const NP=()=>S.players.length;
+const humans=()=>S.players.filter(p=>!p.ai);
+const P=i=>S.players[i];
+const pn=i=>`<b class="pn" data-p="${i}">${esc(P(i).name)}</b>`;
+const alive=()=>S.players.map((_,i)=>i).filter(i=>P(i).alive);
+const molesAlive=()=>alive().filter(i=>P(i).team==='mole');
+const trTxt=(t,v)=>TR[t][v];
+function log(html,cls=''){const m=/data-p="(\d+)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,r:S.r});if(S.log.length>260)S.log.length=260;}
+function save(){lsSet(SAVE_KEY,S);}
+function clearSave(){lsSet(SAVE_KEY,null);}
+function roleCounts(n){return {mole:n<=6?1:n<=9?2:3,guard:n>=6?1:0,boss:n>=7?1:0,rookie:n>=9?1:0};}
+
+/* ================= setup ================= */
+function setupGame(players){
+  clearTimeout(timer);
+  const n=players.length,rc=roleCounts(n);TARGET=targetFor(n);
+  const roles=[];for(let k=0;k<rc.mole;k++)roles.push('mole');roles.push('hr');if(rc.guard)roles.push('guard');if(rc.rookie)roles.push('rookie');
+  while(roles.length<n-(rc.boss?1:0))roles.push('staff');
+  shuffle(roles);
+  let bossSeat=-1;
+  if(rc.boss){bossSeat=Math.random()*n|0;roles.splice(bossSeat,0,'boss');}
+  const combos=shuffle([0,1,2,3,4,5,6,7].concat([0,1,2,3,4,5,6,7]));
+  S={players:players.map((p,i)=>({name:p.name,ai:p.ai,role:roles[i],team:roles[i]==='mole'?'mole':'staff',tr:[combos[i]&1,(combos[i]>>1)&1,(combos[i]>>2)&1],alive:true,notes:[],claim:null,said:[]})),
+     r:1,phase:'night',score:0,wrong:0,scape:1,clues:[],prizes:PRIZES.map(()=>({st:'wait'})),night:{},talk:{},votes:{},lastGuard:{},start:Math.random()*n|0,log:[],viewer:null,cfgPlayers:players};
+  const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;
+  log(`尾牙開始！員工 ${n} 人，其中藏著 ${rc.mole} 個內鬼。內鬼要偷到 ${TARGET} 分的獎品才算得逞。`,'q');
+  if(bossSeat>=0)log(`${pn(bossSeat)} 是老闆，身分公開，投票算 2 票。`);
+  UI={};render();
+  if(S.viewer!=null)roleModal(S.viewer,()=>startNight());else startNight();
+}
+function roleModal(i,cb){
+  const p=P(i);
+  const mates=p.team==='mole'?S.players.map((_,j)=>j).filter(j=>j!==i&&P(j).team==='mole'):[];
+  openModal(`<div class="handoff">${avatar(i)}</div><h2>${esc(p.name)}，你的身分是「${ROLES[p.role].n}」</h2>
+   <div class="intel"><div class="ilab">${ICONS.lock}機密</div><div class="big">${ROLES[p.role].n}</div><div class="inote">${ROLES[p.role].d}${mates.length?`<br>你的同夥：<b>${mates.map(j=>esc(P(j).name)).join('、')}</b>`:''}</div></div>
+   <p class="sub">${p.team==='mole'?`內鬼的目標：偷換的獎品分數加上冤枉好人的次數，累積到 ${TARGET} 分。`:'員工的目標：在內鬼得逞之前把他們全部請走，或撐過五輪抽獎。'}</p>
+   <div class="acts"><button class="btn primary" data-m="go">記住了</button></div>`,()=>{closeModal();cb&&cb();});
+}
+
+/* ================= helpers ================= */
+const order=()=>Array.from({length:NP()},(_,k)=>(S.start+S.r-1+k)%NP());
+function nightActors(){
+  // who must act tonight, in seat order: every living human (so nobody can tell roles by timing) + AIs with a role
+  const firstMole=order().find(i=>P(i).alive&&P(i).team==='mole');
+  return order().filter(i=>P(i).alive&&(!P(i).ai||(P(i).role==='hr'||P(i).role==='guard'||i===firstMole)));
+}
+function curTurn(){
+  if(S.phase==='night'){return nightActors().find(i=>S.night[i]==null)??null;}
+  if(S.phase==='talk'){return order().find(i=>S.talk[i]==null)??null;}
+  if(S.phase==='vote'){return order().find(i=>S.votes[i]==null)??null;}
+  return null;
+}
+const firstMole=()=>order().find(i=>P(i).alive&&P(i).team==='mole');
+
+/* ================= knowledge / AI ================= */
+function knownTeam(i,j){ // what i knows for certain about j: 'mole'|'staff'|null
+  if(i===j)return P(i).team;
+  const pj=P(j);
+  if(!pj.alive&&pj.revealed)return pj.team;
+  if(pj.publicTeam)return pj.publicTeam;
+  if(pj.role==='boss')return 'staff';
+  if(P(i).team==='mole')return pj.team;
+  const n=P(i).notes.find(n=>n.j===j);return n?n.t:null;
+}
+function suspicion(i,j,publicOnly){
+  if(!publicOnly){const k=knownTeam(i,j);if(k)return k==='mole'?99:-99;}
+  else{const pj=P(j);if(!pj.alive&&pj.revealed)return pj.team==='mole'?99:-99;if(pj.publicTeam)return pj.publicTeam==='mole'?99:-99;if(pj.role==='boss')return -99;}
+  let s=0;
+  S.clues.forEach(c=>{s+=P(j).tr[c.t]===c.v?.9:-1.1;});
+  const claimers=alive().concat(S.players.map((_,k)=>k).filter(k=>!P(k).alive)).filter(k=>P(k).claim);
+  S.players.forEach((pk,k)=>{
+    if(k===j||k===i)return;
+    let trust=1;const hrClaims=S.players.filter(x=>x.claimHR).length;
+    if(!pk.claimHR)trust=.35;else if(hrClaims>1)trust=.5;
+    if(!pk.alive&&pk.revealed)trust=pk.team==='mole'?-.6:trust*1.2;
+    if(pk.publicTeam==='mole')trust=-.6;
+    pk.said.forEach(st=>{if(st.j!==j)return;if(st.k==='mole')s+=1.4*trust*(st.r===S.r?1:.8);else if(st.k==='staff')s-=1.2*trust;else if(st.k==='sus')s+=.35*trust;});
+  });
+  // people who accuse a confirmed staff member look a bit shady
+  P(j).said.forEach(st=>{const t=P(st.j);if(st.k==='mole'&&((!t.alive&&t.revealed&&t.team==='staff')||t.role==='boss'||t.publicTeam==='staff'))s+=1.2;});
+  return s+(Math.random()-.5)*.3;
+}
+function rankSus(i,pool,publicOnly){return pool.filter(j=>j!==i).map(j=>({j,s:suspicion(i,j,publicOnly)})).sort((a,b)=>b.s-a.s);}
+function aiNight(i){
+  const p=P(i),pool=alive().filter(j=>j!==i);
+  if(p.team==='mole'){
+    const v=PRIZES[S.r-1].v,need=TARGET-S.score-S.wrong;
+    let steal=v>=need||v>=4||(v===3&&Math.random()<.75)||(v===2&&Math.random()<.4)||(v===1&&Math.random()<.15);
+    if(!steal)return {steal:false};
+    const ms=molesAlive();
+    const thief=ms.map(m=>({m,s:suspicion(i,m,true)+Math.random()*.6})).sort((a,b)=>a.s-b.s)[0].m;
+    const matches=S.clues.filter(c=>P(thief).tr[c.t]===c.v).length;
+    const scape=S.scape>0&&(v>=4||matches>=2)&&Math.random()<.8;
+    return {steal:true,thief,scape};
+  }
+  if(p.role==='hr'){const cand=pool.filter(j=>!knownTeam(i,j));const r=rankSus(i,cand.length?cand:pool);return {check:r[0].j};}
+  if(p.role==='guard'){const r=rankSus(i,pool.filter(j=>knownTeam(i,j)!=='staff')).filter(x=>x.j!==S.lastGuard[i]);return {watch:(r[0]||rankSus(i,pool)[0]).j};}
+  return {};
+}
+function aiTalk(i){
+  const p=P(i);const pool=alive().filter(j=>j!==i);
+  if(!pool.length)return {k:'quiet'};
+  if(p.team==='mole'){
+    const inno=rankSus(i,pool.filter(j=>P(j).team!=='mole'),true);
+    // counter-claim if a mole was outed by an HR claim this round
+    const outed=S.players.some(x=>x.said.some(st=>st.r===S.r&&st.k==='mole'&&P(st.j).team==='mole'));
+    const accuser=S.players.map((x,k)=>k).find(k=>P(k).said.some(st=>st.r===S.r&&st.k==='mole'&&P(st.j).team==='mole'));
+    if(outed&&accuser!=null&&P(accuser).team!=='mole'&&P(accuser).alive&&Math.random()<.7)return {k:'mole',j:accuser,hr:true};
+    if(!S.players.some(x=>x.claimHR)&&S.r>=2&&Math.random()<.25&&inno[0])return {k:'mole',j:inno[0].j,hr:true};
+    if(inno[0]&&inno[0].s>.4)return {k:'sus',j:inno[0].j};
+    return {k:'quiet'};
+  }
+  if(p.role==='hr'&&p.alive){
+    const found=p.notes.filter(n=>n.t==='mole'&&P(n.j).alive);
+    if(found.length)return {k:'mole',j:found[found.length-1].j,hr:true};
+    const last=p.notes[p.notes.length-1];
+    if(last&&S.r>=2&&Math.random()<.55&&P(last.j).alive)return {k:'staff',j:last.j,hr:true};
+  }
+  if(p.role==='guard'){const f=p.notes.find(n=>n.t==='mole'&&P(n.j).alive);if(f)return {k:'mole',j:f.j};}
+  const r=rankSus(i,pool);
+  if(r[0]&&r[0].s>=1)return {k:'sus',j:r[0].j};
+  return {k:'quiet'};
+}
+function aiVote(i){
+  const pool=alive().filter(j=>j!==i);
+  if(P(i).team==='mole'){
+    const inno=rankSus(i,pool.filter(j=>P(j).team!=='mole'),true);
+    // jump on the bandwagon if a teammate is not the leader
+    const tally=voteTally();const lead=Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
+    if(lead&&P(+lead[0]).team!=='mole'&&Math.random()<.6)return +lead[0];
+    return inno[0]&&inno[0].s>.2?inno[0].j:-1;
+  }
+  const r=rankSus(i,pool);
+  const tally=voteTally();
+  if(r[0]&&r[0].s>=.9)return r[0].j;
+  const lead=Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
+  if(lead&&+lead[0]!==i&&suspicion(i,+lead[0])>.2)return +lead[0];
+  return -1;
+}
+function voteTally(){const t={};for(const k in S.votes){const j=S.votes[k];if(j>=0)t[j]=(t[j]||0)+(P(+k).role==='boss'?2:1);}return t;}
+
+/* ================= flow ================= */
+function startNight(){S.phase='night';S.night={};S.nightRes=null;render();save();
+  log(`第 ${S.r} 晚：今晚準備的是${PRIZES[S.r-1].rk}「${PRIZES[S.r-1].n}」。大家下班了……`,'q');proceed();}
+function proceed(){
+  clearTimeout(timer);save();
+  if(!S||!$('#overlay').hidden)return;
+  if(S.phase!=='night'&&S.phase!=='talk'&&S.phase!=='vote')return render();
+  const cur=curTurn();
+  if(cur==null){if(S.phase==='night')resolveNight();else if(S.phase==='talk'){S.phase='vote';S.votes={};log('發言結束，開始投票。誰要被請去倉庫盤點？','q');proceed();}else resolveVote();return;}
+  const p=P(cur);
+  if(p.ai){render();timer=setTimeout(()=>{
+    if(S.phase==='night'){S.night[cur]=aiNight(cur);}
+    else if(S.phase==='talk'){applyTalk(cur,aiTalk(cur));}
+    else{applyVote(cur,aiVote(cur));}
+    proceed();},S.phase==='night'?(humans().length?120:SPEED/4):(humans().length?Math.min(SPEED,500):SPEED/3));return;}
+  if(S.phase==='night'&&S.viewer!==cur){
+    S.viewer=null;UI={};render();
+    openModal(`<div class="handoff">${avatar(cur)}</div><h2>請把裝置交給 ${esc(p.name)}</h2><p class="sub">夜晚行動是秘密的。其他人請轉頭，不要看畫面。</p>
+     <div class="acts"><button class="btn primary" data-m="go">我是 ${esc(p.name)}，開始</button></div>`,()=>{closeModal();S.viewer=cur;UI={};render();scrollDeskIntoView();});
+    return;
+  }
+  if(S.phase!=='night'&&humans().length>1)S.viewer=null;
+  render();
+}
+function resolveNight(){
+  const r=S.r-1,pz=PRIZES[r];
+  const fm=Object.keys(S.night).map(Number).find(i=>P(i).team==='mole'&&S.night[i].steal!=null);
+  const mv=fm!=null?S.night[fm]:{steal:false};
+  const res={steal:false};
+  // HR checks
+  S.players.forEach((p,i)=>{const a=S.night[i];if(!a)return;
+    if(a.check!=null){p.notes.push({j:a.check,t:P(a.check).team,r:S.r,how:'調查'});}
+    if(a.watch!=null)S.lastGuard[i]=a.watch;});
+  if(mv.steal){
+    const thief=mv.thief;
+    const guarded=S.players.map((_,g)=>g).filter(g=>S.night[g]&&S.night[g].watch===thief);
+    const t=Math.random()*3|0;let v=P(thief).tr[t];
+    if(mv.scape&&S.scape>0){v=1-v;S.scape=0;}
+    const blocked=guarded.length>0;
+    S.clues.push({t,v,r:S.r,blocked,fake:mv.scape&&!blocked?true:!!mv.scape,thief});
+    guarded.forEach(g=>P(g).notes.push({j:thief,t:'mole',r:S.r,how:'當場逮到'}));
+    if(blocked){S.prizes[r].st='safe';res.blocked=true;}
+    else{S.prizes[r].st='stolen';S.score+=pz.v;res.steal=true;}
+    res.clue={t,v};
+  }else S.prizes[r].st='safe';
+  S.nightRes=res;S.phase='morning';
+  const winner=pick(alive());
+  if(res.steal)log(`早上抽${pz.rk}，結果抽出來是「銘謝惠顧」！${pz.n}被偷換了（內鬼 +${pz.v}）。監視器拍到動手的人<b>${trTxt(res.clue.t,res.clue.v)}</b>。`,'k');
+  else if(res.blocked)log(`有人想偷換${pz.rk}，被保全攔下了！${pz.n}順利抽出。監視器拍到那個人<b>${trTxt(res.clue.t,res.clue.v)}</b>。`,'k');
+  else log(`${pz.rk}「${pz.n}」順利抽出，由 ${pn(winner)} 抽中。昨晚好像很平靜。`);
+  render();save();
+  if(checkWin())return;
+  const body=res.steal?`<div class="big">銘謝惠顧！</div><div class="inote">${pz.rk}「${pz.n}」被偷換了，內鬼 +${pz.v} 分。<br>監視器拍到：動手的人<b>${trTxt(res.clue.t,res.clue.v)}</b>。</div>`:res.blocked?`<div class="big">保全攔下了！</div><div class="inote">${pz.n}保住了。<br>監視器拍到：想動手的人<b>${trTxt(res.clue.t,res.clue.v)}</b>。</div>`:`<div class="big">${pz.ic} ${pz.n}</div><div class="inote">順利抽出，昨晚沒有人動手。</div>`;
+  openModal(`<h2>第 ${S.r} 天早上</h2><div class="intel" style="margin:6px 0 4px"><div class="ilab">${ICONS.spark}抽獎結果</div>${body}</div>
+   <p class="sub">內鬼目前 ${S.score+S.wrong} / ${TARGET} 分。接下來每個人輪流發言一次，再投票。</p>
+   <div class="acts"><button class="btn primary" data-m="go">開始發言</button></div>`,()=>{closeModal();S.phase='talk';S.talk={};S.viewer=humans().length===1?S.players.indexOf(humans()[0]):null;proceed();});
+  if(!humans().length)timer=setTimeout(()=>modalCb&&modalCb('go'),SPEED*2);
+}
+function applyTalk(i,t){
+  S.talk[i]=t;
+  if(t.k==='quiet'){log(`${pn(i)}：「我先聽聽大家怎麼說。」`);return;}
+  P(i).said.push({j:t.j,k:t.k,r:S.r});
+  if(t.hr)P(i).claimHR=true;
+  if(t.k==='sus')log(`${pn(i)}：「我覺得 ${pn(t.j)} 怪怪的。」`);
+  else if(t.k==='mole')log(`${pn(i)}：「${t.hr?'我是人資，我查過了，':''}${pn(t.j)} 就是內鬼！」`,'k');
+  else log(`${pn(i)}：「${t.hr?'我是人資，':''}${pn(t.j)} 是清白的。」`);
+}
+function applyVote(i,j){S.votes[i]=j;log(j>=0?`${pn(i)} 投給 ${pn(j)}${P(i).role==='boss'?'（老闆 2 票）':''}。`:`${pn(i)} 棄票。`);}
+function resolveVote(){
+  const t=voteTally();const arr=Object.entries(t).sort((a,b)=>b[1]-a[1]);
+  let out=null;
+  if(arr.length&&arr[0][1]>=2&&(!arr[1]||arr[1][1]<arr[0][1]))out=+arr[0][0];
+  if(out==null){log('票數不夠集中，今天沒有人被請走。','q');return endDay();}
+  const p=P(out);p.alive=false;p.revealed=true;
+  if(p.team==='mole')log(`${pn(out)} 被請去倉庫盤點……身分翻開：<b>內鬼</b>！`,'k');
+  else{S.wrong++;log(`${pn(out)} 被請去倉庫盤點……身分翻開：${ROLES[p.role].n}。冤枉好人，內鬼 +1。`,'k');}
+  render();save();
+  if(checkWin())return;
+  if(p.role==='rookie'){
+    if(p.ai){const r=rankSus(out,alive());rookieReveal(out,r[0].j);return;}
+    S.phase='rookie';render();
+    openModal(`<div class="handoff">${avatar(out)}</div><h2>新人的委屈</h2><p class="sub">${esc(p.name)}，你是新人。指定一位還在場的同事，公開他的陣營。</p>
+     <div class="chooser big" style="flex-wrap:wrap">${alive().map(j=>`<button class="btn" data-m="${j}">${esc(P(j).name)}</button>`).join('')}</div>`,m=>{closeModal();rookieReveal(out,+m);});
+    return;
+  }
+  endDay();
+}
+function rookieReveal(i,j){P(j).publicTeam=P(j).team;log(`新人 ${pn(i)} 臨走前指著 ${pn(j)}：他的陣營是 <b>${P(j).team==='mole'?'內鬼':'員工'}</b>。`,'k');if(!checkWin())endDay();}
+function endDay(){
+  if(S.r>=ROUNDS){finish('staff','五輪抽獎撐完了，內鬼沒能得逞。');return;}
+  S.r++;S.phase='night';render();save();
+  timer=setTimeout(()=>startNight(),humans().length?300:SPEED/2);
+}
+function checkWin(){
+  if(!molesAlive().length){finish('staff','所有內鬼都被揪出來了！');return true;}
+  if(S.score+S.wrong>=TARGET){finish('mole',`內鬼累積 ${S.score+S.wrong} 分，得逞了。`);return true;}
+  return false;
+}
+function finish(team,why){
+  S.phase='end';S.win=team;S.why=why;
+  log(`遊戲結束：${team==='mole'?'內鬼':'員工'}獲勝。${why}`,'q');
+  clearSave();render();endModal();
+}
+function endModal(){
+  openModal(`<h2>尾牙落幕</h2><div class="win">${S.win==='mole'?'內鬼得逞':'員工獲勝'}</div><p class="sub">${S.why}</p>
+   <div class="tablewrap"><table class="res"><thead><tr><th>同事</th><th>身分</th><th>陣營</th><th>狀態</th></tr></thead><tbody>
+   ${S.players.map((p,i)=>`<tr><td>${esc(p.name)}</td><td style="font-family:var(--f-body)">${ROLES[p.role].n}</td><td style="font-family:var(--f-body)" class="${p.team==='mole'?'down':'up'}">${p.team==='mole'?'內鬼':'員工'}</td><td style="font-family:var(--f-body)">${p.alive?'在場':'被請走'}</td></tr>`).join('')}</tbody></table></div>
+   <h3 style="font-size:17px;font-weight:900;margin:16px 0 8px">每一條線索的真相</h3>
+   <div class="cluelist">${S.clues.map(c=>`<div class="clue">第 ${c.r} 晚・${esc(P(c.thief).name)} 動手・線索「${trTxt(c.t,c.v)}」${c.fake?'<span class="chip down">甩鍋假線索</span>':''}${c.blocked?'<span class="chip green">被保全攔下</span>':''}</div>`).join('')||'<div class="clue">內鬼一次都沒有動手。</div>'}</div>
+   <div class="acts"><button class="btn" data-m="close">看看名冊</button><button class="btn primary" data-m="again">再來一局</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
+}
+
+/* ================= view ================= */
+function myTurn(){const c=curTurn();if(c==null||P(c).ai||!$('#overlay').hidden)return false;return S.phase==='night'?S.viewer===c:true;}
+function render(){
+  if(!S)return;
+  let st='';for(let i=1;i<=ROUNDS;i++){if(i>1)st+=`<span class="link ${i<=S.r?'done':''}"></span>`;st+=`<span class="step ${i<S.r||S.phase==='end'?'done':i===S.r&&S.phase!=='idle'?'now':''}">${PRIZES[i-1].rk}</span>`;}
+  $('#steps').innerHTML=st;
+  const head={idle:'抽獎箱被動了手腳',night:'深夜的辦公室',morning:'抽獎時間',talk:'大家輪流發言',vote:'投票請人去盤點',rookie:'新人的委屈',end:'尾牙落幕'}[S.phase];
+  $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">YEAR-END PARTY</div><h2>${head}<span class="qbadge">${S.phase==='idle'?'準備開始':S.phase==='end'?(S.win==='mole'?'內鬼勝':'員工勝'):'第 '+S.r+' 輪'}</span></h2>${swoosh}</div>`;
+  renderStage();renderDesk();
+  $('#feed').innerHTML=feedHTML(S.log,l=>l.r?'第'+l.r+'輪':'—','每晚的事件、發言和投票都會記在這裡。');
+}
+function renderStage(){
+  $('#prizes').innerHTML=`<div class="prz">${PRIZES.map((pz,k)=>{const st=S.prizes[k].st;return `<div class="pz ${st==='stolen'?'stolen':st==='safe'?'safe':''} ${k===S.r-1&&S.phase!=='end'&&S.phase!=='idle'?'now':''}"><span class="rk">${pz.rk}</span><span class="ic">${st==='stolen'?'🙃':pz.ic}</span><b>${st==='stolen'?'銘謝惠顧':pz.n}</b><span class="vv">${pz.v} 分</span><span class="st">${st==='stolen'?'被偷換':st==='safe'?'已抽出':'待抽'}</span></div>`;}).join('')}</div>`;
+  $('#scorenote').textContent=S.phase==='idle'?'':`內鬼 ${S.score+S.wrong} / ${TARGET} 分（偷換 ${S.score}、冤枉 ${S.wrong}）`;
+  $('#clues').innerHTML=`<div class="cluelist">${S.clues.map(c=>`<div class="clue ${c.blocked?'blk':''}">第 ${c.r} 晚${c.blocked?'（未遂）':''}<span class="tv">${trTxt(c.t,c.v)}</span></div>`).join('')||'<div class="clue" style="color:var(--muted)">還沒有線索。內鬼每次動手，監視器都會拍到他的一個特徵（整場可能有一條是甩鍋的假線索）。</div>'}</div>`;
+  const cur=curTurn();
+  const V=S.viewer;
+  const tally=S.phase==='vote'?voteTally():{};
+  $('#roster').innerHTML=`<div class="ros">${S.players.map((p,i)=>{
+    const trs=p.tr.map((v,t)=>{const hits=S.clues.filter(c=>c.t===t&&c.v===v).length;return `<span class="trt ${hits?'hit':''}">${trTxt(t,v)}${hits>1?'×'+hits:''}</span>`;}).join('');
+    const said=p.said.filter(s=>s.r===S.r).map(s=>s.k==='sus'?`懷疑 ${esc(P(s.j).name)}`:s.k==='mole'?`${p.claimHR?'人資宣稱：':''}${esc(P(s.j).name)} 是內鬼`:`${p.claimHR?'人資宣稱：':''}${esc(P(s.j).name)} 清白`).join('；');
+    const tags=[];if(p.role==='boss')tags.push('<span class="tag">老闆</span>');if(p.ai)tags.push('<span class="tag">AI</span>');if(p.publicTeam)tags.push(`<span class="tag">${p.publicTeam==='mole'?'確定是內鬼':'確定清白'}</span>`);
+    let mine='';if(V!=null&&V!==i&&(S.phase==='night'||humans().length===1)){const k=knownTeam(V,i);if(k&&!p.revealed&&p.role!=='boss'&&!p.publicTeam)mine=`<span class="tag" style="background:${k==='mole'?'var(--down-bg)':'var(--up-bg)'}">${k==='mole'?'你知道：內鬼':'你知道：清白'}</span>`;}
+    if(V===i&&(S.phase==='night'||humans().length===1))mine=`<span class="tag" style="background:var(--pink)">你・${ROLES[p.role].n}</span>`;
+    return `<div class="emp ${p.alive?'':'out'} ${p.revealed&&p.team==='mole'?'mole':''} ${i===cur&&S.phase!=='night'?'cur':''}" data-out="${p.revealed?(p.team==='mole'?'內鬼':ROLES[p.role].n):''}"><div class="hd">${avatar(i)}<span>${esc(p.name)}</span></div><div class="trs">${tags.join('')}${mine}</div><div class="trs">${trs}</div>${said?`<div class="cl">${said}</div>`:''}${tally[i]?`<div class="vb">${tally[i]} 票</div>`:''}</div>`;}).join('')}</div>`;
+}
+function myIntel(i){
+  const p=P(i);const lines=[];
+  lines.push(`<li><span class="rt">身分</span><span><b>${ROLES[p.role].n}</b>：${ROLES[p.role].d}</span></li>`);
+  if(p.team==='mole'){const m=S.players.map((_,j)=>j).filter(j=>j!==i&&P(j).team==='mole');lines.push(`<li><span class="rt">同夥</span><span>${m.length?m.map(j=>esc(P(j).name)+(P(j).alive?'':'（已出局）')).join('、'):'你是唯一的內鬼'}・甩鍋${S.scape?'還能用':'已用掉'}</span></li>`);}
+  p.notes.forEach(n=>lines.push(`<li><span class="rt">第${n.r}晚</span><span>${n.how}：<b>${esc(P(n.j).name)}</b> 是${n.t==='mole'?'內鬼':'員工'}</span></li>`));
+  return `<div class="intel"><div class="ilab">${ICONS.lock}${esc(p.name)} 的機密</div><ul>${lines.join('')}</ul></div>`;
+}
+function renderDesk(){
+  let h=leafDeco;const cur=curTurn();
+  if(cur!=null){
+    const p=P(cur);
+    if(myTurn()&&S.phase==='night'){
+      const pool=alive().filter(j=>j!==cur);
+      h+=`<div class="dhead"><h2>深夜行動</h2><span class="pill">第 ${S.r} 晚</span></div><div class="dsub">${esc(p.name)}・今晚準備的是${PRIZES[S.r-1].rk}「${PRIZES[S.r-1].n}」（${PRIZES[S.r-1].v} 分）</div>`;
+      if(p.team==='mole'&&cur===firstMole()){
+        const ms=molesAlive();
+        h+=`<div class="dsec"><div class="dlab">要不要動手？<small>動手一定會留下一條線索</small></div><div class="chooser big"><button data-steal="1" class="${UI.steal===true?'on':''}">偷換 ${PRIZES[S.r-1].n}</button><button data-steal="0" class="${UI.steal===false?'on':''}">今晚按兵不動</button></div></div>`;
+        if(UI.steal){h+=`<div class="dsec"><div class="dlab">派誰動手<small>線索會拍到他的特徵</small></div><div class="chooser">${ms.map(m=>`<button data-thief="${m}" class="${UI.thief===m?'on':''}">${avatar(m)}${esc(P(m).name)}・${P(m).tr.map((v,t)=>trTxt(t,v)).join('/')}</button>`).join('')}</div>
+          ${S.scape?`<button class="passbtn" id="btnScape" style="${UI.scape?'background:rgba(255,255,255,.18)':''}">${UI.scape?'✓ ':''}甩鍋：讓今晚的線索變成假的（全隊整場一次）</button>`:''}</div>`;}
+        h+=`<button class="confirm" id="btnNight" ${UI.steal===false||(UI.steal&&UI.thief!=null)?'':'disabled'}>確定 ${ICONS.arrow}</button>`;
+      }else if(p.role==='hr'){
+        const done=UI.res!=null;
+        h+=`<div class="dsec"><div class="dlab">調查一位同事<small>結果只有你知道</small></div><div class="chooser">${pool.map(j=>`<button data-tgt="${j}" class="${UI.tgt===j?'on':''}" ${done?'disabled':''}>${avatar(j)}${esc(P(j).name)}</button>`).join('')}</div>
+         ${done?`<div class="dnote ${UI.res==='mole'?'warn':''}">${esc(P(UI.tgt).name)} 是<b>${UI.res==='mole'?'內鬼':'員工'}</b>。</div>`:''}</div>
+         ${done?`<button class="confirm" id="btnNight">記住了 ${ICONS.arrow}</button>`:`<button class="confirm" id="btnCheck" ${UI.tgt!=null?'':'disabled'}>調查 ${ICONS.eye}</button>`}`;
+      }else if(p.role==='guard'){
+        h+=`<div class="dsec"><div class="dlab">今晚盯誰<small>不能連續兩晚盯同一人</small></div><div class="chooser">${pool.map(j=>`<button data-tgt="${j}" class="${UI.tgt===j?'on':''}" ${S.lastGuard[cur]===j?'disabled':''}>${avatar(j)}${esc(P(j).name)}</button>`).join('')}</div></div>
+         <button class="confirm" id="btnNight" ${UI.tgt!=null?'':'disabled'}>就盯他 ${ICONS.arrow}</button>`;
+      }else{
+        h+=`<div class="empty"><b>${p.team==='mole'?'同夥會決定今晚怎麼做':'今晚你沒有行動'}</b>${p.team==='mole'?'這一晚由 '+esc(P(firstMole()).name)+' 決定要不要動手。':'看一下自己的機密，按確定交給下一位。'}</div><button class="confirm" id="btnNight">確定 ${ICONS.arrow}</button>`;
+      }
+      h+=myIntel(cur);
+    }else if(myTurn()&&S.phase==='talk'){
+      const pool=alive().filter(j=>j!==cur);
+      const k=UI.k||'quiet';
+      h+=`<div class="dhead"><h2>輪到 ${esc(p.name)} 發言</h2><span class="pill">第 ${S.r} 天</span></div><div class="dsub">${p.alive?'':'你已經被請走，但還能發言和投票。'}發言是公開的，可以說謊。</div>
+       <div class="dsec"><div class="dlab">說什麼</div><div class="opt2">
+        <button data-k="quiet" class="${k==='quiet'?'on':''}"><b>先聽大家說</b><span>不表態</span></button>
+        <button data-k="sus" class="${k==='sus'?'on':''}"><b>我覺得某人怪怪的</b><span>輕度懷疑</span></button>
+        <button data-k="mole" class="${k==='mole'?'on':''}"><b>某人就是內鬼</b><span>強力指控</span></button>
+        <button data-k="staff" class="${k==='staff'?'on':''}"><b>某人是清白的</b><span>幫人擔保</span></button></div></div>
+       ${k!=='quiet'?`<div class="dsec"><div class="dlab">對象</div><div class="chooser">${pool.map(j=>`<button data-tgt="${j}" class="${UI.tgt===j?'on':''}">${esc(P(j).name)}</button>`).join('')}</div>
+        ${k!=='sus'?`<button class="passbtn" id="btnHR" style="${UI.hr?'background:rgba(255,255,255,.18)':''}">${UI.hr?'✓ ':''}以「人資調查結果」的名義說</button>`:''}</div>`:''}
+       <button class="confirm" id="btnTalk" ${k==='quiet'||UI.tgt!=null?'':'disabled'}>說出口 ${ICONS.arrow}</button>
+       <button class="passbtn" id="btnPeek">偷看自己的身分（請其他人別看）</button>`;
+    }else if(myTurn()&&S.phase==='vote'){
+      const pool=alive().filter(j=>j!==cur);
+      h+=`<div class="dhead"><h2>${esc(p.name)} 投票</h2><span class="pill">第 ${S.r} 天</span></div><div class="dsub">公開投票。得票最多而且至少 2 票的人會被請走${P(cur).role==='boss'?'。你是老闆，算 2 票':''}。</div>
+       <div class="dsec"><div class="chooser">${pool.map(j=>`<button data-tgt="${j}" class="${UI.tgt===j?'on':''}">${avatar(j)}${esc(P(j).name)}</button>`).join('')}<button data-tgt="-1" class="${UI.tgt===-1?'on':''}">棄票</button></div></div>
+       <button class="confirm" id="btnVote" ${UI.tgt!=null?'':'disabled'}>投下去 ${ICONS.arrow}</button>
+       <button class="passbtn" id="btnPeek">偷看自己的身分（請其他人別看）</button>`;
+    }else{
+      const what=S.phase==='night'?'夜晚行動中':S.phase==='talk'?'正在發言':'正在投票';
+      h+=`<div class="dhead"><h2>${S.phase==='night'?'深夜':'同事'+(p.ai?'思考中':'操作中')}</h2><span class="pill soft">第 ${S.r} 輪</span></div><div class="think">${S.phase==='night'?`<svg class="av" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#2E3440"/><path d="M40 16a18 18 0 1 0 8 26 14 14 0 1 1-8-26z" fill="#F5C443"/></svg>`:avatar(cur)}<div><b>${S.phase==='night'?'大家都下班了':esc(p.name)}</b><div>${S.phase==='night'?(p.ai?'有人在辦公室裡走動':'等待交接裝置'):what}<span class="dots"></span></div></div></div>`;
+      if(S.viewer!=null&&(S.phase==='night'?S.viewer!==cur:true)&&humans().length===1)h+=myIntel(S.viewer);
+    }
+  }else if(S.phase==='end'){
+    h+=`<div class="dhead"><h2>尾牙落幕</h2><span class="pill">${S.win==='mole'?'內鬼勝':'員工勝'}</span></div><div class="empty"><b>${S.win==='mole'?'內鬼得逞':'員工獲勝'}</b>${S.why}</div>
+     <button class="passbtn" id="btnResult">再看一次結算</button><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`;
+  }else if(S.phase==='idle'){
+    h+=`<div class="dhead"><h2>準備開始</h2></div><div class="empty"><b>設定玩家後開始</b>5 到 12 人，可以混搭 AI 同事。</div>`;
+  }else{
+    h+=`<div class="dhead"><h2>${S.phase==='morning'?'抽獎時間':'稍等'}</h2><span class="pill soft">第 ${S.r} 輪</span></div><div class="empty"><b>${PRIZES[S.r-1].rk}・${PRIZES[S.r-1].n}</b>內鬼目前 ${S.score+S.wrong} / ${TARGET} 分</div>`;
+    if(S.viewer!=null&&humans().length===1)h+=myIntel(S.viewer);
+  }
+  $('#desk').innerHTML=h;
+}
+function heroArt(){return `<svg viewBox="0 0 640 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+  <rect width="640" height="180" fill="#F3E3CC"/>
+  <path d="M180 0h460v34H180z" fill="#C8432F"/><text x="420" y="25" font-size="18" font-weight="900" fill="#F5C443" text-anchor="middle" letter-spacing="6">感恩尾牙・年終抽獎</text>
+  ${[0,1,2,3,4,5,6,7,8].map(k=>`<circle cx="${200+k*50}" cy="40" r="5" fill="#F5C443"/>`).join('')}
+  <rect x="300" y="78" width="110" height="80" rx="6" fill="#C8432F"/><rect x="300" y="78" width="110" height="18" fill="#8E2A1C"/><rect x="340" y="62" width="30" height="8" rx="2" fill="#1F2B27"/><text x="355" y="135" font-size="30" font-weight="900" fill="#F5C443" text-anchor="middle">抽</text>
+  <g transform="translate(460 70)"><rect width="70" height="44" rx="4" fill="#1F2B27"/><circle cx="35" cy="22" r="13" fill="#3B4A44"/><circle cx="35" cy="22" r="6" fill="#E9643B"/><rect x="58" y="6" width="6" height="6" rx="3" fill="#E9643B"/><path d="M70 22h30v-40" stroke="#1F2B27" stroke-width="5" fill="none"/></g>
+  <g transform="translate(220 112)"><rect width="56" height="44" rx="4" fill="#FFFBF4" stroke="#C8432F" stroke-width="3"/><path d="M28 0v44M0 14h56" stroke="#C8432F" stroke-width="5"/></g>
+  <rect x="160" y="158" width="480" height="22" fill="#E2CCA8"/>
+ </svg>`;}
+
+/* ================= setup & rules ================= */
+function showSetup(){
+  clearTimeout(timer);
+  const sv=lsGet(SAVE_KEY);
+  openModal(`<div class="setup-art">${heroArt()}</div><h2>尾牙內鬼</h2><p class="sub">年終尾牙，獎品堆滿舞台。可是每天早上抽出來的，總有幾個變成「銘謝惠顧」。監視器只拍到一點點特徵，人資手上有名單，內鬼就坐在你旁邊。</p>
+   <div class="pitch"><div><b>不需要主持人</b>App 負責發身分、處理夜晚和開獎，所有人都能玩。</div><div><b>監視器線索</b>內鬼每次動手，就會被拍到一個特徵：喝什麼、戴不戴眼鏡、穿什麼。</div><div><b>出局也能玩</b>被請去倉庫盤點的人還能發言、投票，新人臨走還能爆料。</div></div>
+   ${setupSeatsHTML(setupCfg,5,12)}
+   <p class="note">多位人類玩家共用一台裝置時，夜晚會輪流交接裝置；白天的發言和投票是公開的，真人之間可以直接討論。</p>
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${sv&&['night','talk','vote'].includes(sv.phase)?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+  m=>{
+    if(setupSeatsHandle(setupCfg,m,showSetup))return;
+    if(m==='rules')showRules();
+    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;TARGET=targetFor(S.players.length);const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;UI={};render();proceed();}
+    else if(m==='start'){
+      closeModal();SPEED=SPEEDS[setupCfg.speed];
+      const ps=seatsToPlayers(setupCfg,AI_NAMES);
+      if(ps.filter(p=>!p.ai).length>1){setupGame(ps);}else setupGame(ps);
+    }
+  });
+}
+function showRules(){showRulesHTML(`
+  <p><b>一句話：</b>尾牙抽獎被動了手腳。內鬼每晚偷換獎品，員工靠監視器線索、人資調查和投票把他們揪出來。</p>
+  <p>5–12 人・20–30 分鐘・12 歲以上</p>
+  <h3>身分</h3>
+  <table><tr><th>人數</th><th>內鬼</th><th>內鬼目標分</th><th>其他身分</th></tr>
+  <tr><td>5</td><td>1</td><td>4</td><td>人資</td></tr><tr><td>6</td><td>1</td><td>4</td><td>人資、保全</td></tr><tr><td>7–8</td><td>2</td><td>7</td><td>人資、保全、老闆</td></tr><tr><td>9</td><td>2</td><td>7</td><td>人資、保全、老闆、新人</td></tr><tr><td>10–12</td><td>3</td><td>12</td><td>人資、保全、老闆、新人</td></tr></table>
+  <ul>${Object.values(ROLES).map(r=>`<li><b>${r.n}：</b>${r.d}</li>`).join('')}</ul>
+  <p>每個人還有三個公開特徵：喝咖啡或奶茶、戴不戴眼鏡、穿西裝或帽T。</p>
+  <h3>每一輪（共 ${ROUNDS} 輪，依序抽五獎到頭獎）</h3>
+  <ol><li><b>夜晚：</b>大家輪流拿裝置做秘密行動。內鬼決定要不要偷換今晚的獎品、派誰去；人資調查一人；保全盯一人。沒有行動的人也要拿一下裝置，避免從時間猜出身分。</li>
+  <li><b>早上開獎：</b>如果獎品被偷換，抽出來就是「銘謝惠顧」，內鬼拿到這個獎品的分數（五獎 1 分到頭獎 5 分）。不管成功或被保全攔下，監視器都會拍到動手者的一個特徵。</li>
+  <li><b>發言：</b>每人輪流說一句：不表態、懷疑某人、指控某人是內鬼、或擔保某人清白。可以用「人資」的名義，也可以說謊。</li>
+  <li><b>投票：</b>公開投票，得票最多且至少 2 票的人被請去倉庫盤點，翻開身分。平手就沒人出局。</li></ol>
+  <h3>勝利條件</h3>
+  <ul><li><b>內鬼：</b>偷到的獎品分數 + 冤枉好人的次數（每請走一個員工 +1）達到目標分（見上表），立刻獲勝。</li>
+  <li><b>員工：</b>把所有內鬼都請走，或撐完五輪內鬼還不到目標分。</li></ul>
+  <h3>出局之後</h3><p>被請走的人身分公開，但還能發言、投票，只是不能被投、不能用能力。新人被請走時可以指定一人公開陣營。</p>
+  <h3>甩鍋</h3><p>內鬼全隊整場只有一次，可以讓當晚的監視器線索變成相反的特徵。所以每條線索都不一定可靠。</p>
+  <h3>致勝心法</h3>
+  <ul><li>員工：把所有線索疊起來，看誰的特徵最吻合。但記得可能有一條是假的。</li>
+  <li>內鬼：前面的小獎不偷也沒關係，頭獎和二獎加起來就有 9 分。動手越少，線索越少。</li>
+  <li>人資：太早跳出來會被內鬼反咬，太晚又來不及。保全攔到人時，可以直接指控。</li></ul>
+  <h3>和實體版的差別</h3><p>實體版用閉眼和傳卡處理夜晚，沒有主持人時由大家輪流翻線索卡。App 版由程式代替主持，白天的自由討論改成每人一句結構化發言，真人之間仍然可以直接聊。</p>`);}
+
+/* ================= input ================= */
+$('#desk').addEventListener('click',e=>{
+  if(e.target.closest('#btnAgain')){setupGame(S.cfgPlayers);return;}
+  if(e.target.closest('#btnResult')){endModal();return;}
+  if(!myTurn())return;
+  const b=e.target.closest('button');if(!b||b.disabled)return;
+  const cur=curTurn();
+  if(b.dataset.steal!=null){UI.steal=b.dataset.steal==='1';if(!UI.steal){UI.thief=null;UI.scape=false;}}
+  else if(b.dataset.thief!=null)UI.thief=+b.dataset.thief;
+  else if(b.id==='btnScape')UI.scape=!UI.scape;
+  else if(b.dataset.tgt!=null)UI.tgt=+b.dataset.tgt;
+  else if(b.dataset.k){UI.k=b.dataset.k;if(UI.k==='sus')UI.hr=false;}
+  else if(b.id==='btnHR')UI.hr=!UI.hr;
+  else if(b.id==='btnCheck'){UI.res=P(UI.tgt).team;}
+  else if(b.id==='btnPeek'){roleModal(cur,()=>{render();});return;}
+  else if(b.id==='btnNight'){
+    const p=P(cur);let a={};
+    if(p.team==='mole'&&cur===firstMole())a=UI.steal?{steal:true,thief:UI.thief,scape:!!UI.scape}:{steal:false};
+    else if(p.role==='hr')a={check:UI.tgt};
+    else if(p.role==='guard')a={watch:UI.tgt};
+    S.night[cur]=a;UI={};if(humans().length>1)S.viewer=null;proceed();return;
+  }
+  else if(b.id==='btnTalk'){const k=UI.k||'quiet';applyTalk(cur,k==='quiet'?{k}:{k,j:UI.tgt,hr:!!UI.hr&&k!=='sus'});UI={};proceed();return;}
+  else if(b.id==='btnVote'){applyVote(cur,UI.tgt);UI={};proceed();return;}
+  else return;
+  render();
+});
+$('#btnRules').addEventListener('click',showRules);
+$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();if(S.phase==='morning'){S.phase='talk';S.talk={};}else if(S.phase==='rookie'){endDay();return;}proceed();}});}else showSetup();});
+
+/* ================= boot ================= */
+window.__game={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;}};
+(function boot(){
+  S={players:Array.from({length:7},(_,i)=>({name:'—',ai:true,role:'staff',team:'staff',tr:[i&1,(i>>1)&1,(i>>2)&1],alive:true,notes:[],said:[]})),r:1,phase:'idle',score:0,wrong:0,scape:1,clues:[],prizes:PRIZES.map(()=>({st:'wait'})),night:{},talk:{},votes:{},lastGuard:{},start:0,log:[],viewer:null};
+  render();showSetup();
+})();
+
+</script>
+<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("../../sw.js",{scope:"../../"}).catch(()=>{}));</script>
+</body>
+</html>
