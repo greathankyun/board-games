@@ -297,6 +297,7 @@ img.av{display:block;border-radius:50%;object-fit:cover}
 </div>
 <div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 <div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script src="../../assets/net.js"></script>
 <script>
 'use strict';
 const LOBBY='../../';
@@ -432,7 +433,7 @@ function clone(){return JSON.parse(JSON.stringify({rooms:S.rooms,players:S.playe
 let S=null, UI={}, tick=null;
 let setupCfg={n:4,seats:[{name:'你',ai:false}].concat(AI_NAMES.slice(0,5).map(n=>({name:n,ai:true}))),speed:'中',timer:true};
 const NP=()=>S.players.length;
-const humans=()=>S.players.filter(p=>!p.ai);
+const humans=()=>S.players.filter(p=>!p.ai&&!p.remote); // humans on this device
 const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
 const rn=r=>`${DISTS[r.d].n}${TY[r.t].n}`;
 function log(html,cls=''){const m=/data-p="(\d)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,r:S.round});if(S.log.length>220)S.log.length=220;}
@@ -444,9 +445,10 @@ function setupGame(players){
   clearTimeout(timer);
   const rooms=[];LAYOUT.forEach((ts,d)=>ts.forEach(t=>rooms.push({id:rooms.length,d,t,owner:t==='social'?-2:-1,bonus:0,rep:0,dead:false})));
   const roles=shuffle(ROLE_KEYS.slice()),goals=shuffle(GOAL_KEYS.slice());
-  S={players:players.map((p,i)=>({name:p.name,ai:p.ai,role:roles[i],goal:goals[i],money:START_MONEY,home:null,comfort:0,reports:0,lottery:false,freeProp:0})),
+  S={players:players.map((p,i)=>({name:p.name,ai:p.ai,remote:!!p.remote,pid:p.pid||null,role:roles[i],goal:goals[i],money:START_MONEY,home:null,comfort:0,reports:0,lottery:false,freeProp:0})),
      rooms,L:DISTS.map(d=>d.L),boom:[0,0,0,0],rentUp:false,round:1,start:Math.random()*players.length|0,cur:0,acts:ACTS,
-     phase:'event',events:shuffle(Object.keys(EVENTS)).slice(0,ROUNDS),log:[],rej:{},cfgPlayers:players,viewer:null};
+     phase:'event',events:shuffle(Object.keys(EVENTS)).slice(0,ROUNDS),log:[],rej:{},cfgPlayers:players,viewer:null,gid:rid(6),timer:!!setupCfg.timer};
+  if(NET.host)S.online={code:NET.code};
   const priv=shuffle(rooms.filter(r=>r.t!=='social'));
   S.players.forEach((p,i)=>{
     if(p.role==='landlord')p.money-=4;if(p.role==='tenant')p.money+=6;
@@ -587,7 +589,7 @@ function endModal(){
    <p class="sub">現金 + 房產價值 + 累積居住分 + 秘密目標。平手時居住分高的人贏。</p>
    <div class="tablewrap"><table class="res"><thead><tr><th>玩家</th><th>身分</th><th>現金</th><th>房產</th><th>居住</th><th>秘密目標</th><th>總分</th></tr></thead><tbody>
    ${sc.map((s,i)=>({s,i})).sort((a,b)=>b.s.total-a.s.total).map(({s,i})=>{const p=S.players[i];return `<tr><td>${esc(p.name)}</td><td>${ROLES[p.role].n}</td><td>${s.money}</td><td>${s.prop}</td><td>${s.comfort}</td><td>${GOALS[p.goal].n} ${s.goal?'+'+s.goal:'✗'}</td><td><b>${s.total}</b></td></tr>`;}).join('')}</tbody></table></div>
-   <div class="acts"><button class="btn" data-m="close">看看房市</button><button class="btn primary" data-m="again">再來一局</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
+   <div class="acts"><button class="btn${NET.client?' primary':''}" data-m="close">看看房市</button>${NET.client?'':'<button class="btn primary" data-m="again">再來一局</button>'}</div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
 }
 
 /* ================= AI ================= */
@@ -663,6 +665,7 @@ function startTurn(){
   const p=S.players[S.cur];
   UI={};
   if(p.ai){render();timer=setTimeout(aiAct,humans().length?SPEED:SPEED/3);return;}
+  if(p.remote){S.deadline=setupCfg.timer?Date.now()+TURN_SECONDS*1000:null;render();startTick();return;}
   if(S.viewer!==S.cur){
     S.viewer=null;render();
     openModal(`<div class="handoff">${avatar(S.cur)}</div><h2>請把裝置交給 ${esc(p.name)}</h2><p class="sub">輪到你行動。畫面會顯示 ${esc(p.name)} 的秘密目標，其他人請別偷看。${setupCfg.timer?`每回合有 ${TURN_SECONDS} 秒談判時間。`:''}</p>
@@ -672,7 +675,7 @@ function startTurn(){
   beginHumanTurn();
 }
 function beginHumanTurn(){UI={};S.deadline=setupCfg.timer?Date.now()+TURN_SECONDS*1000:null;render();scrollDeskIntoView();startTick();}
-function startTick(){stopTick();if(!S.deadline)return;tick=setInterval(()=>{if(!$('#overlay').hidden){S.deadline+=1000;return;}const left=Math.ceil((S.deadline-Date.now())/1000);const el=$('#timer');if(el){el.textContent=`⏳ ${Math.max(0,left)} 秒`;el.classList.toggle('low',left<=15);}if(left<=0){stopTick();log(`${pn(S.cur)} 談判時間到`);endTurn();}},1000);}
+function startTick(){stopTick();if(!S.deadline)return;tick=setInterval(()=>{if(!$('#overlay').hidden||S.ask){S.deadline+=1000;return;}const left=Math.ceil((S.deadline-Date.now())/1000);const el=$('#timer');if(el){el.textContent=`⏳ ${Math.max(0,left)} 秒`;el.classList.toggle('low',left<=15);}if(left<=0){stopTick();log(`${pn(S.cur)} 談判時間到`);endTurn();}},1000);}
 function stopTick(){if(tick){clearInterval(tick);tick=null;}}
 function aiAct(){
   if(S.phase!=='act')return;
@@ -689,6 +692,8 @@ function offer(o,then){
   const tgt=S.players[o.to];
   log(`${pn(o.from)} 向 ${pn(o.to)} 提案`);
   if(tgt.ai){const ok=aiAccept(o);settleTrade(o,ok);save();render();then(ok);return;}
+  // a friend on their own phone answers there
+  if(tgt.remote){S.ask={o,id:rid(4)};TRADE_THEN=then;render();return;}
   // a human must answer
   const prevViewer=S.viewer;
   const ask=()=>{S.viewer=o.to;render();
@@ -716,7 +721,8 @@ function endTurn(){
 }
 
 /* ================= view ================= */
-const myTurn=()=>S&&S.phase==='act'&&!S.players[S.cur].ai&&S.viewer===S.cur&&$('#overlay').hidden;
+const myTurn=()=>S&&S.phase==='act'&&!S.players[S.cur].ai&&S.viewer===S.cur&&$('#overlay').hidden&&!S.ask&&!UI.sent&&(NET.client||!S.players[S.cur].remote);
+let TRADE_THEN=null;
 const ROOM_ART={
   roof:'<rect x="6" y="18" width="28" height="18" fill="#C9AE84"/><path d="M4 18 20 6l16 12z" fill="#7A8A96"/><rect x="16" y="24" width="8" height="12" fill="#6E5A3A"/>',
   share:'<rect x="6" y="10" width="28" height="26" fill="#E2CFA8"/><rect x="10" y="15" width="8" height="7" fill="#fff"/><rect x="22" y="15" width="8" height="7" fill="#fff"/><rect x="16" y="26" width="8" height="10" fill="#8A5A2E"/>',
@@ -746,6 +752,7 @@ function render(){
   $('#stat').innerHTML=`<span class="chip">本輪事件：${S.phase==='idle'?'—':EVENTS[S.events[S.round-1]].n}</span>${S.rentUp?'<span class="chip down">租金 +1</span>':''}<span class="chip">社宅登記 ${S.players.filter(p=>p.lottery).length} 人</span>`;
   renderDesk();renderPlayers();
   $('#feed').innerHTML=feedHTML(S.log,l=>l.r?MONTHS[l.r-1]:'—','搬家、交易和檢舉都會記在這裡。');
+  NET.publish();
 }
 function myIntel(i){
   const p=S.players[i],g=GOALS[p.goal],h=homeRoom(i);
@@ -762,6 +769,7 @@ function renderDesk(){
   let h=leafDeco;
   if(S.phase==='act'){
     const p=S.players[S.cur];
+    if(S.ask)h+=`<div class="dnote">等待 ${esc(S.players[S.ask.o.to].name)} 回覆 ${esc(S.players[S.ask.o.from].name)} 的提案<span class="dots"></span></div>`;
     if(myTurn()){
       const i=S.cur,canAct=S.acts>0,canProp=S.acts>0||p.freeProp>0;
       h+=`<div class="dhead"><h2>你的回合</h2><span class="pill">剩 ${S.acts} 個行動${p.freeProp?'＋免費提案':''}</span>${S.deadline?`<span class="timer" id="timer">⏳ ${Math.max(0,Math.ceil((S.deadline-Date.now())/1000))} 秒</span>`:''}</div>
@@ -791,19 +799,19 @@ function renderDesk(){
       h+=`<button class="passbtn" id="btnEnd">結束回合</button>`;
       h+=myIntel(i);
     }else{
-      h+=`<div class="dhead"><h2>${p.ai?'對手行動':'換人操作'}</h2><span class="pill soft">${MONTHS[S.round-1]}</span></div><div class="think">${avatar(S.cur)}<div><b>${esc(p.name)}</b><div>${p.ai?'正在打算盤<span class="dots"></span>':'等待交接裝置'}</div></div></div>`;
+      h+=`<div class="dhead"><h2>${UI.sent?'已送出':NET.waitTitle(p)}</h2><span class="pill soft">${MONTHS[S.round-1]}</span>${S.deadline&&!p.ai?`<span class="timer" id="timer">⏳ ${Math.max(0,Math.ceil((S.deadline-Date.now())/1000))} 秒</span>`:''}</div><div class="think">${avatar(S.cur)}<div><b>${esc(p.name)}</b><div>${UI.sent?'等房主確認':NET.waitSub(p,'正在打算盤')}<span class="dots"></span></div></div></div>`;
       if(S.viewer!=null)h+=myIntel(S.viewer);
     }
   }else if(S.phase==='end'){
     h+=`<div class="dhead"><h2>年底結算</h2><span class="pill">贏家</span></div><div class="think">${avatar(S.winners[0])}<div><b>${S.winners.map(i=>esc(S.players[i].name)).join('、')}</b><div>總分 ${S.final[S.winners[0]].total}</div></div></div>
-     <button class="passbtn" id="btnResult">再看一次結算</button><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`;
+     <button class="passbtn" id="btnResult">再看一次結算</button>${NET.client?'':`<button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`}`;
   }else if(S.phase==='idle'){
     h+=`<div class="dhead"><h2>準備開局</h2></div><div class="empty"><b>設定玩家後開始</b>3 到 6 人，可以混搭 AI。</div>`;
   }else{
     h+=`<div class="dhead"><h2>新聞快報</h2><span class="pill soft">${MONTHS[S.round-1]}</span></div><div class="empty"><b>${EVENTS[S.events[S.round-1]].n}</b>${EVENTS[S.events[S.round-1]].d}</div>`;
     if(S.viewer!=null)h+=myIntel(S.viewer);
   }
-  $('#desk').innerHTML=h;
+  $('#desk').innerHTML=h+NET.barHTML();
 }
 function renderPlayers(){
   $('#players').innerHTML=S.players.map((p,i)=>{const h=homeRoom(i);return `<div class="pl ${i===S.cur&&S.phase==='act'?'cur':''}"><img class="av" src="img/${p.role}.webp" alt="${ROLES[p.role].n}"><div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}<span class="tag">${ROLES[p.role].n}</span></div>
@@ -829,13 +837,14 @@ function showSetup(){
    ${setupSeatsHTML(setupCfg,3,6)}
    <div class="field"><span>談判計時</span><div class="seg"><button data-m="tm:1" class="${setupCfg.timer?'on':''}">每回合 ${TURN_SECONDS} 秒</button><button data-m="tm:0" class="${setupCfg.timer?'':'on'}">不計時</button></div></div>
    <p class="note">多位人類玩家可以共用一台裝置輪流操作，換人時秘密目標會蓋起來。</p>
-   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${sv&&sv.phase==='act'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${NET.setupBtns()}${sv&&sv.phase==='act'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
   m=>{
     if(setupSeatsHandle(setupCfg,m,showSetup))return;
     if(m.startsWith('tm:')){setupCfg.timer=m==='tm:1';showSetup();return;}
+    if(NET.setupHandle(m))return;
     if(m==='rules')showRules();
-    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;UI={};startTurn();}
-    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
+    else if(m==='resume')resumeGame(sv);
+    else if(m==='start'){NET.leave();closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
   });
 }
 function showRules(){showRulesHTML(`
@@ -872,26 +881,15 @@ $('#desk').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   const i=S.cur;
   if(b.dataset.act){const a=b.dataset.act;UI={act:UI.act===a?null:a};if(a==='trade')UI.tr={give:{money:0,rooms:[]},take:{money:0,rooms:[]},swap:false};}
-  else if(b.id==='btnDo'){
-    if(UI.act==='lottery'){if(S.acts>0){S.acts--;doAction(i,'lottery');}}
-    else if(UI.room!=null&&legal(i,UI.act,UI.room)&&S.acts>0){S.acts--;doAction(i,UI.act,UI.room);}
-    UI={};save();
-    if(S.acts<=0&&S.players[i].freeProp<=0){endTurn();return;}
-  }
+  else if(b.id==='btnDo'){act({t:'do',a:UI.act,room:UI.room});return;}
   else if(b.dataset.tt!=null){UI.t=+b.dataset.tt;UI.tr={give:{money:0,rooms:[]},take:{money:0,rooms:[]},swap:false};}
   else if(b.dataset.gr!=null){const id=+b.dataset.gr,a=UI.tr.give.rooms;UI.tr.give.rooms=a.includes(id)?a.filter(x=>x!==id):a.concat(id);}
   else if(b.dataset.tr!=null){const id=+b.dataset.tr,a=UI.tr.take.rooms;UI.tr.take.rooms=a.includes(id)?a.filter(x=>x!==id):a.concat(id);}
   else if(b.dataset.gm){UI.tr.give.money=Math.max(0,Math.min(Math.max(0,S.players[i].money),UI.tr.give.money+(+b.dataset.gm)));}
   else if(b.dataset.tm){UI.tr.take.money=Math.max(0,Math.min(Math.max(0,S.players[UI.t].money),UI.tr.take.money+(+b.dataset.tm)));}
   else if(b.dataset.swap){UI.tr.swap=!UI.tr.swap;}
-  else if(b.id==='btnOffer'){
-    const o={from:i,to:UI.t,give:UI.tr.give,take:UI.tr.take,swap:UI.tr.swap};
-    if(!tradeOK(o))return;
-    useProposal(i);UI={};
-    offer(o,()=>{save();if(S.acts<=0&&S.players[i].freeProp<=0){endTurn();}else render();});
-    return;
-  }
-  else if(b.id==='btnEnd'){endTurn();return;}
+  else if(b.id==='btnOffer'){act({t:'offer',o:{to:UI.t,give:UI.tr.give,take:UI.tr.take,swap:UI.tr.swap}});return;}
+  else if(b.id==='btnEnd'){act({t:'end'});return;}
   else return;
   render();
 });
@@ -901,7 +899,68 @@ $('#map').addEventListener('click',e=>{
 });
 $('#map').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const el=e.target.closest('[data-room]');if(el){e.preventDefault();el.click();}}});
 $('#btnRules').addEventListener('click',showRules);
-$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);stopTick();clearSave();showSetup();}else{closeModal();render();}});}else showSetup();});
+$('#btnNew').addEventListener('click',()=>{if(NET.online){NET.confirmLeave();return;}if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);stopTick();clearSave();showSetup();}else{closeModal();render();}});}else showSetup();});
+
+// one entry point for a move: this device, or the host applying a move sent from a friend's phone
+function act(a){
+  if(NET.client){NET.send(a);UI={sent:true};render();return;}
+  applyAct(S.cur,a);
+}
+function applyAct(i,a){
+  if(S.phase!=='act'||i!==S.cur||S.ask)return;
+  const p=S.players[i];
+  if(a.t==='do'){
+    if(a.a==='lottery'){if(S.acts<=0||!legal(i,'lottery'))return;S.acts--;doAction(i,'lottery');}
+    else{const id=+a.room;if(!ACT_INFO[a.a]||a.a==='trade'||!S.rooms[id]||!legal(i,a.a,id)||S.acts<=0)return;S.acts--;doAction(i,a.a,id);}
+    UI={};save();
+    if(S.acts<=0&&p.freeProp<=0){endTurn();return;}
+    render();return;
+  }
+  if(a.t==='offer'){
+    const x=a.o||{},rs=v=>Array.isArray(v)?[...new Set(v.map(Number).filter(id=>S.rooms[id]))]:[],mn=v=>Math.max(0,Math.floor(+v||0));
+    const o={from:i,to:+x.to,give:{money:mn(x.give&&x.give.money),rooms:rs(x.give&&x.give.rooms)},take:{money:mn(x.take&&x.take.money),rooms:rs(x.take&&x.take.rooms)},swap:!!x.swap};
+    if(!Number.isInteger(o.to)||o.to===i||!S.players[o.to]||!tradeOK(o)||!(S.acts>0||p.freeProp>0))return;
+    useProposal(i);UI={};
+    offer(o,()=>{save();if(S.acts<=0&&S.players[i].freeProp<=0){endTurn();}else render();});
+    return;
+  }
+  if(a.t==='end')endTurn();
+}
+function answerAsk(ok){const o=S.ask.o;S.ask=null;settleTrade(o,ok);save();const th=TRADE_THEN;TRADE_THEN=null;render();if(th)th(ok);}
+async function resumeGame(sv){
+  closeModal();SPEED=SPEEDS[setupCfg.speed];NET.leave();
+  if(sv.online&&!(await NET.resumeHost(sv))){sv.players.forEach(p=>{if(p.remote){p.remote=false;p.ai=true;}});delete sv.online;}
+  S=sv;if(S.ask){S.ask=null;}const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;UI={};startTurn();
+}
+// friends see the countdown tick on their own phones too
+setInterval(()=>{if(!NET.client||!S||!S.deadline)return;const el=$('#timer');if(!el)return;const left=Math.ceil((S.deadline-Date.now())/1000);el.textContent=`⏳ ${Math.max(0,left)} 秒`;el.classList.toggle('low',left<=15);},1000);
+const GAME={id:'taipei-rent',name:'台北租屋大逃殺',hostKey:'taipei-rent-net-host',clientKey:'taipei-rent-net-client',min:3,max:6,aiNames:AI_NAMES,
+  secretHint:'你的秘密目標只會出現在你自己的手機上。',
+  start(cfg){setupGame(cfg);},
+  strip(pub){if(pub.phase==='end')return;pub.players.forEach(p=>{p.goal=null;});pub.events=pub.events.map((e,k)=>k<pub.round?e:null);},
+  secret(i){return {goal:S.players[i].goal};},
+  applySecret(seat,sec){if(S.phase!=='end')S.players[seat].goal=sec.goal;},
+  waiting(){if(!S||S.phase!=='act')return [];if(S.ask)return S.players[S.ask.o.to].ai?[]:[S.ask.o.to];return S.players[S.cur].ai?[]:[S.cur];},
+  action(seat,a){
+    if(a.t==='answer'){if(!S.ask||S.ask.o.to!==seat||a.id!==S.ask.id)return;answerAsk(!!a.ok);return;}
+    applyAct(seat,a);
+  },
+  afterTakeover(ws){ws.forEach(i=>{S.cfgPlayers[i]={name:S.players[i].name,ai:true};});
+    if(S.ask&&ws.includes(S.ask.o.to)){answerAsk(aiAccept(S.ask.o));return;}
+    if(S.phase==='act'&&ws.includes(S.cur)&&$('#overlay').hidden){stopTick();S.deadline=null;aiAct();}else render();},
+  resumeUI(){if(S.phase==='end')endModal();else if(S.phase==='act'&&!S.ask)startTurn();else render();},
+  clientReset(prev){if(!prev||prev.gid!==S.gid||prev.cur!==S.cur||prev.acts!==S.acts||prev.phase!==S.phase||!!prev.ask!==!!S.ask||S.players[NET.seat].freeProp!==prev.players[NET.seat].freeProp)UI={};},
+  clientModal(){
+    const g=S.gid;
+    if(S.phase==='end')return {key:'end'+g,open:endModal};
+    if(S.ask&&S.ask.o.to===NET.seat){const o=S.ask.o,id=S.ask.id;return {key:'ask'+id,open:()=>openModal(`<h2>${esc(S.players[o.from].name)} 向你提案</h2><p class="sub">要接受嗎？</p>
+      <div class="offer"><div><h5>你會得到</h5><ul>${tradeTxt(o,'give').map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div><div><h5>你要付出</h5><ul>${tradeTxt(o,'take').map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div></div>
+      ${S.secOK?myIntel(NET.seat):''}
+      <div class="acts"><button class="btn" data-m="no">拒絕</button><button class="btn primary" data-m="yes">成交</button></div>`,m=>{closeModal();NET.send({t:'answer',id,ok:m==='yes'});})};}
+    if(S.phase==='event'){const ev=EVENTS[S.events[S.round-1]];return {key:'ev'+g+S.round,open:()=>openModal(`<h2>${MONTHS[S.round-1]} · 新聞快報</h2><div class="intel" style="margin:6px 0 4px"><div class="ilab">${ICONS.spark}${ev.n}</div><div class="inote" style="font-size:14px">${ev.d}</div></div><p class="sub">等房主開始這兩個月的行動。</p><div class="acts"><button class="btn primary" data-m="ok">知道了</button></div>`,()=>closeModal())};}
+    return null;
+  },
+};
 
 /* ================= boot ================= */
 window.__game={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;},scoreOf};
