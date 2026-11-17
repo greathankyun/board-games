@@ -301,6 +301,7 @@ img.av{display:block;border-radius:50%;object-fit:cover}
 <div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 <div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
 <script src="../../assets/table.js"></script>
+<script src="../../assets/net.js"></script>
 <script>
 'use strict';
 const LOBBY='../../';
@@ -392,7 +393,7 @@ const targetFor=n=>n<=6?4:n<=9?7:12;
 let S=null, UI={};
 let setupCfg={n:7,seats:[{name:'你',ai:false}].concat(AI_NAMES.slice(0,11).map(n=>({name:n,ai:true}))),speed:'中'};
 const NP=()=>S.players.length;
-const humans=()=>S.players.filter(p=>!p.ai);
+const humans=()=>S.players.filter(p=>!p.ai&&!p.remote); // humans on this device
 const P=i=>S.players[i];
 const pn=i=>`<b class="pn" data-p="${i}">${esc(P(i).name)}</b>`;
 const alive=()=>S.players.map((_,i)=>i).filter(i=>P(i).alive);
@@ -413,8 +414,9 @@ function setupGame(players){
   let bossSeat=-1;
   if(rc.boss){bossSeat=Math.random()*n|0;roles.splice(bossSeat,0,'boss');}
   const combos=shuffle([0,1,2,3,4,5,6,7].concat([0,1,2,3,4,5,6,7]));
-  S={players:players.map((p,i)=>({name:p.name,ai:p.ai,role:roles[i],team:roles[i]==='mole'?'mole':'staff',tr:[combos[i]&1,(combos[i]>>1)&1,(combos[i]>>2)&1],alive:true,notes:[],claim:null,said:[]})),
-     r:1,phase:'night',score:0,wrong:0,scape:1,clues:[],prizes:PRIZES.map(()=>({st:'wait'})),night:{},talk:{},votes:{},lastGuard:{},start:Math.random()*n|0,log:[],viewer:null,cfgPlayers:players};
+  S={players:players.map((p,i)=>({name:p.name,ai:p.ai,remote:!!p.remote,pid:p.pid||null,role:roles[i],team:roles[i]==='mole'?'mole':'staff',tr:[combos[i]&1,(combos[i]>>1)&1,(combos[i]>>2)&1],alive:true,notes:[],claim:null,said:[]})),
+     r:1,phase:'night',score:0,wrong:0,scape:1,clues:[],prizes:PRIZES.map(()=>({st:'wait'})),night:{},talk:{},votes:{},lastGuard:{},start:Math.random()*n|0,log:[],viewer:null,cfgPlayers:players,gid:rid(6)};
+  if(NET.host)S.online={code:NET.code};
   const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;
   log(`尾牙開始！員工 ${n} 人，其中藏著 ${rc.mole} 個內鬼。內鬼要偷到 ${TARGET} 分的獎品才算得逞。`,'q');
   if(bossSeat>=0)log(`${pn(bossSeat)} 是老闆，身分公開，投票算 2 票。`);
@@ -438,7 +440,10 @@ function nightActors(){
   return order().filter(i=>P(i).alive&&(!P(i).ai||(P(i).role==='hr'||P(i).role==='guard'||i===firstMole)));
 }
 function curTurn(){
-  if(S.phase==='night'){return nightActors().find(i=>S.night[i]==null)??null;}
+  if(S.phase==='night'){
+    // night moves are secret and independent: friends on their own phones act at the same time
+    if(NET.client){const me=P(NET.seat);return me&&me.alive&&S.night[NET.seat]==null?NET.seat:null;}
+    const pend=nightActors().filter(i=>S.night[i]==null);return pend.find(i=>!P(i).remote)??pend[0]??null;}
   if(S.phase==='talk'){return order().find(i=>S.talk[i]==null)??null;}
   if(S.phase==='vote'){return order().find(i=>S.votes[i]==null)??null;}
   return null;
@@ -542,6 +547,7 @@ function proceed(){
   const cur=curTurn();
   if(cur==null){if(S.phase==='night')resolveNight();else if(S.phase==='talk'){S.phase='vote';S.votes={};log('發言結束，開始投票。誰要被請去倉庫盤點？','q');proceed();}else resolveVote();return;}
   const p=P(cur);
+  if(p.remote){render();return;}
   if(p.ai){render();timer=setTimeout(()=>{
     if(S.phase==='night'){S.night[cur]=aiNight(cur);}
     else if(S.phase==='talk'){applyTalk(cur,aiTalk(cur));}
@@ -612,7 +618,8 @@ function resolveVote(){
   if(checkWin())return;
   if(p.role==='rookie'){
     if(p.ai){const r=rankSus(out,alive());rookieReveal(out,r[0].j);return;}
-    S.phase='rookie';render();
+    S.phase='rookie';S.rk=out;render();
+    if(p.remote)return;
     openModal(`<div class="handoff">${avatar(out)}</div><h2>新人的委屈</h2><p class="sub">${esc(p.name)}，你是新人。指定一位還在場的同事，公開他的陣營。</p>
      <div class="chooser big" style="flex-wrap:wrap">${alive().map(j=>`<button class="btn" data-m="${j}">${esc(P(j).name)}</button>`).join('')}</div>`,m=>{closeModal();rookieReveal(out,+m);});
     return;
@@ -641,11 +648,11 @@ function endModal(){
    ${S.players.map((p,i)=>`<tr><td>${esc(p.name)}</td><td style="font-family:var(--f-body)">${ROLES[p.role].n}</td><td style="font-family:var(--f-body)" class="${p.team==='mole'?'down':'up'}">${p.team==='mole'?'內鬼':'員工'}</td><td style="font-family:var(--f-body)">${p.alive?'在場':'被請走'}</td></tr>`).join('')}</tbody></table></div>
    <h3 style="font-size:17px;font-weight:900;margin:16px 0 8px">每一條線索的真相</h3>
    <div class="cluelist">${S.clues.map(c=>`<div class="clue">第 ${c.r} 晚・${esc(P(c.thief).name)} 動手・線索「${trTxt(c.t,c.v)}」${c.fake?'<span class="chip down">甩鍋假線索</span>':''}${c.blocked?'<span class="chip green">被保全攔下</span>':''}</div>`).join('')||'<div class="clue">內鬼一次都沒有動手。</div>'}</div>
-   <div class="acts"><button class="btn" data-m="close">看看名冊</button><button class="btn primary" data-m="again">再來一局</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
+   <div class="acts"><button class="btn${NET.client?' primary':''}" data-m="close">看看名冊</button>${NET.client?'':'<button class="btn primary" data-m="again">再來一局</button>'}</div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
 }
 
 /* ================= view ================= */
-function myTurn(){const c=curTurn();if(c==null||P(c).ai||!$('#overlay').hidden)return false;return S.phase==='night'?S.viewer===c:true;}
+function myTurn(){const c=curTurn();if(c==null||P(c).ai||!$('#overlay').hidden||UI.sent)return false;if(NET.client)return c===NET.seat;if(P(c).remote)return false;return S.phase==='night'?S.viewer===c:true;}
 function render(){
   if(!S)return;
   let st='';for(let i=1;i<=ROUNDS;i++){if(i>1)st+=`<span class="link ${i<=S.r?'done':''}"></span>`;st+=`<span class="step ${i<S.r||S.phase==='end'?'done':i===S.r&&S.phase!=='idle'?'now':''}">${PRIZES[i-1].rk}</span>`;}
@@ -655,6 +662,7 @@ function render(){
   renderStage();renderDesk();
   $('#feed').innerHTML=feedHTML(S.log,l=>l.r?'第'+l.r+'輪':'—','每晚的事件、發言和投票都會記在這裡。');
   TBL&&TBL.watch(S.log);
+  NET.publish();
 }
 function renderStage(){
   $('#prizes').innerHTML=`<div class="prz">${PRIZES.map((pz,k)=>{const st=S.prizes[k].st;return `<div class="pz ${st==='stolen'?'stolen':st==='safe'?'safe':''} ${k===S.r-1&&S.phase!=='end'&&S.phase!=='idle'?'now':''}"><span class="rk">${pz.rk}</span><span class="ic">${st==='stolen'?'🙃':pz.ic}</span><b>${st==='stolen'?'銘謝惠顧':pz.n}</b><span class="vv">${pz.v} 分</span><span class="st">${st==='stolen'?'被偷換':st==='safe'?'已抽出':'待抽'}</span></div>`;}).join('')}</div>`;
@@ -729,19 +737,19 @@ function renderDesk(){
        <button class="passbtn" id="btnPeek">偷看自己的身分（請其他人別看）</button>`;
     }else{
       const what=S.phase==='night'?'夜晚行動中':S.phase==='talk'?'正在發言':'正在投票';
-      h+=`<div class="dhead"><h2>${S.phase==='night'?'深夜':'同事'+(p.ai?'思考中':'操作中')}</h2><span class="pill soft">第 ${S.r} 輪</span></div><div class="think">${S.phase==='night'?`<svg class="av" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#2E3440"/><path d="M40 16a18 18 0 1 0 8 26 14 14 0 1 1-8-26z" fill="#F5C443"/></svg>`:avatar(cur)}<div><b>${S.phase==='night'?'大家都下班了':esc(p.name)}</b><div>${S.phase==='night'?(p.ai?'有人在辦公室裡走動':'等待交接裝置'):what}<span class="dots"></span></div></div></div>`;
+      h+=`<div class="dhead"><h2>${S.phase==='night'?'深夜':'同事'+(p.ai?'思考中':'操作中')}</h2><span class="pill soft">第 ${S.r} 輪</span></div><div class="think">${S.phase==='night'?`<svg class="av" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#2E3440"/><path d="M40 16a18 18 0 1 0 8 26 14 14 0 1 1-8-26z" fill="#F5C443"/></svg>`:avatar(cur)}<div><b>${S.phase==='night'?'大家都下班了':esc(p.name)}</b><div>${UI.sent?'已送出，等其他人':S.phase==='night'?(p.ai?'有人在辦公室裡走動':(p.remote||NET.client)?'大家在自己的手機上行動':'等待交接裝置'):what}<span class="dots"></span></div></div></div>`;
       if(S.viewer!=null&&(S.phase==='night'?S.viewer!==cur:true)&&humans().length===1)h+=myIntel(S.viewer);
     }
   }else if(S.phase==='end'){
     h+=`<div class="dhead"><h2>尾牙落幕</h2><span class="pill">${S.win==='mole'?'內鬼勝':'員工勝'}</span></div><div class="empty"><b>${S.win==='mole'?'內鬼得逞':'員工獲勝'}</b>${S.why}</div>
-     <button class="passbtn" id="btnResult">再看一次結算</button><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`;
+     <button class="passbtn" id="btnResult">再看一次結算</button>${NET.client?'':`<button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`}`;
   }else if(S.phase==='idle'){
     h+=`<div class="dhead"><h2>準備開始</h2></div><div class="empty"><b>設定玩家後開始</b>5 到 12 人，可以混搭 AI 同事。</div>`;
   }else{
     h+=`<div class="dhead"><h2>${S.phase==='morning'?'抽獎時間':'稍等'}</h2><span class="pill soft">第 ${S.r} 輪</span></div><div class="empty"><b>${PRIZES[S.r-1].rk}・${PRIZES[S.r-1].n}</b>內鬼目前 ${S.score+S.wrong} / ${TARGET} 分</div>`;
     if(S.viewer!=null&&humans().length===1)h+=myIntel(S.viewer);
   }
-  $('#desk').innerHTML=h;
+  $('#desk').innerHTML=h+NET.barHTML();
 }
 function heroArt(){return `<svg viewBox="0 0 640 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
   <rect width="640" height="180" fill="#F3E3CC"/>
@@ -761,17 +769,25 @@ function showSetup(){
    <div class="pitch"><div><b>不需要主持人</b>App 負責發身分、處理夜晚和開獎，所有人都能玩。</div><div><b>監視器線索</b>內鬼每次動手，就會被拍到一個特徵：喝什麼、戴不戴眼鏡、穿什麼。</div><div><b>出局也能玩</b>被請去倉庫盤點的人還能發言、投票，新人臨走還能爆料。</div></div>
    ${setupSeatsHTML(setupCfg,5,12)}
    <p class="note">多位人類玩家共用一台裝置時，夜晚會輪流交接裝置；白天的發言和投票是公開的，真人之間可以直接討論。</p>
-   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${sv&&['night','talk','vote'].includes(sv.phase)?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${NET.setupBtns()}${sv&&['night','talk','vote'].includes(sv.phase)?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
   m=>{
     if(setupSeatsHandle(setupCfg,m,showSetup))return;
+    if(NET.setupHandle(m))return;
     if(m==='rules')showRules();
-    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;TARGET=targetFor(S.players.length);const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;UI={};render();proceed();}
+    else if(m==='resume')resumeGame(sv);
     else if(m==='start'){
-      closeModal();SPEED=SPEEDS[setupCfg.speed];
+      NET.leave();closeModal();SPEED=SPEEDS[setupCfg.speed];
       const ps=seatsToPlayers(setupCfg,AI_NAMES);
       if(ps.filter(p=>!p.ai).length>1){setupGame(ps);}else setupGame(ps);
     }
   });
+}
+async function resumeGame(sv){
+  closeModal();SPEED=SPEEDS[setupCfg.speed];NET.leave();
+  if(sv.online&&!(await NET.resumeHost(sv))){sv.players.forEach(p=>{if(p.remote){p.remote=false;p.ai=true;}});delete sv.online;}
+  S=sv;TARGET=targetFor(S.players.length);const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;UI={};
+  if(S.phase==='morning'){S.phase='talk';S.talk={};}
+  render();proceed();
 }
 function showRules(){showRulesHTML(`
   <p><b>一句話：</b>尾牙抽獎被動了手腳。內鬼每晚偷換獎品，員工靠監視器線索、人資調查和投票把他們揪出來。</p>
@@ -810,22 +826,87 @@ $('#desk').addEventListener('click',e=>{
   else if(b.dataset.tgt!=null)UI.tgt=+b.dataset.tgt;
   else if(b.dataset.k){UI.k=b.dataset.k;if(UI.k==='sus')UI.hr=false;}
   else if(b.id==='btnHR')UI.hr=!UI.hr;
-  else if(b.id==='btnCheck'){UI.res=P(UI.tgt).team;}
+  else if(b.id==='btnCheck'){if(NET.client){act({t:'night',a:{check:UI.tgt}});return;}UI.res=P(UI.tgt).team;}
   else if(b.id==='btnPeek'){roleModal(cur,()=>{render();});return;}
   else if(b.id==='btnNight'){
     const p=P(cur);let a={};
     if(p.team==='mole'&&cur===firstMole())a=UI.steal?{steal:true,thief:UI.thief,scape:!!UI.scape}:{steal:false};
     else if(p.role==='hr')a={check:UI.tgt};
     else if(p.role==='guard')a={watch:UI.tgt};
-    S.night[cur]=a;UI={};if(humans().length>1)S.viewer=null;proceed();return;
+    act({t:'night',a});return;
   }
-  else if(b.id==='btnTalk'){const k=UI.k||'quiet';applyTalk(cur,k==='quiet'?{k}:{k,j:UI.tgt,hr:!!UI.hr&&k!=='sus'});UI={};proceed();return;}
-  else if(b.id==='btnVote'){applyVote(cur,UI.tgt);UI={};proceed();return;}
+  else if(b.id==='btnTalk'){const k=UI.k||'quiet';act({t:'talk',v:k==='quiet'?{k}:{k,j:UI.tgt,hr:!!UI.hr&&k!=='sus'}});return;}
+  else if(b.id==='btnVote'){act({t:'vote',j:UI.tgt});return;}
   else return;
   render();
 });
 $('#btnRules').addEventListener('click',showRules);
-$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();if(S.phase==='morning'){S.phase='talk';S.talk={};}else if(S.phase==='rookie'){endDay();return;}proceed();}});}else showSetup();});
+$('#btnNew').addEventListener('click',()=>{if(NET.online){NET.confirmLeave();return;}if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();if(S.phase==='morning'){S.phase='talk';S.talk={};}else if(S.phase==='rookie'){endDay();return;}proceed();}});}else showSetup();});
+
+// one entry point for a seat's move: this device, or the host applying a move sent from a friend's phone
+function act(a){
+  if(NET.client){NET.send(a);UI={sent:true};render();return;}
+  applyAct(curTurn(),a);
+}
+function applyAct(cur,a){
+  if(cur==null)return;
+  const p=P(cur),ok=j=>Number.isInteger(j)&&j>=0&&j<NP()&&j!==cur&&P(j).alive;
+  if(a.t==='night'&&S.phase==='night'){
+    if(S.night[cur]!=null||!nightActors().includes(cur))return;
+    const x=a.a||{};let v={};
+    if(p.team==='mole'&&cur===firstMole())v=x.steal&&molesAlive().includes(+x.thief)?{steal:true,thief:+x.thief,scape:!!x.scape&&S.scape>0}:{steal:false};
+    else if(p.role==='hr'&&ok(+x.check))v={check:+x.check};
+    else if(p.role==='guard'&&ok(+x.watch)&&S.lastGuard[cur]!==+x.watch)v={watch:+x.watch};
+    S.night[cur]=v;UI={};if(humans().length>1)S.viewer=null;
+  }else if(a.t==='talk'&&S.phase==='talk'&&curTurn()===cur){
+    const x=a.v||{},k=['quiet','sus','mole','staff'].includes(x.k)?x.k:'quiet';
+    if(k!=='quiet'&&!ok(+x.j))return;
+    applyTalk(cur,k==='quiet'?{k}:{k,j:+x.j,hr:!!x.hr&&k!=='sus'});UI={};
+  }else if(a.t==='vote'&&S.phase==='vote'&&curTurn()===cur){
+    const j=+a.j;if(j!==-1&&!ok(j))return;
+    applyVote(cur,j);UI={};
+  }else return;
+  if($('#overlay').hidden)proceed();else{save();render();}
+}
+const GAME={id:'office-mole',name:'尾牙內鬼',hostKey:'office-mole-net-host',clientKey:'office-mole-net-client',min:5,max:12,aiNames:AI_NAMES,
+  secretHint:'你的身分、同夥和調查結果只會出現在你自己的手機上。',
+  start(cfg){setupGame(cfg);},
+  strip(pub){
+    if(pub.phase==='end')return;
+    pub.players.forEach(p=>{if(!p.revealed&&p.role!=='boss'){p.role=null;p.team=null;}p.notes=[];});
+    pub.clues.forEach(c=>{c.thief=null;c.fake=null;});
+    for(const k in pub.night)pub.night[k]=1;
+    pub.lastGuard={};pub.scape=null;
+  },
+  secret(i){const p=S.players[i];return {role:p.role,team:p.team,notes:p.notes,mates:p.team==='mole'?S.players.map((q,j)=>q.team==='mole'?j:-1).filter(j=>j>=0):[],scape:p.team==='mole'?S.scape:null,lg:S.lastGuard[i]??null};},
+  applySecret(seat,sec){
+    if(S.phase==='end')return;const p=S.players[seat];p.role=sec.role;p.team=sec.team;p.notes=sec.notes||[];
+    (sec.mates||[]).forEach(j=>{if(S.players[j]){S.players[j].team='mole';if(!S.players[j].role)S.players[j].role='mole';}});
+    if(sec.scape!=null)S.scape=sec.scape;if(sec.lg!=null)S.lastGuard[seat]=sec.lg;
+  },
+  waiting(){if(!S)return [];
+    if(S.phase==='night')return nightActors().filter(i=>S.night[i]==null&&!P(i).ai);
+    if(S.phase==='talk'||S.phase==='vote'){const c=curTurn();return c!=null&&!P(c).ai?[c]:[];}
+    if(S.phase==='rookie'&&S.rk!=null&&!P(S.rk).ai)return [S.rk];
+    return [];},
+  action(seat,a){
+    if(a.t==='rookie'){if(S.phase!=='rookie'||S.rk!==seat)return;const j=+a.j;if(!alive().includes(j))return;S.phase='vote';S.rk=null;rookieReveal(seat,j);return;}
+    applyAct(seat,a);
+  },
+  afterTakeover(ws){ws.forEach(i=>{S.cfgPlayers[i]={name:S.players[i].name,ai:true};});
+    if(S.phase==='rookie'&&ws.includes(S.rk)){const out=S.rk;S.rk=null;const r=rankSus(out,alive());rookieReveal(out,r[0].j);return;}
+    if($('#overlay').hidden)proceed();else render();},
+  resumeUI(){if(S.phase==='end')endModal();else if(S.phase==='morning'){S.phase='talk';S.talk={};proceed();}else proceed();},
+  clientReset(prev){if(!prev||prev.gid!==S.gid||prev.phase!==S.phase||prev.r!==S.r||JSON.stringify(prev.talk)!==JSON.stringify(S.talk)||JSON.stringify(prev.votes)!==JSON.stringify(S.votes)||prev.night[NET.seat]!==S.night[NET.seat])UI={};},
+  clientModal(){
+    const g=S.gid;
+    if(S.phase==='end')return {key:'end'+g,open:endModal};
+    if(S.secOK&&this.seenRole!==g)return {key:'role'+g,open:()=>roleModal(NET.seat,()=>{this.seenRole=g;NET.resync();})};
+    if(S.phase==='morning'){const l=S.log.find(x=>x.r===S.r&&/抽/.test(x.h));return {key:'m'+g+S.r,open:()=>openModal(`<h2>第 ${S.r} 天早上</h2><div class="intel" style="margin:6px 0 4px"><div class="ilab">${ICONS.spark}抽獎結果</div><div class="inote">${l?l.h:''}</div></div><p class="sub">內鬼目前 ${S.score+S.wrong} / ${TARGET} 分。等房主開始發言。</p><div class="acts"><button class="btn primary" data-m="ok">知道了</button></div>`,()=>closeModal())};}
+    if(S.phase==='rookie'&&S.rk===NET.seat)return {key:'rk'+g+S.r,open:()=>openModal(`<div class="handoff">${avatar(NET.seat)}</div><h2>新人的委屈</h2><p class="sub">你是新人。指定一位還在場的同事，公開他的陣營。</p><div class="chooser big" style="flex-wrap:wrap">${alive().map(j=>`<button class="btn" data-m="${j}">${esc(P(j).name)}</button>`).join('')}</div>`,m=>{closeModal();NET.send({t:'rookie',j:+m});})};
+    return null;
+  },
+};
 
 /* ================= boot ================= */
 window.__game={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;}};

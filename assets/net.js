@@ -73,7 +73,14 @@ const localHumans=()=>S.players.filter(p=>!p.ai&&!p.remote);
 
 /* ---------- presence banner (floating, independent of each game's layout) ---------- */
 (function(){
-  const css=`.netbanner{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;width:min(520px,calc(100vw - 24px));display:flex;flex-direction:column;gap:6px;pointer-events:none}
+  const css=`.roomcode{display:flex;gap:10px;justify-content:center;margin:6px 0 4px}
+.roomcode span{width:54px;height:66px;display:grid;place-items:center;font-size:36px;font-weight:800;background:var(--green,#1E5641);color:var(--green-ink,#FFF8EC);border-radius:14px;box-shadow:0 4px 0 #123A2B}
+.codein{font:inherit;font-weight:800;font-size:20px;padding:9px 14px;border:1.5px solid var(--line2,#d9c9ad);border-radius:12px;background:var(--paper,#fff);color:var(--ink,#222);width:min(220px,100%)}
+.roombar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:700;opacity:.9;border-top:1px solid rgba(255,255,255,.2);padding-top:12px;margin-top:12px}
+.roombar b{font-size:20px;letter-spacing:.12em;background:rgba(255,255,255,.14);border-radius:8px;padding:0 10px}
+.roombar .linkbtn{margin-left:auto;background:none;border:0;color:inherit;font:inherit;font-weight:800;text-decoration:underline;cursor:pointer;padding:4px}
+.netsent{font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px;margin-top:10px}
+.netbanner{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;width:min(520px,calc(100vw - 24px));display:flex;flex-direction:column;gap:6px;pointer-events:none}
 .netbanner>div{pointer-events:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#2B2622;color:#FFF8EC;border-radius:14px;padding:9px 14px;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);line-height:1.4}
 .netbanner>div.ok{background:#1F5C45}
 .netbanner .t{flex:1;min-width:0}
@@ -292,7 +299,7 @@ const NET={
       const pub=JSON.parse(JSON.stringify(S));delete pub.viewer;delete pub.online;
       pub.series=setupCfg.series;
       GAME.strip(pub);
-      pub.wait=GAME.waiting();
+      pub._wait=GAME.waiting(); // underscore: games use their own field names (er-24 has S.wait)
       pub.v=++this.ver;S.v=pub.v;
       const js=JSON.stringify(pub);
       // secrets first, so a client never sees a new public state without its matching private view
@@ -360,7 +367,11 @@ const NET={
     if(unknown)setTimeout(()=>{if(this.client&&!meta&&this.code===info.code)this.bye('找不到房間',`沒有房號 ${esc(info.code)} 的房間。請再跟房主確認一次房號。`);},8000);
     this.startHeartbeat(info.pid);
     this.offs.push(this.tx.on(`rooms/${info.code}/hb/host`,v=>{if(v==='off')this.hostSeen=Date.now()-this.DROP_MS-1;else this.hostSeen=Date.now();this.paint();}));
-    clearInterval(this.watchTimer);this.watchTimer=setInterval(()=>this.paint(),1000);
+    clearInterval(this.watchTimer);this.watchTimer=setInterval(()=>{
+      this.paint();
+      // a move the host ignored (e.g. it arrived too late) must not leave this phone stuck on "sent"
+      try{if(typeof UI!=='undefined'&&UI&&UI.sent&&this._sentAt&&Date.now()-this._sentAt>6000&&(this._pubAt||0)<this._sentAt){UI.sent=false;this.resync();}}catch(e){}
+    },1000);
     this.offs.push(this.tx.on(`rooms/${info.code}/meta`,async v=>{
       try{meta=JSON.parse(v);}catch(e){return;}
       if(meta.game!==GAME.id)return this.bye('房號不對',`這個房號是別款遊戲的房間，請確認房主開的是《${esc(GAME.name)}》。`);
@@ -373,7 +384,7 @@ const NET={
       if(this.lastPub&&pub.v<=this.lastPub.v&&pub.gid===this.lastPub.gid)return;
       const seat=pub.players.findIndex(p=>p.pid===info.pid);
       if(seat<0){if(this.seat!=null||pub.phase!=='idle')this.bye('來不及加入','這個房間的遊戲已經開始，沒有你的座位。');return;}
-      const first=this.seat==null;this.seat=seat;this.lastPub=pub;this.hostSeen=Math.max(this.hostSeen,Date.now());if(first&&!$('#overlay').hidden)closeModal();this.sync();}));
+      const first=this.seat==null;this.seat=seat;this.lastPub=pub;this._pubAt=Date.now();this.hostSeen=Math.max(this.hostSeen,Date.now());if(first&&!$('#overlay').hidden)closeModal();this.sync();}));
   },
   async trySecret(){if(!this.aes||!this.secretRaw)return;const raw=this.secretRaw;try{const s=await Crypto.dec(this.aes,raw);if(raw!==this.secretRaw)return;this.secret=s;if(this.lastPub)this.sync();}catch(e){console.error(e);}},
   waitModal(meta){
@@ -398,11 +409,16 @@ const NET={
     this.paint();
   },
   resync(){if(this.role==='client'&&this.lastPub){this.mkey=null;this.mopen=false;this.sync();}},
+  /* small helpers for games: who is this seat from my point of view */
+  isMe(i){return this.client?i===this.seat:!(S.players[i]&&(S.players[i].ai||S.players[i].remote));},
+  waitTitle(p){return p.ai?'對手出招':(p.remote||this.client)?'等待對手':'換人操作';},
+  waitSub(p,aiTxt){return p.ai?aiTxt:(p.remote||this.client)?'正在自己的手機上思考':'等待交接裝置';},
   _n:0,
   async send(a){
     if(this.role!=='client')return;
     if(!this.aes){this.flashMsg('還在連線，請再按一次');return;}
     const n=Date.now()*1000+(this._n=(this._n+1)%1000);
+    this._sentAt=Date.now();
     const e=await Crypto.enc(this.aes,{...a,_n:n});
     this.tx.push(`rooms/${this.code}/actions`,JSON.stringify({pid:this.pid,e}));
   },

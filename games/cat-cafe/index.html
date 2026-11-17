@@ -314,6 +314,7 @@ img.av{display:block;border-radius:50%;object-fit:cover}
 </div>
 <div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 <div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script src="../../assets/net.js"></script>
 <script>
 'use strict';
 const LOBBY='../../';
@@ -420,7 +421,7 @@ const SAVE_KEY='cat-cafe-save-v1';
 let S=null, UI={};
 let setupCfg={n:2,seats:[{name:'你',ai:false}].concat(AI_NAMES.slice(0,3).map(n=>({name:n,ai:true}))),speed:'中'};
 const NP=()=>S.players.length;
-const humans=()=>S.players.filter(p=>!p.ai);
+const humans=()=>S.players.filter(p=>!p.ai&&!p.remote); // humans on this device
 const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
 function log(html,cls=''){const m=/data-p="(\d+)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,t:S.turnNo});if(S.log.length>220)S.log.length=220;}
 function save(){lsSet(SAVE_KEY,S);}
@@ -434,8 +435,9 @@ function setupGame(players){
   clearTimeout(timer);
   const bag=[];FK.forEach(f=>{for(let k=0;k<FURN[f].c;k++)bag.push({f,c:k%4});});shuffle(bag);
   const cd=[];CATS.forEach((c,k)=>{cd.push(k,k);});shuffle(cd);
-  S={players:players.map(p=>({name:p.name,ai:p.ai,grid:Array(CELLS).fill(null)})),bag,market:[],catDeck:cd,catRow:[],goals:shuffle(GOALS.map((_,k)=>k)).slice(0,3),
-     cur:Math.random()*players.length|0,turnNo:1,adoptedThisRound:false,roundStart:0,phase:'place',log:[],cfgPlayers:players};
+  S={players:players.map(p=>({name:p.name,ai:p.ai,remote:!!p.remote,pid:p.pid||null,grid:Array(CELLS).fill(null)})),bag,market:[],catDeck:cd,catRow:[],goals:shuffle(GOALS.map((_,k)=>k)).slice(0,3),
+     cur:Math.random()*players.length|0,turnNo:1,adoptedThisRound:false,roundStart:0,phase:'place',log:[],cfgPlayers:players,gid:rid(6)};
+  if(NET.host)S.online={code:NET.code};
   S.roundStart=S.cur;
   S.players.forEach((p,i)=>{p.bonus=(i-S.cur+players.length)%players.length;});
   refill();
@@ -537,7 +539,7 @@ function endModal(){
   openModal(`<h2>打烊結算</h2><div class="win">${S.winners.map(i=>esc(S.players[i].name)).join('、')} 最受歡迎</div>
    <div class="tablewrap"><table class="res"><thead><tr><th>店長</th><th>貓咪</th><th>客人</th><th>配色</th>${S.goals.map(g=>`<th>${GOALS[g].n}</th>`).join('')}<th>開店補助</th><th>總分</th></tr></thead><tbody>
    ${sc.map((s,i)=>({s,i})).sort((a,b)=>b.s.total-a.s.total).map(({s,i})=>`<tr><td>${esc(S.players[i].name)}</td><td>${s.cats}（${s.n} 隻）</td><td>${s.guests}</td><td>${s.color}</td>${s.goals.map(x=>`<td>${x}</td>`).join('')}<td>+${s.bonus}</td><td><b>${s.total}</b></td></tr>`).join('')}</tbody></table></div>
-   <div class="acts"><button class="btn" data-m="close">看看咖啡廳</button><button class="btn primary" data-m="again">再來一局</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
+   <div class="acts"><button class="btn${NET.client?' primary':''}" data-m="close">看看咖啡廳</button>${NET.client?'':'<button class="btn primary" data-m="again">再來一局</button>'}</div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
 }
 
 /* ================= AI ================= */
@@ -551,6 +553,7 @@ function evalGrid(g,catRow){
 }
 function aiTurn(i){
   const p=S.players[i];let best=null;
+  if(S.phase!=='adopt'){ // an AI stand-in can take over after the furniture is already placed
   S.market.forEach((t,mi)=>{
     for(let k=0;k<CELLS;k++){if(p.grid[k])continue;
       const g=p.grid.slice();g[k]={f:t.f,c:t.c,cat:null};
@@ -559,6 +562,7 @@ function aiTurn(i){
       if(!best||v>best.v)best={v,mi,k};
     }});
   place(i,best.mi,best.k);
+  }
   const ad=adoptions(i);
   if(ad.length){
     let b=null;ad.forEach(a=>{const g=p.grid.map(t=>t&&{...t});g[a.k].cat=a.ci;const v=scoreGrid(g).total+Math.random()*.2;if(!b||v>b.v)b={...a,v};});
@@ -601,7 +605,7 @@ function catVec(ci,cls=''){
 function tileHTML(t,extra=''){if(!t)return '<div class="cell"></div>';return `<div class="tile tc${t.c} ${extra}">${furnSVG(t.f)}${t.cat!=null?catSVG(t.cat,'cat'):''}</div>`;}
 
 /* ================= view ================= */
-function myTurn(){return S.phase!=='end'&&S.phase!=='idle'&&!S.players[S.cur].ai&&$('#overlay').hidden;}
+function myTurn(){return S.phase!=='end'&&S.phase!=='idle'&&!S.players[S.cur].ai&&$('#overlay').hidden&&!UI.sent&&(NET.client?S.cur===NET.seat:!S.players[S.cur].remote);}
 function render(){
   if(!S)return;
   const filled=S.players.reduce((a,p)=>a+p.grid.filter(Boolean).length,0),tot=NP()*CELLS;
@@ -612,6 +616,7 @@ function render(){
   $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">CAT CAFÉ</div><h2>${head}<span class="qbadge">${S.phase==='idle'?'準備開店':S.phase==='end'?'打烊':'輪到 '+esc(S.players[S.cur].name)}</span></h2>${swoosh}</div>`;
   renderShared();renderDesk();renderPlayers();
   $('#feed').innerHTML=feedHTML(S.log,l=>l.t?'#'+l.t:'—','每一件家具和每一隻貓都會記在這裡。');
+  NET.publish();
 }
 function renderShared(){
   if(S.phase==='idle'){['#market','#cats','#goals','#cafes'].forEach(s=>$(s).innerHTML='');return;}
@@ -645,15 +650,15 @@ function renderDesk(){
          <button class="confirm" id="btnAdopt" ${sel?'':'disabled'}>歡迎入住 ${ICONS.arrow}</button><button class="passbtn" id="btnSkip">這回合先不領養</button>`;
       }
     }else{
-      h+=`<div class="dhead"><h2>${p.ai?'對手佈置中':'換人操作'}</h2></div><div class="think">${avatar(i)}<div><b>${esc(p.name)}</b><div>${p.ai?'正在挑家具<span class="dots"></span>':''}</div></div></div>`;
+      h+=`<div class="dhead"><h2>${UI.sent?'已送出':p.ai?'對手佈置中':NET.waitTitle(p)}</h2></div><div class="think">${avatar(i)}<div><b>${esc(p.name)}</b><div>${p.ai?'正在挑家具<span class="dots"></span>':(p.remote||NET.client)?NET.waitSub(p)+'<span class="dots"></span>':'輪到你了，直接在這台操作'}</div></div></div>${UI.sent?NET.waitHTML():''}`;
     }
   }else if(S.phase==='end'){
     h+=`<div class="dhead"><h2>打烊</h2><span class="pill">最受歡迎</span></div><div class="think">${avatar(S.winners[0])}<div><b>${S.winners.map(i=>esc(S.players[i].name)).join('、')}</b><div>${S.final[S.winners[0]].total} 分</div></div></div>
-     <button class="passbtn" id="btnResult">再看一次結算</button><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`;
+     <button class="passbtn" id="btnResult">再看一次結算</button>${NET.client?'':`<button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`}`;
   }else{
     h+=`<div class="dhead"><h2>準備開店</h2></div><div class="empty"><b>設定店長後開始</b>2 到 4 人，可以混搭 AI 對手。</div>`;
   }
-  $('#desk').innerHTML=h;
+  $('#desk').innerHTML=h+NET.barHTML();
 }
 function renderPlayers(){
   $('#players').innerHTML=S.players.map((p,i)=>{const sc=S.phase==='end'&&S.final?S.final[i]:scoreP(i);return `<div class="pl ${i===S.cur&&S.phase!=='end'?'cur':''}">${avatar(i)}<div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}</div>
@@ -676,13 +681,14 @@ function showSetup(){
   openModal(`<div class="setup-art">${heroArt()}</div><h2>貓咪咖啡廳</h2><p class="sub">你剛頂下一間小店面，要把它佈置成貓咪咖啡廳。每一隻貓都有自己的脾氣：橘貓要靠近餐桌、黑貓喜歡書櫃、無毛貓怕冷要窩在沙發旁。擺對了，牠們就會搬進來，客人也會跟著來。</p>
    <div class="pitch"><div><b>挑一片、擺一格</b>每回合從市場挑一片家具，放進自己 4×4 的店裡。</div><div><b>10 種貓咪</b>每種貓有不同的入住條件，條件達成就能領養。</div><div><b>每局不一樣</b>從 8 張計分目標隨機抽 3 張。</div></div>
    ${setupSeatsHTML(setupCfg,2,4)}
-   <p class="note">沒有秘密資訊，多人共用一台裝置時直接輪流操作就好。</p>
-   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${sv&&(sv.phase==='place'||sv.phase==='adopt')?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+   <p class="note">沒有秘密資訊，多人共用一台裝置時直接輪流操作就好；也可以開線上房間，各自用手機玩。</p>
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${NET.setupBtns()}${sv&&(sv.phase==='place'||sv.phase==='adopt')?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
   m=>{
     if(setupSeatsHandle(setupCfg,m,showSetup))return;
+    if(NET.setupHandle(m))return;
     if(m==='rules')showRules();
-    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;UI={};proceed();}
-    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
+    else if(m==='resume')resumeGame(sv);
+    else if(m==='start'){NET.leave();closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
   });
 }
 function showRules(){showRulesHTML(`
@@ -720,15 +726,50 @@ $('#desk').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   const i=S.cur;
   if(b.dataset.k!=null)UI.k=+b.dataset.k;
-  else if(b.id==='btnPlace'){place(i,UI.mi,UI.k);UI={};if(adoptions(i).length){S.phase='adopt';save();}else{endTurn();return;}}
+  else if(b.id==='btnPlace'){act({t:'place',mi:UI.mi,k:UI.k});return;}
   else if(b.dataset.ad!=null)UI.ad=+b.dataset.ad;
-  else if(b.id==='btnAdopt'){const a=adoptions(i)[UI.ad];adopt(i,a.ri,a.k);UI={};endTurn();return;}
-  else if(b.id==='btnSkip'){UI={};endTurn();return;}
+  else if(b.id==='btnAdopt'){const a=adoptions(i)[UI.ad];act({t:'adopt',ri:a.ri,k:a.k});return;}
+  else if(b.id==='btnSkip'){act({t:'skip'});return;}
   else return;
   render();
 });
 $('#btnRules').addEventListener('click',showRules);
-$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();proceed();}});}else showSetup();});
+$('#btnNew').addEventListener('click',()=>{if(NET.online){NET.confirmLeave();return;}if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();proceed();}});}else showSetup();});
+
+/* ================= online ================= */
+// one entry point for a move: this device, or the host applying a move sent from a friend's phone
+function act(a){
+  if(NET.client){NET.send(a);UI={sent:true};render();return;}
+  applyAct(S.cur,a);
+}
+function applyAct(i,a){
+  if(i!==S.cur||S.players[i].ai)return;
+  if(a.t==='place'&&S.phase==='place'){
+    const mi=+a.mi,k=+a.k;if(!S.market[mi]||!(k>=0&&k<CELLS)||S.players[i].grid[k])return;
+    place(i,mi,k);UI={};if(adoptions(i).length){S.phase='adopt';proceed();}else endTurn();
+  }else if(a.t==='adopt'&&S.phase==='adopt'){
+    const x=adoptions(i).find(o=>o.ri===+a.ri&&o.k===+a.k);if(!x)return;
+    adopt(i,x.ri,x.k);UI={};endTurn();
+  }else if(a.t==='skip'&&S.phase==='adopt'){UI={};endTurn();}
+}
+async function resumeGame(sv){
+  closeModal();SPEED=SPEEDS[setupCfg.speed];NET.leave();
+  if(sv.online&&!(await NET.resumeHost(sv))){sv.players.forEach(p=>{if(p.remote){p.remote=false;p.ai=true;}});delete sv.online;}
+  S=sv;UI={};proceed();
+}
+const GAME={id:'cat-cafe',name:'貓咪咖啡廳',hostKey:'catcafe-net-host',clientKey:'catcafe-net-client',min:2,max:4,aiNames:AI_NAMES,
+  secretHint:'',
+  start(cfg){setupGame(cfg);},
+  strip(pub){pub.bag=pub.bag.map(()=>0);pub.catDeck=pub.catDeck.map(()=>0);},
+  secret(){return null;},
+  applySecret(){},
+  waiting(){if(!S||(S.phase!=='place'&&S.phase!=='adopt')||S.players[S.cur].ai)return [];return [S.cur];},
+  action(seat,a){applyAct(seat,a);},
+  afterTakeover(ws){ws.forEach(i=>{S.cfgPlayers[i]={name:S.players[i].name,ai:true};});proceed();},
+  resumeUI(){if(S.phase==='end')endModal();else proceed();},
+  clientReset(prev){if(!prev||prev.gid!==S.gid||prev.turnNo!==S.turnNo||prev.phase!==S.phase||prev.cur!==S.cur)UI={};},
+  clientModal(){if(S.phase==='end')return {key:'end'+S.gid,open:endModal};return null;},
+};
 
 /* ================= boot ================= */
 window.__game={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;}};

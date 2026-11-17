@@ -316,6 +316,7 @@ img.av{display:block;border-radius:50%;object-fit:cover}
 </div>
 <div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 <div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script src="../../assets/net.js"></script>
 <script>
 'use strict';
 const LOBBY='../../';
@@ -435,7 +436,7 @@ const SAVE_KEY='er24-save-v1';
 /* ================= state ================= */
 let S=null, UI={};
 let setupCfg={n:1,diff:1,seats:[{name:'你',ai:false},{name:'小芳',ai:true},{name:'阿凱',ai:true},{name:'陳社工',ai:true}],speed:'中'};
-const humans=()=>S.players.filter(p=>!p.ai);
+const humans=()=>S.players.filter(p=>!p.ai&&!p.remote); // humans on this device
 const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}・${ROLES[S.players[i].role].n}</b>`;
 function log(html,cls=''){const m=/data-p="(\d+)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,r:S.r});if(S.log.length>260)S.log.length=260;}
 function save(){lsSet(SAVE_KEY,S);}
@@ -451,9 +452,10 @@ function setupGame(cfg){
   clearTimeout(timer);
   let players;
   if(cfg.solo)players=[{name:cfg.players[0].name,ai:false,role:0},{name:cfg.players[0].name,ai:false,role:1}];
-  else players=cfg.players.map((p,i)=>({name:p.name,ai:p.ai,role:i}));
+  else players=cfg.players.map((p,i)=>({name:p.name,ai:p.ai,remote:!!p.remote,pid:p.pid||null,role:i}));
   S={players:players.map(p=>({...p,hand:[]})),diff:cfg.diff,r:1,turn:0,ap:0,used:{},beds:[null,null,null,null,null,null],red:2,wait:[],saved:[],deaths:0,comp:0,acc:0,nid:1,
-     ev:null,evDeck:shuffle(EVENTS.map((_,k)=>k)),cards:shuffle(CARD_DECK.slice()),phase:'turn',log:[],viewer:null,cfg,solo:!!cfg.solo,vip:null};
+     ev:null,evDeck:shuffle(EVENTS.map((_,k)=>k)),cards:shuffle(CARD_DECK.slice()),phase:'turn',log:[],viewer:null,cfg,solo:!!cfg.solo,vip:null,gid:rid(6)};
+  if(NET.host)S.online={code:NET.code};
   S.players.forEach(p=>{p.hand.push(drawCard());});
   log(`早上 08:00，${S.solo?'你':'團隊'}接班。難度「${diff().n}」：死亡 ${diff().death} 人或投訴 ${diff().comp} 件就失敗。撐到明天 08:00！`,'q');
   startRound(true);
@@ -603,6 +605,7 @@ function showRoundModal(){
   S.phase='between';render();
   openModal(`<h2>${HOURS(S.r)}</h2><p class="sub">新的兩小時開始了。救回 ${S.saved.length} 人、死亡 ${S.deaths}/${diff().death}、投訴 ${S.comp}/${diff().comp}。</p>
    <div class="acts"><button class="btn primary" data-m="go">繼續值班</button></div>`,()=>{closeModal();S.phase='turn';startRound();});
+  if(NET.host)NET.publish();
 }
 function checkLose(){
   if(S.deaths>=diff().death){finish(false,`死亡人數達到 ${S.deaths} 人。`);return true;}
@@ -623,7 +626,7 @@ function endModal(){
    <div class="tablewrap"><table class="res"><thead><tr><th>項目</th><th>數字</th></tr></thead><tbody>
    <tr><td>難度</td><td>${diff().n}</td></tr><tr><td>救回病人</td><td>${S.saved.length}</td></tr><tr><td>救治分數（1 級 5 分 … 5 級 1 分）</td><td>${scoreOf()}</td></tr>
    <tr><td>死亡</td><td>${S.deaths} / ${diff().death}</td></tr><tr><td>投訴</td><td>${S.comp} / ${diff().comp}</td></tr><tr><td>撐到</td><td>${HOURS(Math.min(S.r+(S.win?1:0),ROUNDS+1))}</td></tr></tbody></table></div>
-   <div class="acts"><button class="btn" data-m="close">看看急診室</button><button class="btn primary" data-m="again">再來一局</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfg);});
+   <div class="acts"><button class="btn${NET.client?' primary':''}" data-m="close">看看急診室</button>${NET.client?'':'<button class="btn primary" data-m="again">再來一局</button>'}</div>`,m=>{closeModal();if(m==='again')setupGame(S.cfg);});
 }
 
 /* ================= AI teammate ================= */
@@ -685,6 +688,7 @@ function proceed(){
     },humans().length?Math.min(SPEED,420):SPEED/4);
     return;
   }
+  if(p.remote){render();return;}
   const viewerKey=S.solo?0:i;
   if(S.viewer!==viewerKey&&humans().length>1&&!S.solo){
     S.viewer=null;render();
@@ -697,7 +701,7 @@ function proceed(){
 }
 
 /* ================= view ================= */
-function myTurn(){return S.phase==='turn'&&!S.players[S.turn].ai&&$('#overlay').hidden&&(S.solo||humans().length===1||S.viewer===S.turn);}
+function myTurn(){if(S.phase!=='turn'||S.players[S.turn].ai||!$('#overlay').hidden||UI.sent)return false;if(NET.client)return S.turn===NET.seat;return !S.players[S.turn].remote&&(S.solo||humans().length===1||S.viewer===S.turn);}
 function render(){
   if(!S)return;
   let st='';for(let r=1;r<=ROUNDS;r++){if(r>1)st+=`<span class="link ${r<=S.r?'done':''}"></span>`;st+=`<span class="step ${r<S.r||S.phase==='end'?'done':r===S.r&&S.phase!=='idle'?'now':''}">${HOURS(r).slice(0,2)}</span>`;}
@@ -707,6 +711,7 @@ function render(){
   $('#gauges').innerHTML=S.phase==='idle'?'':`<div class="gauge"><small>時間</small><b>${HOURS(S.r)}</b></div><div class="gauge"><small>救回</small><b>${S.saved.length}</b></div><div class="gauge ${S.deaths>=diff().death-1?'bad':''}"><small>死亡</small><b>${S.deaths}/${diff().death}</b></div><div class="gauge ${S.comp>=diff().comp-2?'bad':''}"><small>投訴</small><b>${S.comp}/${diff().comp}</b></div>`;
   renderBoard();renderDesk();renderPlayers();
   $('#feed').innerHTML=feedHTML(S.log,l=>l.r?HOURS(l.r):'—','每一位病人的動向都會記在這裡。');
+  NET.publish();
 }
 function ptHTML(pt){
   const lv=pt.tri?pt.lvl:0;
@@ -749,17 +754,18 @@ function renderDesk(){
       if(p.hand.length)h+=`<div class="dsec"><div class="dlab">處置卡<small>${pt?'會用在選定的病人':'有些卡要先選病人'}</small></div><div class="cards">${p.hand.map((c,ci)=>`<button data-card="${ci}" ${cardUsable(c,pt)?'':'disabled style="opacity:.45;cursor:not-allowed"'}><b>${CARDS[c].n}</b><span>${CARDS[c].d}</span></button>`).join('')}</div></div>`;
       h+=`<button class="confirm" id="btnEnd">${S.ap>0?'結束這個角色的回合':'回合結束'} ${ICONS.arrow}</button>`;
     }else{
-      h+=`<div class="dhead"><h2>${p.ai?'隊友行動':'換人操作'}</h2><span class="pill soft">${HOURS(S.r)}</span></div><div class="think">${avatar(i)}<div><b>${esc(p.name)}・${R.n}</b><div>${p.ai?`剩 ${S.ap} 點，處理中<span class="dots"></span>`:'等待交接裝置'}</div></div></div>`;
+      const far=p.remote||NET.client;
+      h+=`<div class="dhead"><h2>${UI.sent?'處理中':p.ai?'隊友行動':far?'隊友行動':'換人操作'}</h2><span class="pill soft">${HOURS(S.r)}</span></div><div class="think">${avatar(i)}<div><b>${esc(p.name)}・${R.n}</b><div>${p.ai?`剩 ${S.ap} 點，處理中<span class="dots"></span>`:far?`剩 ${S.ap} 點，在自己的手機上處理<span class="dots"></span>`:'等待交接裝置'}</div></div></div>${NET.client&&S.players[NET.seat]?myIntel(NET.seat):''}`;
     }
   }else if(S.phase==='end'){
     h+=`<div class="dhead"><h2>${S.win?'交班成功':'值班失敗'}</h2><span class="pill">${diff().n}</span></div><div class="empty"><b>救回 ${S.saved.length} 人</b>${S.why}</div>
-     <button class="passbtn" id="btnResult">再看一次結算</button><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`;
+     <button class="passbtn" id="btnResult">再看一次結算</button>${NET.client?'':`<button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`}`;
   }else if(S.phase==='idle'){
     h+=`<div class="dhead"><h2>準備接班</h2></div><div class="empty"><b>設定團隊後開始</b>1 到 4 人合作，單人模式由你一人操作醫師和護理師。</div>`;
   }else{
     h+=`<div class="dhead"><h2>交接中</h2><span class="pill soft">${HOURS(S.r)}</span></div><div class="empty"><b>下一個兩小時</b>新病人即將到院。</div>`;
   }
-  $('#desk').innerHTML=h;
+  $('#desk').innerHTML=h+NET.barHTML();
 }
 function renderPlayers(){
   $('#players').innerHTML=S.players.map((p,i)=>{const R=ROLES[p.role];return `<div class="pl ${S.phase==='turn'&&i===S.turn?'cur':''}"><img class="av" src="img/${R.k}.webp" alt="${R.n}"><div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}</div>
@@ -788,17 +794,18 @@ function showSetup(){
    <div class="field"><span>難度</span><div class="seg">${DIFF.map((d,k)=>`<button data-m="d:${k}" class="${k===c.diff?'on':''}">${d.n}</button>`).join('')}</div></div>
    <p class="note">${DIFF[c.diff].n}：死亡 ${DIFF[c.diff].death} 人或投訴 ${DIFF[c.diff].comp} 件就失敗。${DIFF[c.diff].d}</p>
    <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===c.speed?'on':''}">${k}</button>`).join('')}</div></div>
-   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${sv&&sv.phase==='turn'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始值班</button></div>`,
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${NET.setupBtns()}${sv&&sv.phase==='turn'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始值班</button></div>`,
   m=>{
     document.querySelectorAll('[data-seat]').forEach(inp=>{c.seats[+inp.dataset.seat].name=inp.value;});
     if(m.startsWith('n:')){c.n=+m.slice(2);return showSetup();}
     if(m.startsWith('d:')){c.diff=+m.slice(2);return showSetup();}
     if(m.startsWith('h:')||m.startsWith('a:')){c.seats[+m.slice(2)].ai=m[0]==='a';return showSetup();}
     if(m.startsWith('sp:')){c.speed=m.slice(3);SPEED=SPEEDS[c.speed];return showSetup();}
+    if(NET.setupHandle(m))return;
     if(m==='rules')showRules();
-    else if(m==='resume'){closeModal();SPEED=SPEEDS[c.speed];S=sv;S.viewer=null;UI={};render();proceed();}
+    else if(m==='resume')resumeGame(sv);
     else if(m==='start'){
-      closeModal();SPEED=SPEEDS[c.speed];
+      NET.leave();closeModal();SPEED=SPEEDS[c.speed];
       const players=c.seats.slice(0,Math.max(1,c.n)).map((s,i)=>({name:(s.name||'').trim()||(s.ai?AI_NAMES[i]:'玩家'+(i+1)),ai:c.n===1?false:s.ai}));
       setupGame({solo:c.n===1,diff:c.diff,players});
     }
@@ -840,14 +847,51 @@ $('#desk').addEventListener('click',e=>{
   if(!myTurn())return;
   const b=e.target.closest('button');if(!b||b.disabled)return;
   const i=S.turn;
-  if(b.dataset.a){act(i,b.dataset.a,UI.sel,b.dataset.k!=null?+b.dataset.k:undefined);save();}
-  else if(b.dataset.card!=null){playCard(i,+b.dataset.card,UI.sel);save();}
-  else if(b.id==='btnEnd'){endTurn();return;}
-  else return;
-  render();
+  if(b.dataset.a)sendAct({t:'a',a:b.dataset.a,pt:UI.sel,k:b.dataset.k!=null?+b.dataset.k:null});
+  else if(b.dataset.card!=null)sendAct({t:'card',ci:+b.dataset.card,pt:UI.sel});
+  else if(b.id==='btnEnd')sendAct({t:'end'});
 });
 $('#btnRules').addEventListener('click',showRules);
-$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄這次值班？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續值班</button><button class="btn primary" data-m="yes">重新開始</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();if(S.phase==='between')showRoundModal();else proceed();}});}else showSetup();});
+$('#btnNew').addEventListener('click',()=>{if(NET.online){NET.confirmLeave();return;}if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄這次值班？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續值班</button><button class="btn primary" data-m="yes">重新開始</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();if(S.phase==='between')showRoundModal();else proceed();}});}else showSetup();});
+
+/* ================= online ================= */
+// one entry point for a move: this device, or the host applying a move sent from a teammate's phone
+function sendAct(a){
+  if(NET.client){NET.send(a);UI={sel:UI.sel,sent:true};render();return;}
+  applyAct(S.turn,a);
+}
+function applyAct(i,a){
+  if(S.phase!=='turn'||i!==S.turn||S.players[i].ai)return;
+  const pt=a.pt==null?null:+a.pt;
+  if(a.t==='a'){if(!['tri','bed','need','stab','rescue','calm'].includes(a.a))return;if(act(i,a.a,pt,a.k==null?undefined:+a.k)){save();render();}}
+  else if(a.t==='card'){const ci=+a.ci;if(!(ci>=0&&ci<S.players[i].hand.length))return;if(playCard(i,ci,pt)){save();render();}}
+  else if(a.t==='end')endTurn();
+}
+async function resumeGame(sv){
+  closeModal();SPEED=SPEEDS[setupCfg.speed];NET.leave();
+  if(sv.online&&!(await NET.resumeHost(sv))){sv.players.forEach(p=>{if(p.remote){p.remote=false;p.ai=true;}});delete sv.online;}
+  S=sv;S.viewer=null;UI={};render();proceed();
+}
+const GAME={id:'er-24',name:'急診室24小時',hostKey:'er24-net-host',clientKey:'er24-net-client',min:2,max:4,aiNames:AI_NAMES,
+  secretHint:'你的處置卡只會出現在你自己的手機上。',
+  start(cfg){setupGame({solo:false,diff:setupCfg.diff,players:cfg});},
+  strip(pub){
+    pub.players.forEach(p=>{p.hand=p.hand.map(()=>null);});pub.cards=[];pub.evDeck=[];
+    pub.beds.concat(pub.wait).forEach(pt=>{if(pt&&!pt.tri){pt.lvl=3;pt.lvl0=3;pt.t=3;pt.needs=[];}}); // untriaged patients stay a mystery
+  },
+  secret(i){return {hand:S.players[i].hand};},
+  applySecret(seat,sec){S.players[seat].hand=sec.hand||[];},
+  waiting(){if(!S||S.phase!=='turn'||S.players[S.turn].ai)return [];return [S.turn];},
+  action(seat,a){applyAct(seat,a);},
+  afterTakeover(ws){ws.forEach(i=>{S.cfg.players[i]={...S.cfg.players[i],ai:true,remote:false};});proceed();},
+  resumeUI(){if(S.phase==='end')endModal();else if(S.phase==='between')showRoundModal();else proceed();},
+  clientReset(prev){if(!prev||prev.gid!==S.gid||prev.turn!==S.turn||prev.r!==S.r||prev.ap!==S.ap||prev.phase!==S.phase||JSON.stringify(prev.log[0])!==JSON.stringify(S.log[0])||JSON.stringify(prev.players[NET.seat].hand)!==JSON.stringify(S.players[NET.seat].hand))UI={sel:UI.sel};},
+  clientModal(){
+    if(S.phase==='end')return {key:'end'+S.gid,open:endModal};
+    if(S.phase==='between')return {key:'b'+S.gid+S.r,open:()=>openModal(`<h2>${HOURS(S.r)}</h2><p class="sub">新的兩小時開始了。救回 ${S.saved.length} 人、死亡 ${S.deaths}/${diff().death}、投訴 ${S.comp}/${diff().comp}。等房主繼續值班。</p><div class="acts"><button class="btn primary" data-m="ok">知道了</button></div>`,()=>closeModal())};
+    return null;
+  },
+};
 
 /* ================= boot ================= */
 window.__game={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;},aiStep};

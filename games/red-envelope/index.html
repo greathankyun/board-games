@@ -293,6 +293,7 @@ img.av{display:block;border-radius:50%;object-fit:cover}
 </div>
 <div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 <div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script src="../../assets/net.js"></script>
 <script>
 'use strict';
 const LOBBY='../../';
@@ -398,7 +399,7 @@ const cardName=c=>c.v<0?'白包':c.v===0?'空包':money(c.v);
 let S=null, UI={};
 let setupCfg={n:5,seats:[{name:'你',ai:false}].concat(AI_NAMES.slice(0,7).map(n=>({name:n,ai:true}))),speed:'中'};
 const NP=()=>S.players.length;
-const humans=()=>S.players.filter(p=>!p.ai);
+const humans=()=>S.players.filter(p=>!p.ai&&!p.remote); // humans on this device
 const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
 function log(html,cls=''){const m=/data-p="(\d+)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,w:S.w});if(S.log.length>220)S.log.length=220;}
 function save(){lsSet(SAVE_KEY,S);}
@@ -412,9 +413,10 @@ function setupGame(players){
   clearTimeout(timer);
   const deck=[];DECK.forEach(([n,v,c])=>{for(let k=0;k<c;k++)deck.push({v});});shuffle(deck);
   const ids=shuffle(IDK.slice());
-  S={players:players.map((p,i)=>({name:p.name,ai:p.ai,id:ids[i%ids.length],hand:deck.splice(0,HAND).sort((a,b)=>a.v-b.v),score:0,drinks:0,peeks:2,cousin:1,known:{}})),
+  S={players:players.map((p,i)=>({name:p.name,ai:p.ai,remote:!!p.remote,pid:p.pid||null,id:ids[i%ids.length],hand:deck.splice(0,HAND).sort((a,b)=>a.v-b.v),score:0,drinks:0,peeks:2,cousin:1,known:{}})),
      w:1,start:Math.random()*players.length|0,evs:shuffle(EVENTS.map((_,k)=>k)).slice(0,WEDDINGS),
-     t:0,sub:'play',envs:[],thr:0,hist:[],phase:'head',log:[],viewer:null,last:null,cfgPlayers:players};
+     t:0,sub:'play',envs:[],thr:0,hist:[],phase:'head',log:[],viewer:null,last:null,cfgPlayers:players,gid:rid(6)};
+  if(NET.host)S.online={code:NET.code};
   const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;
   log('喜宴開始！大家各自拿到 7 個紅包袋。','q');
   UI={};render();headModal();
@@ -519,7 +521,7 @@ function endModal(){
    <p class="sub">面子分加上手上剩的現金（每 2,000 算 1 分），留著白包每個 −2，每喝一杯 −1。</p>
    <div class="tablewrap"><table class="res"><thead><tr><th>賓客</th><th>身分</th><th>面子</th><th>剩餘現金</th><th>白包</th><th>酒</th><th>總分</th></tr></thead><tbody>
    ${sc.map((s,i)=>({s,i})).sort((a,b)=>b.s.total-a.s.total).map(({s,i})=>`<tr><td>${esc(S.players[i].name)}</td><td style="font-family:var(--f-body)">${IDS[S.players[i].id].n}</td><td>${s.face}</td><td>+${s.cash}</td><td>${s.white}</td><td>${s.drink}</td><td><b>${s.total}</b></td></tr>`).join('')}</tbody></table></div>
-   <div class="acts"><button class="btn" data-m="close">看看禮金簿</button><button class="btn primary" data-m="again">再來一局</button></div>`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
+   <div class="acts"><button class="btn${NET.client?' primary':''}" data-m="close">看看禮金簿</button>${NET.client?'':'<button class="btn primary" data-m="again">再來一局</button>'}</div>${NET.client?'<p class="note">房主按「再來一局」就會直接開始下一局。</p>':''}`,m=>{closeModal();if(m==='again')setupGame(S.cfgPlayers);});
 }
 
 /* ================= AI ================= */
@@ -597,6 +599,7 @@ function proceed(){
     },humans().length?Math.min(SPEED,450):SPEED/3);
     return;
   }
+  if(p.remote){render();return;}
   if(S.viewer!==cur){
     S.viewer=null;UI={};render();
     openModal(`<div class="handoff">${avatar(cur)}</div><h2>請把裝置交給 ${esc(p.name)}</h2><p class="sub">輪到你${S.sub==='chal'?'決定要不要抓上一家，然後':''}包紅包。其他人請別偷看：畫面會顯示 ${esc(p.name)} 的手牌。</p>
@@ -608,7 +611,7 @@ function proceed(){
 function nextTurn(){S.t++;S.sub='start';if(S.t>=NP())S.sub='final';proceed();}
 
 /* ================= view ================= */
-function myTurn(){const c=curPlayer();return c!=null&&!S.players[c].ai&&S.viewer===c&&$('#overlay').hidden;}
+function myTurn(){const c=curPlayer();return c!=null&&!S.players[c].ai&&S.viewer===c&&$('#overlay').hidden&&!UI.sent&&(NET.client||!S.players[c].remote);}
 function render(){
   if(!S)return;
   let st='';for(let i=1;i<=WEDDINGS;i++){if(i>1)st+=`<span class="link ${i<=S.w?'done':''}"></span>`;st+=`<span class="step ${i<S.w||S.phase==='end'?'done':i===S.w&&S.phase!=='idle'?'now':''}">第${i}場</span>`;}
@@ -616,6 +619,7 @@ function render(){
   const head={idle:'喜宴紅包大作戰',head:'新人進場',turn:'包紅包、喊金額',end:'散場結算'}[S.phase];
   $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">WEDDING BANQUET</div><h2>${head}<span class="qbadge">${S.phase==='idle'?'準備開席':S.phase==='end'?'散場':'第 '+S.w+' 場 · '+ev().n}</span></h2>${swoosh}</div>`;
   renderBook();renderDesk();renderPlayers();
+  NET.publish();
   $('#feed').innerHTML=feedHTML(S.log,l=>l.w?'第'+l.w+'場':'—','每一包紅包和每一次抓包都會記在這裡。');
 }
 function envHTML(e,viewer,isNow){
@@ -680,19 +684,19 @@ function renderDesk(){
        <button class="passbtn" id="btnPass">敬酒跳過${hasId(cur,'ex')||ev().k==='toast'?'（不用喝）':'（喝一杯，−1）'}</button>`;
       h+=myIntel(cur);
     }else{
-      h+=`<div class="dhead"><h2>${p.ai?'對手出招':'換人操作'}</h2><span class="pill soft">第 ${S.w} 場</span></div><div class="think">${avatar(cur)}<div><b>${esc(p.name)}</b><div>${p.ai?(S.sub==='chal'?'盯著上一包紅包':'正在包紅包')+'<span class="dots"></span>':'等待交接裝置'}</div></div></div>${lastNote()}`;
+      h+=`<div class="dhead"><h2>${UI.sent&&cur===S.viewer?'已送出':NET.waitTitle(p)}</h2><span class="pill soft">第 ${S.w} 場</span></div><div class="think">${avatar(cur)}<div><b>${esc(p.name)}</b><div>${UI.sent&&cur===S.viewer?'等房主確認<span class="dots"></span>':NET.waitSub(p,(S.sub==='chal'?'盯著上一包紅包':'正在包紅包'))+'<span class="dots"></span>'}</div></div></div>${lastNote()}`;
       if(S.viewer!=null)h+=myIntel(S.viewer);
     }
   }else if(S.phase==='end'){
     h+=`<div class="dhead"><h2>散場</h2><span class="pill">最有面子</span></div><div class="think">${avatar(S.winners[0])}<div><b>${S.winners.map(i=>esc(S.players[i].name)).join('、')}</b><div>總分 ${S.final[S.winners[0]].total}</div></div></div>
-     <button class="passbtn" id="btnResult">再看一次結算</button><button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`;
+     <button class="passbtn" id="btnResult">再看一次結算</button>${NET.client?'':`<button class="confirm" id="btnAgain">再來一局 ${ICONS.arrow}</button>`}`;
   }else if(S.phase==='idle'){
     h+=`<div class="dhead"><h2>準備開席</h2></div><div class="empty"><b>設定賓客後開始</b>3 到 8 人，可以混搭 AI 對手。</div>`;
   }else{
     h+=`<div class="dhead"><h2>新人進場</h2><span class="pill soft">第 ${S.w} 場</span></div><div class="empty"><b>${ev().n}</b>${ev().d}</div>`;
     if(S.viewer!=null)h+=myIntel(S.viewer);
   }
-  $('#desk').innerHTML=h;
+  $('#desk').innerHTML=h+NET.barHTML();
 }
 function renderPlayers(){
   const cur=curPlayer();
@@ -716,13 +720,20 @@ function showSetup(){
    <div class="pitch"><div><b>只能越喊越高</b>每一家都要喊得比上一家多，越後面越難說真話。</div><div><b>抓或不抓</b>下一家可以抓包。抓對他罰酒，抓錯你罰酒，不抓就得接著喊更高。</div><div><b>親戚身分</b>大舅、阿嬤、媒人婆、新郎前任……每個人都有一招。</div></div>
    ${setupSeatsHTML(setupCfg,3,8)}
    <p class="note">多位人類玩家可以共用一台裝置輪流操作，換人時手牌會蓋起來。</p>
-   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${sv&&sv.phase==='turn'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${NET.setupBtns()}${sv&&sv.phase==='turn'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
   m=>{
     if(setupSeatsHandle(setupCfg,m,showSetup))return;
+    if(NET.setupHandle(m))return;
     if(m==='rules')showRules();
-    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];S=sv;const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;UI={};render();proceed();}
-    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
+    else if(m==='resume')resumeGame(sv);
+    else if(m==='start'){NET.leave();closeModal();SPEED=SPEEDS[setupCfg.speed];setupGame(seatsToPlayers(setupCfg,AI_NAMES));}
   });
+}
+async function resumeGame(sv){
+  closeModal();SPEED=SPEEDS[setupCfg.speed];NET.leave();
+  if(sv.online&&!(await NET.resumeHost(sv))){sv.players.forEach(p=>{if(p.remote){p.remote=false;p.ai=true;}});delete sv.online;}
+  S=sv;const hs=humans();S.viewer=hs.length===1?S.players.indexOf(hs[0]):null;UI={};
+  if(S.phase==='head')headModal();else{render();proceed();}
 }
 function showRules(){showRulesHTML(`
   <p><b>一句話：</b>喜宴上輪流包紅包、喊金額，每一家都要喊得比上一家高。下一家可以抓包，抓對了說謊的人罰酒，抓錯了自己罰酒。</p>
@@ -759,25 +770,68 @@ $('#desk').addEventListener('click',e=>{
   if(e.target.closest('#btnResult')){endModal();return;}
   if(!myTurn())return;
   const b=e.target.closest('button');if(!b||b.disabled)return;
-  const cur=curPlayer();
-  if(b.id==='btnPeek'){peek(cur);save();}
-  else if(b.id==='btnCatch'||b.id==='btnLet'){
-    const ev0=S.t>=NP()?lastHid():prevEnv();
-    if(b.id==='btnCatch')resolveChallenge(cur,ev0);
+  if(b.id==='btnPeek')act({t:'peek'});
+  else if(b.id==='btnCatch'||b.id==='btnLet')act({t:'chal',c:b.id==='btnCatch'});
+  else if(b.dataset.ci!=null){UI.ci=+b.dataset.ci;render();}
+  else if(b.dataset.dec!=null){UI.dec=+b.dataset.dec;render();}
+  else if(b.id==='btnCousin'){UI.cz=!UI.cz;render();}
+  else if(b.id==='btnPlay')act({t:'play',ci:UI.ci,dec:UI.dec,cz:!!UI.cz});
+  else if(b.id==='btnPass')act({t:'pass'});
+});
+// one entry point for a seat's move: used by this device, and by the host for moves sent from friends' phones
+function act(a){
+  if(NET.client){NET.send(a);if(a.t!=='peek')UI={sent:true};render();return;}
+  applyAct(curPlayer(),a);
+}
+function applyAct(cur,a){
+  if(cur==null||S.phase!=='turn')return;
+  const p=S.players[cur];
+  if(a.t==='peek'){if(S.sub!=='chal'||!hasId(cur,'grandma'))return;peek(cur);save();render();return;}
+  if(a.t==='chal'){
+    if(S.sub!=='chal')return;
+    const ev0=S.t>=NP()?lastHid():prevEnv();if(!ev0)return;
+    if(a.c)resolveChallenge(cur,ev0);
     else log(`${pn(cur)} 放過了 ${pn(ev0.p)}。`);
     if(S.t>=NP()){S.sub='done';UI={};if(humans().length>1)S.viewer=null;proceed();return;}
-    S.sub='play';UI={};save();
+    S.sub='play';UI={};save();render();return;
   }
-  else if(b.dataset.ci!=null)UI.ci=+b.dataset.ci;
-  else if(b.dataset.dec!=null)UI.dec=+b.dataset.dec;
-  else if(b.id==='btnCousin')UI.cz=!UI.cz;
-  else if(b.id==='btnPlay'){doPlay(cur,UI.ci,UI.dec,!!UI.cz);UI={};if(humans().length>1)S.viewer=null;nextTurn();return;}
-  else if(b.id==='btnPass'){doPlay(cur,null);UI={};if(humans().length>1)S.viewer=null;nextTurn();return;}
+  if(S.sub!=='play')return;
+  if(a.t==='play'){
+    const ci=+a.ci,dec=+a.dec,cz=!!a.cz&&hasId(cur,'cousin')&&p.cousin;
+    if(!Number.isInteger(ci)||!p.hand[ci]||!allowed(cur,cz).includes(dec))return;
+    doPlay(cur,ci,dec,cz);
+  }else if(a.t==='pass')doPlay(cur,null);
   else return;
-  render();
-});
+  UI={};if(humans().length>1)S.viewer=null;nextTurn();
+}
+const GAME={id:'red-envelope',name:'紅包心機',hostKey:'red-envelope-net-host',clientKey:'red-envelope-net-client',min:3,max:8,aiNames:AI_NAMES,
+  secretHint:'你手上的紅包袋和偷看到的內容只會出現在你自己的手機上。',
+  start(cfg){setupGame(cfg);},
+  strip(pub){
+    if(pub.phase==='end')return;
+    pub.players.forEach(p=>{p.hand=p.hand.map(()=>({v:null}));p.known={};});
+    const hide=e=>{if(!e.pass&&e.status!=='lie'&&e.status!=='ok')e.card=null;};
+    pub.envs.forEach(hide);pub.hist.forEach(h=>h.envs.forEach(hide));
+  },
+  secret(i){const p=S.players[i];return {hand:p.hand,known:p.known};},
+  applySecret(seat,sec){
+    if(S.phase==='end')return;const p=S.players[seat];p.hand=sec.hand||[];p.known=sec.known||{};
+    const fill=e=>{if(!e.pass&&!e.card&&p.known[e.no]!=null)e.card={v:p.known[e.no]};};
+    S.envs.forEach(fill);S.hist.forEach(h=>h.envs.forEach(fill));
+  },
+  waiting(){if(!S||S.phase!=='turn')return [];const c=curPlayer();return c!=null&&!S.players[c].ai?[c]:[];},
+  action(seat,a){if(curPlayer()!==seat)return;applyAct(seat,a);},
+  afterTakeover(ws){ws.forEach(i=>{S.cfgPlayers[i]={name:S.players[i].name,ai:true};});if($('#overlay').hidden)proceed();else render();},
+  resumeUI(){if(S.phase==='end')endModal();else if(S.phase==='head')headModal();else proceed();},
+  clientReset(prev){if(!prev||prev.gid!==S.gid||prev.w!==S.w||prev.t!==S.t||prev.sub!==S.sub||prev.phase!==S.phase)UI={};},
+  clientModal(){
+    if(S.phase==='end')return {key:'end'+S.gid,open:endModal};
+    if(S.phase==='head'){const e=ev();return {key:'h'+S.gid+S.w,open:()=>openModal(`<h2>第 ${S.w} 場喜宴</h2><div class="intel" style="margin:6px 0 4px"><div class="ilab">${ICONS.spark}本場狀況</div><div class="big">${e.n}</div><div class="inote">${e.d}</div></div><p class="sub">由 ${esc(S.players[order()[0]].name)} 先包。等房主開席。</p><div class="acts"><button class="btn primary" data-m="ok">知道了</button></div>`,()=>{closeModal();})};}
+    return null;
+  },
+};
 $('#btnRules').addEventListener('click',showRules);
-$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();if(S.phase==='head')headModal();else proceed();}});}else showSetup();});
+$('#btnNew').addEventListener('click',()=>{if(NET.online){NET.confirmLeave();return;}if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>放棄目前這局？</h2><p class="sub">目前的進度會被清除。</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);clearSave();showSetup();}else{closeModal();if(S.phase==='head')headModal();else proceed();}});}else showSetup();});
 
 /* ================= boot ================= */
 window.__game={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;},finalScore};
