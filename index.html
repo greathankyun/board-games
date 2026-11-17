@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>桌遊大廳</title>
-<meta name="description" content="原創策略桌遊合集，可安裝到手機主畫面、離線遊玩，支援 AI 對手與同機多人。">
-<meta name="theme-color" content="#1E5641">
+<meta name="description" content="原創桌遊合集，可安裝到手機主畫面、離線遊玩，支援 AI 對手、同機多人與線上連線。">
+<meta name="theme-color" content="#F1EADF">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -14,294 +14,401 @@
 <meta name="apple-mobile-web-app-title" content="桌遊大廳">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@500;700&display=swap">
 <style>
-/* Layout: a game shelf — one lobby header, then a row of game "boxes" */
+/* 版面：報紙式大廳。頁首（標誌／分頁／安裝）→ 標語 → 分類與搜尋 → 橫幅封面卡片 → 手機底部導覽 */
 :root{
-  --bg:#F5EEE1; --surface:#FFFBF4; --surface2:#EFE6D4; --ink:#1F2B27; --muted:#6E7068; --line:#E5D9C3;
-  --accent:#1E5641; --accent-ink:#F3F7EF; --gold:#E9643B;
-  --c0:#7A5AD3; --c1:#D7542B; --c2:#22987A; --c3:#D19A17; --c4:#2E7DC0;
-  --f-display:'Noto Sans TC','PingFang TC',system-ui,sans-serif;
+  --bg:#F1EADF; --paper:#F7F2E9; --ink:#1E1B18; --muted:#6B6258; --line:#B9AE9E; --line-soft:#D8CEBF;
+  --accent:#7B2A25; --accent-ink:#FBF4EA;
+  --f-serif:'Noto Serif TC','Songti TC','PMingLiU',serif;
   --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
-  --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --f-latin:'Georgia','Times New Roman',serif;
+  --nav-h:0px;
   color-scheme:light;
-  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
-.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:28px}
-h1{font-family:var(--f-display);font-weight:900;font-size:clamp(32px,6vw,48px);letter-spacing:.08em;line-height:1;margin:0}
-.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin:0 0 8px}
-.lead{color:var(--muted);margin:10px 0 0;max-width:46ch}
-.btn{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px))}
+a{color:inherit}
+button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
-.game{position:relative;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;color:inherit;text-decoration:none;min-width:0}
-.game:hover{border-color:var(--ink)}
-.cover{height:150px;position:relative;background:var(--surface2);overflow:hidden;display:flex;align-items:flex-end;padding:14px;gap:6px}
-.cover::before{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 110% -20%,transparent 0 9px,color-mix(in srgb,var(--accent) 14%,transparent) 9px 10px)}
-.bar{position:relative;flex:1;border-radius:2px 2px 0 0}
-.game .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
-.game h2{font-family:var(--f-display);font-size:24px;font-weight:900;letter-spacing:.05em;margin:0}
-.game p{margin:0;color:var(--muted);font-size:14px}
-.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:8px}
-.meta span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--muted)}
-.play{font-weight:700;color:var(--accent);font-size:14px;margin-top:6px}
-.soon{border-style:dashed;background:transparent;justify-content:center;align-items:center;text-align:center;padding:32px;color:var(--muted);min-height:200px}
-.soon b{display:block;font-family:var(--f-display);font-size:18px;color:var(--ink);margin-bottom:4px}
-.install{margin-top:28px;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
-.install p{margin:0;color:var(--muted);font-size:14px;max-width:60ch}
-.install b{color:var(--ink)}
-footer{margin-top:32px;font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.06em}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* 頁首 */
+.top{display:flex;align-items:center;gap:16px;padding:calc(14px + env(safe-area-inset-top,0px)) 0 12px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;margin-right:auto}
+.brand svg{width:38px;height:34px;flex:none}
+.brand b{display:block;font-family:var(--f-serif);font-weight:900;font-size:26px;letter-spacing:.06em;line-height:1.05}
+.brand small{display:block;font-family:var(--f-latin);font-size:10px;letter-spacing:.42em;margin-top:3px}
+.tabs{display:none;gap:44px;margin:0 auto}
+.tabs button{background:none;border:0;padding:6px 14px 9px;font-family:var(--f-serif);font-weight:900;font-size:18px;letter-spacing:.06em;cursor:pointer;border-bottom:3px solid transparent}
+.tabs button[aria-current="page"]{color:var(--accent);border-bottom-color:var(--accent)}
+.icon-btn{display:none;background:none;border:0;padding:6px;cursor:pointer;border-right:1px solid var(--line);padding-right:22px}
+.icon-btn svg{width:24px;height:24px;display:block}
+.install{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:4px;padding:8px 16px;font-weight:700;letter-spacing:.12em;cursor:pointer;white-space:nowrap}
+.install svg{width:16px;height:16px}
+
+/* 標語 */
+.hero{display:grid;gap:18px;align-items:center;padding:20px 0 6px}
+.eyebrow{display:flex;white-space:nowrap;align-items:center;gap:18px;margin:0;font-family:var(--f-latin);font-size:clamp(9px,2.5vw,11px);letter-spacing:clamp(.12em,.6vw,.32em);color:var(--muted);text-transform:uppercase}
+.eyebrow::after{content:"";width:70px;height:1px;background:var(--line)}
+.hero h1{font-family:var(--f-serif);font-weight:900;font-size:clamp(30px,7.6vw,52px);letter-spacing:.06em;line-height:1.25;margin:10px 0 6px}
+.hero p.sub{margin:0;letter-spacing:.18em;font-size:clamp(14px,3.6vw,17px)}
+.hero .sub .long{display:none}
+.boxes{display:none;position:relative;height:190px}
+
+/* 分類與搜尋 */
+.toolbar{display:grid;gap:14px;padding:16px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.count{display:none;font-family:var(--f-serif);font-weight:900;font-size:20px;letter-spacing:.06em;white-space:nowrap}
+.count em{font-style:normal;color:var(--accent);margin-left:10px}
+.chips{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-width:76px;border:1.5px solid var(--ink);background:transparent;border-radius:999px;padding:6px 18px;font-weight:700;letter-spacing:.12em;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip span{margin-left:6px}
+.search{position:relative}
+.search svg{position:absolute;left:16px;top:50%;width:20px;height:20px;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search input{width:100%;font:inherit;font-size:16px;letter-spacing:.1em;color:var(--ink);background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:10px 18px 10px 46px;outline:0}
+.search input:focus{border-color:var(--ink)}
+.search input::placeholder{color:#9A9085}
+
+/* 卡片 */
+.grid{display:grid;grid-template-columns:1fr;gap:26px 28px}
+.card{position:relative;min-width:0}
+.banner{position:relative;display:block;aspect-ratio:3/1;border-radius:4px;overflow:hidden;background:var(--g-bg);color:var(--g-ink);text-decoration:none;box-shadow:0 2px 0 rgba(30,27,24,.08),0 8px 18px -10px rgba(30,27,24,.45);isolation:isolate}
+.banner .ph{position:absolute;inset:0;z-index:0}
+.banner .ph::before{content:"";position:absolute;right:-6%;top:-30%;width:62%;aspect-ratio:1;border-radius:50%;background:var(--g-acc);opacity:.32}
+.banner .ph::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 7px,rgba(255,255,255,.05) 7px 8px)}
+.ph-art{position:absolute;right:5%;top:12%;bottom:12%;width:44%;display:flex;align-items:flex-end;gap:6px;z-index:1}
+.ph-art .bar{flex:1;border-radius:2px 2px 0 0}
+.banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center;z-index:2}
+.banner .grain{position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:multiply;opacity:.55;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .33 0 0 0 0 .25 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.banner.has-art .grain{opacity:.25}
+.banner .txt{position:absolute;left:5.5%;top:12%;bottom:10%;width:52%;z-index:4;display:flex;flex-direction:column;pointer-events:none}
+.banner .t{font-family:var(--f-serif);font-weight:900;font-size:clamp(28px,9.2vw,46px);line-height:1.05;letter-spacing:.04em;white-space:nowrap;text-shadow:0 1px 0 rgba(0,0,0,.08)}
+.banner .t.long{font-size:clamp(22px,6.6vw,36px)}
+.banner .en{font-family:var(--f-latin);font-size:clamp(8px,2.3vw,11px);letter-spacing:.28em;text-transform:uppercase;margin-top:8px;opacity:.9}
+.banner .tag{margin-top:auto;font-size:clamp(10px,2.8vw,13px);letter-spacing:.2em;opacity:.92}
+.banner.text-in-art .txt{display:none}
+.fav{position:absolute;right:8px;top:8px;z-index:5;width:40px;height:40px;display:grid;place-items:center;background:none;border:0;cursor:pointer;color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.fav svg{width:26px;height:26px}
+.fav[aria-pressed="true"] path{fill:#C8432F;stroke:#fff}
+.meta{display:flex;align-items:center;gap:12px;padding-top:9px;min-width:0}
+.meta a.name{font-family:var(--f-serif);font-weight:900;font-size:20px;letter-spacing:.04em;text-decoration:none;white-space:nowrap}
+.meta .kind{font-weight:700;font-size:14px;letter-spacing:.14em;color:#3B342D;border-left:1.5px solid var(--ink);padding-left:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.meta .go{margin-left:auto;color:var(--accent);font-family:var(--f-serif);font-weight:900;font-size:16px;letter-spacing:.08em;text-decoration:none;white-space:nowrap}
+.meta .go svg{width:14px;height:14px;vertical-align:-1px;margin-left:4px}
+.card .info{margin:4px 0 0;font-size:13px;color:var(--muted);letter-spacing:.04em}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--muted);border:1.5px dashed var(--line);border-radius:6px}
+.empty b{display:block;font-family:var(--f-serif);font-size:20px;color:var(--ink);margin-bottom:4px}
+
+.more{display:block;width:100%;margin:26px 0 0;padding:11px;border:1.5px solid var(--accent);border-radius:6px;background:transparent;color:var(--accent);font-family:var(--f-serif);font-weight:900;font-size:19px;letter-spacing:.12em;cursor:pointer}
+
+.strip{display:none;align-items:center;gap:22px;margin-top:30px;padding:18px 0 30px;border-top:1px solid var(--line)}
+.strip p{margin:0;font-family:var(--f-serif);font-weight:900;font-size:18px;letter-spacing:.1em}
+.strip .ghost{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:4px;background:transparent;padding:5px 16px;letter-spacing:.1em;cursor:pointer}
+.strip .ghost svg{width:15px;height:15px}
+.strip .sep{width:1px;height:22px;background:var(--line)}
+.foot{font-size:12px;color:var(--muted);letter-spacing:.08em;padding:22px 0 26px;text-align:center}
+
+/* 手機底部導覽 */
+.bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(3,1fr);background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bottom button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 8px;font-family:var(--f-serif);font-weight:900;font-size:14px;letter-spacing:.2em;cursor:pointer;position:relative;color:#4A433B}
+.bottom button+button::before{content:"";position:absolute;left:0;top:22%;height:56%;width:1px;background:var(--line)}
+.bottom svg{width:26px;height:26px}
+.bottom button[aria-current="page"]{color:var(--accent)}
+.bottom button[aria-current="page"]::after{content:"";position:absolute;bottom:3px;left:28%;right:28%;height:3px;background:var(--accent);border-radius:2px}
+
+/* 說明面板 */
+dialog{border:0;padding:0;background:var(--paper);color:var(--ink);border-radius:8px;max-width:min(560px,calc(100vw - 32px));width:100%;box-shadow:0 20px 60px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(30,27,24,.45)}
+.sheet{padding:22px 22px 18px;max-height:80vh;overflow:auto}
+.sheet h2{font-family:var(--f-serif);font-weight:900;font-size:24px;letter-spacing:.08em;margin:0 0 10px}
+.sheet h3{font-family:var(--f-serif);font-size:17px;margin:18px 0 4px;letter-spacing:.06em}
+.sheet p,.sheet li{margin:0 0 6px;color:#3B342D}
+.sheet ul{padding-left:20px;margin:0}
+.sheet .close{float:right;background:none;border:1.5px solid var(--line);border-radius:4px;padding:3px 12px;cursor:pointer}
+
+/* 平板以上 */
+@media (min-width:640px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .banner{aspect-ratio:2.3/1}
+  .banner .t{font-size:clamp(26px,4.4vw,44px)}
+  .banner .t.long{font-size:clamp(20px,3.4vw,34px)}
+  .banner .en{font-size:10px}
+  .banner .tag{font-size:12px}
+}
+@media (min-width:1000px){
+  :root{--nav-h:0px}
+  .top{padding-top:calc(18px + env(safe-area-inset-top,0px))}
+  .brand{margin-right:0}
+  .tabs{display:flex}
+  .icon-btn{display:block}
+  .hero{grid-template-columns:1fr 420px;padding:26px 24px 10px}
+  .hero .sub .long{display:inline}
+  .boxes{display:block}
+  .toolbar{grid-template-columns:auto 1fr minmax(220px,320px);align-items:center;gap:0;padding:14px 24px}
+  .count{order:1;display:block;padding-right:28px;border-right:1px solid var(--line);margin-right:28px}
+  .chips{margin:0;padding:2px 0;flex-wrap:wrap;order:2;gap:8px}
+  .chip{min-width:62px;padding:5px 14px}
+  .search{order:3;border-left:1px solid var(--line);padding-left:28px;margin-left:12px}
+  .search svg{left:44px}
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .banner .t{font-size:clamp(28px,3.1vw,44px)}
+  .banner .t.long{font-size:clamp(22px,2.4vw,34px)}
+  .more{width:auto;margin:30px auto 0;border:0;display:flex;align-items:center;gap:20px;background:none}
+  .more::before,.more::after{content:"";flex:1;height:1px;background:var(--line)}
+  .more-row{display:block}
+  .strip{display:flex}
+  .bottom{display:none}
+}
+@media (max-width:999px){ :root{--nav-h:64px} .icon-btn{display:none} }
+@media (max-width:380px){ .install span{display:none} .install{padding:8px 11px} }
+
+/* 桌面標語右側的遊戲盒堆疊 */
+.box{position:absolute;border-radius:3px;background:var(--g-bg);color:var(--g-ink);box-shadow:0 18px 26px -14px rgba(0,0,0,.55);overflow:hidden;display:flex;align-items:flex-start;padding:10px 14px}
+.box b{font-family:var(--f-serif);font-weight:900;font-size:24px;letter-spacing:.04em;line-height:1.1;position:relative;z-index:3}
+.box small{display:block;font-family:var(--f-latin);font-size:7px;letter-spacing:.24em;margin-top:4px}
+.box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
+
+.box::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12%;background:rgba(0,0,0,.22);z-index:4}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div>
-      <p class="eyebrow">Board Game Hall</p>
-      <h1>桌遊大廳</h1>
-      <p class="lead">原創策略桌遊合集。可以跟 AI 對戰，也能幾個人輪流用同一台裝置。安裝到主畫面後，沒有網路也能玩。</p>
-    </div>
-    <button class="btn primary" id="installBtn" type="button" hidden>安裝到主畫面</button>
+  <header class="top">
+    <a class="brand" href="./" aria-label="桌遊大廳 首頁">
+      <svg viewBox="0 0 38 34" aria-hidden="true"><rect x="1" y="14" width="10" height="20" fill="#5C6B4E"/><rect x="14" y="6" width="10" height="28" fill="#7B2A25"/><rect x="27" y="0" width="10" height="34" fill="#B07A3A"/></svg>
+      <span><b>桌遊大廳</b><small>TABLE &amp; PLAY</small></span>
+    </a>
+    <nav class="tabs" aria-label="分頁">
+      <button type="button" data-view="hall" aria-current="page">遊戲館</button>
+      <button type="button" data-view="fav">我的收藏</button>
+    </nav>
+    <button class="icon-btn" id="searchJump" type="button" aria-label="搜尋遊戲"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l6 6"/></svg></button>
+    <button class="install" id="installBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span>安裝</span></button>
   </header>
 
-  <main class="shelf">
-    <a class="game" href="games/proxy-war/">
-      <div class="cover" aria-hidden="true">
-        <span class="bar" style="height:38%;background:var(--c0)"></span>
-        <span class="bar" style="height:72%;background:var(--c1)"></span>
-        <span class="bar" style="height:52%;background:var(--c2)"></span>
-        <span class="bar" style="height:90%;background:var(--c3)"></span>
-        <span class="bar" style="height:60%;background:var(--c4)"></span>
-      </div>
-      <div class="body">
-        <h2>控股風雲</h2>
-        <p>每個人只看得到一則內線消息。讀懂對手的買賣，搶下董事會，決定配息、擴張還是掏空。</p>
-        <div class="meta"><span>2–5 人</span><span>約 20 分鐘</span><span>AI 對手</span><span>股權・推理</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/blank-agents/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center;gap:10px">
-        <span style="position:relative;width:62px;height:84px;border-radius:10px;background:var(--c1)"></span>
-        <span style="position:relative;width:62px;height:84px;border-radius:10px;background:#1F2B27;color:#fff;display:grid;place-items:center;font:900 30px var(--f-display)">?</span>
-        <span style="position:relative;width:62px;height:84px;border-radius:10px;background:var(--c4)"></span>
-      </div>
-      <div class="body">
-        <h2>失憶特工</h2>
-        <p>你看得到所有人的身分，唯獨看不到自己。從別人怎麼騙你推理出你是誰，再選對直升機撤離。</p>
-        <div class="meta"><span>5–8 人</span><span>約 20 分鐘</span><span>AI 對手</span><span>線上連線</span><span>隱藏身分・欺瞞</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/unsigned/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center;gap:14px">
-        <span style="position:relative;width:84px;height:58px;border-radius:6px;background:#FFFBF4;border:2px solid #6E5A3A;display:grid;place-items:center"><i style="width:22px;height:22px;border-radius:50%;background:#C8432F;display:block"></i></span>
-        <span style="position:relative;width:84px;height:58px;border-radius:6px;background:#FFFBF4;border:2px solid #6E5A3A;display:grid;place-items:center;transform:rotate(-8deg)"><i style="width:22px;height:22px;border-radius:50%;background:#2E6FB0;display:block"></i></span>
-        <span style="position:relative;width:84px;height:58px;border-radius:6px;background:#FFFBF4;border:2px solid #6E5A3A;display:grid;place-items:center"><i style="width:22px;height:22px;border-radius:50%;background:#D19A17;display:block"></i></span>
-      </div>
-      <div class="body">
-        <h2>無名信</h2>
-        <p>1931 年上海小報互寄匿名信。從蠟封顏色推理是誰下的手，所有簽名在終刊一次翻開清算。</p>
-        <div class="meta"><span>3–6 人</span><span>約 25 分鐘</span><span>AI 對手</span><span>線上連線</span><span>匿名・推理</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/seven-days/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center;gap:10px">
-        <span style="position:relative;width:58px;height:78px;border-radius:10px;background:var(--c0);color:#fff;display:grid;place-items:center;font:900 18px var(--f-display)">⏳1</span>
-        <span style="position:relative;width:58px;height:78px;border-radius:10px;background:var(--c2);color:#fff;display:grid;place-items:center;font:900 18px var(--f-display)">⏳2</span>
-        <span style="position:relative;width:58px;height:78px;border-radius:10px;background:var(--gold);color:#fff;display:grid;place-items:center;font:900 18px var(--f-display)">⏳3</span>
-      </div>
-      <div class="body">
-        <h2>七日斷腸</h2>
-        <p>武林大會七天七夜。下毒是公開的，毒性和發作日是秘密的。拿解藥勒索，合作搶秘境再背後暗算。</p>
-        <div class="meta"><span>3–5 人</span><span>約 30 分鐘</span><span>AI 對手</span><span>線上連線</span><span>勒索・談判</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/wealth-road/">
-      <div class="cover" aria-hidden="true">
-        <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMax meet" style="position:relative;width:100%;height:100%">
-          <path d="M0 120 L0 92 Q60 70 110 84 T210 50 T300 30 L300 120Z" fill="var(--c2)" opacity=".35"/>
-          <path d="M14 108 C70 104 90 78 140 72 S220 40 270 18" fill="none" stroke="var(--c0)" stroke-width="10" stroke-linecap="round"/>
-          <path d="M14 108 C70 104 90 78 140 72 S220 40 270 18" fill="none" stroke="var(--surface)" stroke-width="2" stroke-dasharray="8 8"/>
-          <rect x="40" y="86" width="16" height="16" rx="2" fill="var(--c1)"/><rect x="104" y="66" width="22" height="22" rx="2" fill="var(--c3)"/><rect x="176" y="44" width="28" height="28" rx="2" fill="var(--c4)"/>
-          <circle cx="270" cy="18" r="11" fill="var(--c1)" stroke="var(--c0)" stroke-width="3"/>
-        </svg>
-      </div>
-      <div class="body">
-        <h2>財富自由之路</h2>
-        <p>從 22 歲出社會到 62 歲退休。分配時間、看懂景氣、買資產、躲詐騙，讓被動收入追上支出。</p>
-        <div class="meta"><span>2–5 人</span><span>約 40 分鐘</span><span>AI 對手</span><span>線上連線</span><span>理財・財商</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/red-envelope/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center;gap:12px">
-        <span style="position:relative;width:54px;height:76px;border-radius:8px;background:#C8432F;transform:rotate(-8deg);display:grid;place-items:center;color:#F5C443;font:900 22px var(--f-display)">囍</span>
-        <span style="position:relative;width:54px;height:76px;border-radius:8px;background:#C8432F;display:grid;place-items:center;color:#F5C443;font:800 14px var(--f-mono)">8800</span>
-        <span style="position:relative;width:54px;height:76px;border-radius:8px;background:#5B5B5B;transform:rotate(8deg);display:grid;place-items:center;color:#fff;font:900 15px var(--f-display)">抓！</span>
-      </div>
-      <div class="body">
-        <h2>紅包心機</h2>
-        <p>喜宴上輪流包紅包，每一家都得喊得比上一家多。紅包是封起來的，下一家要決定抓不抓。</p>
-        <div class="meta"><span>3–8 人</span><span>約 15 分鐘</span><span>AI 對手</span><span>吹牛・派對</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/office-mole/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center;gap:10px">
-        <span style="position:relative;font-size:46px">🎁</span><span style="position:relative;font-size:46px">🙃</span><span style="position:relative;font-size:46px">📹</span>
-      </div>
-      <div class="body">
-        <h2>尾牙內鬼</h2>
-        <p>尾牙獎品一個個變成銘謝惠顧。靠監視器線索和人資調查揪出內鬼，不需要主持人。</p>
-        <div class="meta"><span>5–12 人</span><span>約 25 分鐘</span><span>AI 同事</span><span>社交推理</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/er-24/">
-      <div class="cover" aria-hidden="true">
-        <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMax meet" style="position:relative;width:100%;height:100%">
-          <path d="M6 70h70l14-30 18 60 16-44 12 14h158" fill="none" stroke="var(--c2)" stroke-width="6" stroke-linejoin="round"/>
-          <rect x="200" y="20" width="56" height="56" rx="12" fill="var(--c1)"/><path d="M222 32h12v12h12v12h-12v12h-12v-12h-12v-12h12z" fill="var(--surface)"/>
-        </svg>
-      </div>
-      <div class="body">
-        <h2>急診室24小時</h2>
-        <p>全合作。檢傷分級、搶床位、處理突發重症，醫療團隊一起撐到天亮。有單人模式和四種難度。</p>
-        <div class="meta"><span>1–4 人</span><span>約 35 分鐘</span><span>AI 隊友</span><span>合作・危機</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/cat-cafe/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center">
-        <span style="position:relative;display:grid;grid-template-columns:repeat(3,38px);gap:5px">
-          <i style="height:38px;border-radius:8px;background:#E6CFA9"></i><i style="height:38px;border-radius:8px;background:#F6CBD3;display:grid;place-items:center;font-style:normal;font-size:24px">🐈</i><i style="height:38px;border-radius:8px;background:#BFE3CF"></i>
-          <i style="height:38px;border-radius:8px;background:#F7E4A6;display:grid;place-items:center;font-style:normal;font-size:22px">🪴</i><i style="height:38px;border-radius:8px;background:#E6CFA9;display:grid;place-items:center;font-style:normal;font-size:22px">☕</i><i style="height:38px;border-radius:8px;background:#F6CBD3"></i>
-        </span>
-      </div>
-      <div class="body">
-        <h2>貓咪咖啡廳</h2>
-        <p>挑家具板塊拼出自己的小店。10 種貓咪各有脾氣，擺對位置牠們才肯搬進來。</p>
-        <div class="meta"><span>2–4 人</span><span>約 30 分鐘</span><span>AI 對手</span><span>板塊拼放・家庭</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/influencer/">
-      <div class="cover" aria-hidden="true">
-        <span class="bar" style="height:22%;background:var(--c4)"></span>
-        <span class="bar" style="height:34%;background:var(--c0)"></span>
-        <span class="bar" style="height:30%;background:var(--c3)"></span>
-        <span class="bar" style="height:58%;background:var(--c2)"></span>
-        <span class="bar" style="height:96%;background:var(--c1)"></span>
-      </div>
-      <div class="body">
-        <h2>網紅爆紅計畫</h2>
-        <p>輪流抽選美食、旅遊、開箱、業配內容卡經營頻道。追演算法、躲炎上，三季後粉絲最多的人勝。</p>
-        <div class="meta"><span>2–5 人</span><span>約 25 分鐘</span><span>AI 對手</span><span>輪抽・收集</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/pudu/">
-      <div class="cover" aria-hidden="true" style="align-items:flex-end;justify-content:center;gap:8px">
-        <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMax meet" style="position:relative;width:100%;height:100%">
-          <rect x="30" y="92" width="240" height="10" rx="3" fill="#B0703A"/>
-          <rect x="60" y="62" width="22" height="30" rx="3" fill="#3E9A4B"/><rect x="64" y="70" width="14" height="9" rx="2" fill="#F5C443"/>
-          <path d="M98 70h40a20 18 0 0 1-40 0z" fill="var(--c1)"/>
-          <rect x="152" y="74" width="16" height="18" rx="2" fill="var(--c3)"/><rect x="170" y="74" width="16" height="18" rx="2" fill="var(--c3)"/><rect x="161" y="56" width="16" height="18" rx="2" fill="#E9B23A"/>
-          <path d="M214 92V58a20 20 0 0 1 40 0v34l-7-6-6 6-7-6-6 6-7-6z" fill="#ECEFF4" stroke="#8C93A3" stroke-width="2"/><circle cx="227" cy="58" r="3" fill="#3A3F4B"/><circle cx="241" cy="58" r="3" fill="#3A3F4B"/><path d="M222 50l8 3M246 50l-8 3" stroke="#3A3F4B" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="body">
-        <h2>中元普渡</h2>
-        <p>從供桌一張張翻供品，翻越多分越高。好兄弟一不爽就翻桌歸零，要自己決定何時收手。</p>
-        <div class="meta"><span>2–6 人</span><span>約 15 分鐘</span><span>AI 對手</span><span>推運氣</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/taipei-rent/">
-      <div class="cover" aria-hidden="true">
-        <span class="bar" style="height:46%;background:#E2CFA8"></span>
-        <span class="bar" style="height:70%;background:#C9AE84"></span>
-        <span class="bar" style="height:56%;background:var(--c2)"></span>
-        <span class="bar" style="height:92%;background:var(--c4)"></span>
-        <span class="bar" style="height:40%;background:#7A8A96"></span>
-      </div>
-      <div class="body">
-        <h2>台北租屋大逃殺</h2>
-        <p>房東、二房東、房客互相開條件：換房間、漲房租、檢舉違建。每人藏一張秘密目標，談判有限時。</p>
-        <div class="meta"><span>3–6 人</span><span>約 40 分鐘</span><span>AI 對手</span><span>交易・談判</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/magic-exam/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center">
-        <span style="position:relative;display:grid;grid-template-columns:repeat(4,30px);gap:5px">
-          <i style="height:30px;border-radius:7px;background:var(--surface);border:2px solid var(--line)"></i><i style="height:30px;border-radius:7px;background:var(--ink)"></i><i style="height:30px;border-radius:7px;background:var(--surface);border:2px solid var(--line)"></i><i style="height:30px;border-radius:7px;background:var(--c0)"></i>
-          <i style="height:30px;border-radius:7px;background:var(--ink)"></i><i style="height:30px;border-radius:7px;background:var(--ink)"></i><i style="height:30px;border-radius:7px;background:var(--surface);border:2px solid var(--line)"></i><i style="height:30px;border-radius:7px;background:var(--surface);border:2px solid var(--line)"></i>
-        </span>
-      </div>
-      <div class="body">
-        <h2>魔法學院期末考</h2>
-        <p>每題擲骰，全班同時在考卷上勾咒語格。魔藥、占星、飛行、變形四科，有單人模式，也能印出紙本考卷。</p>
-        <div class="meta"><span>1–8 人</span><span>約 15 分鐘</span><span>AI 同學</span><span>擲骰填表</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/claw-master/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center">
-        <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet" style="position:relative;width:100%;height:100%">
-          <path d="M150 0v34M136 50l14-14 14 14M136 50l-4 12M164 50l4 12" stroke="#5C6470" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <circle cx="150" cy="38" r="8" fill="var(--c1)"/>
-          <circle cx="110" cy="96" r="18" fill="#F5C443"/><circle cx="152" cy="98" r="20" fill="#B07A42"/><circle cx="194" cy="96" r="16" fill="#F6C6CF"/><circle cx="232" cy="100" r="13" fill="#FFFBF4" stroke="#E9643B" stroke-width="2"/>
-        </svg>
-      </div>
-      <div class="body">
-        <h2>夾娃娃大師</h2>
-        <p>按住按鈕移動爪子，放手就夾下去。小隻的比較值錢，碰倒旁邊的要扣分，落後的人有救援卡翻盤。</p>
-        <div class="meta"><span>2–6 人</span><span>約 15 分鐘</span><span>AI 對手</span><span>手眼協調</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <a class="game" href="games/time-pawn/">
-      <div class="cover" aria-hidden="true" style="align-items:center;justify-content:center;gap:8px">
-        <span style="position:relative;width:44px;height:62px;border-radius:8px;background:#4F9E61"></span>
-        <span style="position:relative;width:44px;height:62px;border-radius:8px;background:#D19A17"></span>
-        <span style="position:relative;width:44px;height:62px;border-radius:8px;background:#2E7DC0"></span>
-        <span style="position:relative;width:44px;height:62px;border-radius:8px;background:#8A5A2E"></span>
-        <span style="position:relative;width:44px;height:62px;border-radius:8px;background:#7A5AD3;display:grid;place-items:center;color:#fff;font:900 20px var(--f-display)">贗</span>
-      </div>
-      <div class="body">
-        <h2>時空當鋪</h2>
-        <p>收穿越者寶物的當鋪。三種競標輪流出現，湊成同時代套組賣給收藏家，小心拍賣人手上的贗品。</p>
-        <div class="meta"><span>3–5 人</span><span>約 30 分鐘</span><span>AI 對手</span><span>競標・收集</span></div>
-        <span class="play">開始遊戲 →</span>
-      </div>
-    </a>
-    <div class="game soon"><div><b>下一款製作中</b>新遊戲完成後會出現在這裡</div></div>
-  </main>
-
-  <section class="install" id="installHelp">
-    <p id="installText"><b>安裝方式：</b>Android 或電腦版 Chrome 可以按上方的「安裝到主畫面」。iPhone 和 iPad 請用 Safari 開啟，點「分享」再點「加入主畫面」。</p>
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Original Board Game Collection</p>
+      <h1>每一局，都值得入席。</h1>
+      <p class="sub"><span class="long">精選原創桌遊，</span>找到今天想玩的那一款。</p>
+    </div>
+    <div class="boxes" id="boxes" aria-hidden="true"></div>
   </section>
 
-  <footer>v1 · 所有遊戲皆為原創設計</footer>
+  <section class="toolbar" aria-label="篩選">
+    <div class="count" id="count">全部遊戲<em>15</em></div>
+    <div class="search" id="searchWrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l6 6"/></svg>
+      <input id="q" type="search" placeholder="搜尋遊戲" aria-label="搜尋遊戲" autocomplete="off" enterkeyhint="search">
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="遊戲分類"></div>
+  </section>
+
+  <main>
+    <div class="grid" id="grid"></div>
+    <button class="more" id="more" type="button" hidden></button>
+  </main>
+
+  <section class="strip">
+    <p>隨時入席，離線也能玩。</p>
+    <span class="sep"></span>
+    <button class="ghost" type="button" data-install><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>安裝到主畫面</button>
+    <button class="ghost" type="button" data-help>遊戲說明</button>
+  </section>
+  <p class="foot">v2 · 所有遊戲皆為原創設計</p>
 </div>
+
+<nav class="bottom" aria-label="主選單">
+  <button type="button" data-view="hall" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5M3 16.5L12 21l9-4.5"/></svg>遊戲館</button>
+  <button type="button" data-view="fav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7.5-4.6-9-9.3C2 7.4 4.2 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.1 0 5.3 2.9 4.3 6.2-1.5 4.7-9 9.3-9 9.3z"/></svg>收藏</button>
+  <button type="button" data-help><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 3 5v13.5c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5zM12 6.5V20"/></svg>說明</button>
+</nav>
+
+<dialog id="help">
+  <div class="sheet">
+    <button class="close" type="button" data-close>關閉</button>
+    <h2>遊戲說明</h2>
+    <p>這裡每一款都是原創桌遊，規則都寫在遊戲裡，開局前可以先看。</p>
+    <h3>怎麼玩</h3>
+    <ul>
+      <li><b>AI 對手：</b>人不夠時讓電腦補位，一個人也能開局。</li>
+      <li><b>同機輪流：</b>幾個人傳同一支手機或平板，換人時會先遮住畫面。</li>
+      <li><b>線上連線：</b>標示「線上連線」的遊戲可以開房間，用四位數房號邀朋友加入。</li>
+      <li><b>自動存檔：</b>中途離開，下次打開會接著玩。</li>
+    </ul>
+    <h3>安裝到主畫面</h3>
+    <p id="installText">Android 或電腦版 Chrome 按右上角「安裝」。iPhone 和 iPad 請用 Safari 開啟，點「分享」再點「加入主畫面」。裝好之後沒有網路也能玩。</p>
+    <h3>收藏</h3>
+    <p>點封面右上角的愛心，就會出現在「收藏」分頁。收藏只存在這台裝置上。</p>
+  </div>
+</dialog>
+
 <script>
 'use strict';
+/* 遊戲清單。封面圖放在 covers/<id>.webp（1536×640，12:5），檔案存在就自動蓋過佔位圖。
+   textInArt:true 表示封面圖本身已經印好標題，就不再疊字。 */
+const GAMES=[
+ {id:'proxy-war',name:'控股風雲',en:'Proxy War',tag:'內線・持股・董事會',kind:'經營・策略',cats:['策略','經營'],players:'2–5 人',time:'20 分鐘',online:1,
+  bg:'#2F4A3A',ink:'#F1E6CF',acc:'#C9A46A',desc:'每個人只看得到一則內線消息。讀懂對手的買賣，搶下董事會，決定配息、擴張還是掏空。',
+  art:'<span class="bar" style="height:38%;background:#8F7BB8"></span><span class="bar" style="height:72%;background:#C8573A"></span><span class="bar" style="height:52%;background:#5FA88A"></span><span class="bar" style="height:90%;background:#D9A93A"></span><span class="bar" style="height:60%;background:#6A9CC7"></span>'},
+ {id:'blank-agents',name:'失憶特工',en:'Blank Agents',tag:'看得見別人，看不見自己',kind:'推理・欺瞞',cats:['推理','派對'],players:'5–8 人',time:'20 分鐘',online:1,
+  bg:'#26252B',ink:'#EEE8F2',acc:'#8C7BA8',desc:'你看得到所有人的身分，唯獨看不到自己。從別人怎麼騙你推理出你是誰，再選對直升機撤離。',
+  artStyle:'align-items:center;justify-content:center;gap:10px',
+  art:'<span style="width:22%;aspect-ratio:3/4;border-radius:8px;background:#C8573A"></span><span style="width:22%;aspect-ratio:3/4;border-radius:8px;background:#EEE8F2;color:#26252B;display:grid;place-items:center;font:900 28px var(--f-serif)">?</span><span style="width:22%;aspect-ratio:3/4;border-radius:8px;background:#8C7BA8"></span>'},
+ {id:'unsigned',name:'無名信',en:'The Unsigned Letter',tag:'一九三一，上海小報的匿名戰',kind:'推理・劇情',cats:['推理'],players:'3–6 人',time:'25 分鐘',online:1,
+  bg:'#E4D3B4',ink:'#2A1E16',acc:'#A8322A',desc:'1931 年上海小報互寄匿名信。從蠟封顏色推理是誰下的手，所有簽名在終刊一次翻開清算。',
+  artStyle:'align-items:center;justify-content:center;gap:12px',
+  art:'<span style="width:28%;aspect-ratio:3/2;border-radius:4px;background:#FBF4E4;border:2px solid #6E5A3A;display:grid;place-items:center"><i style="width:30%;aspect-ratio:1;border-radius:50%;background:#A8322A;display:block"></i></span><span style="width:28%;aspect-ratio:3/2;border-radius:4px;background:#FBF4E4;border:2px solid #6E5A3A;display:grid;place-items:center;transform:rotate(-8deg)"><i style="width:30%;aspect-ratio:1;border-radius:50%;background:#2E6FB0;display:block"></i></span>'},
+ {id:'seven-days',name:'七日斷腸',en:'Seven Days of Poison',tag:'七天七夜，解藥在誰手上',kind:'勒索・談判',cats:['策略','推理'],players:'3–5 人',time:'30 分鐘',online:1,
+  bg:'#5A2420',ink:'#F3E3CC',acc:'#D9A35A',desc:'武林大會七天七夜。下毒是公開的，毒性和發作日是秘密的。拿解藥勒索，合作搶秘境再背後暗算。',
+  artStyle:'align-items:center;justify-content:center;gap:10px',
+  art:'<span style="width:18%;aspect-ratio:3/4;border-radius:8px;background:#2F4A3A;color:#F3E3CC;display:grid;place-items:center;font:900 16px var(--f-serif)">壹</span><span style="width:18%;aspect-ratio:3/4;border-radius:8px;background:#D9A35A;color:#5A2420;display:grid;place-items:center;font:900 16px var(--f-serif)">肆</span><span style="width:18%;aspect-ratio:3/4;border-radius:8px;background:#F3E3CC;color:#5A2420;display:grid;place-items:center;font:900 16px var(--f-serif)">柒</span>'},
+ {id:'wealth-road',name:'財富自由之路',en:'The Road to Financial Freedom',tag:'從 22 歲走到 62 歲',kind:'經營・理財',cats:['經營','策略'],players:'2–5 人',time:'40 分鐘',online:1,
+  bg:'#EFD48A',ink:'#1F3A5A',acc:'#2F6FA0',desc:'從 22 歲出社會到 62 歲退休。分配時間、看懂景氣、買資產、躲詐騙，讓被動收入追上支出。',
+  artStyle:'align-items:stretch',
+  art:'<svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%"><path d="M0 120 L0 92 Q60 70 110 84 T210 50 T300 30 L300 120Z" fill="#2F6FA0" opacity=".45"/><path d="M14 108 C70 104 90 78 140 72 S220 40 270 18" fill="none" stroke="#1F3A5A" stroke-width="10" stroke-linecap="round"/><path d="M14 108 C70 104 90 78 140 72 S220 40 270 18" fill="none" stroke="#EFD48A" stroke-width="2" stroke-dasharray="8 8"/><circle cx="270" cy="18" r="11" fill="#C8573A"/></svg>'},
+ {id:'red-envelope',name:'紅包心機',en:'Red Envelope Bluff',tag:'越包越大，你抓不抓？',kind:'吹牛・派對',cats:['派對'],players:'3–8 人',time:'15 分鐘',
+  bg:'#A8322A',ink:'#F5D99A',acc:'#F0B84A',desc:'喜宴上輪流包紅包，每一家都得喊得比上一家多。紅包是封起來的，下一家要決定抓不抓。',
+  artStyle:'align-items:center;justify-content:center;gap:12px',
+  art:'<span style="width:17%;aspect-ratio:5/7;border-radius:6px;background:#7E1F1A;border:2px solid #F0B84A;transform:rotate(-8deg);display:grid;place-items:center;color:#F0B84A;font:900 20px var(--f-serif)">囍</span><span style="width:17%;aspect-ratio:5/7;border-radius:6px;background:#7E1F1A;border:2px solid #F0B84A;display:grid;place-items:center;color:#F0B84A;font:900 11px var(--f-latin)">8800</span><span style="width:17%;aspect-ratio:5/7;border-radius:6px;background:#3A2E2A;transform:rotate(8deg);display:grid;place-items:center;color:#F5D99A;font:900 15px var(--f-serif)">抓！</span>'},
+ {id:'office-mole',name:'尾牙內鬼',en:'The Year-End Mole',tag:'獎品不見了，內鬼就在同事裡',kind:'社交推理',cats:['推理','派對'],players:'5–12 人',time:'25 分鐘',
+  bg:'#253552',ink:'#F1E6CF',acc:'#D9A93A',desc:'尾牙獎品一個個變成銘謝惠顧。靠監視器線索和人資調查揪出內鬼，不需要主持人。',
+  artStyle:'align-items:center;justify-content:center;gap:10px;font-size:40px',
+  art:'<span>🎁</span><span>🕵️</span><span>📹</span>'},
+ {id:'er-24',name:'急診室24小時',en:'ER: 24 Hours',tag:'檢傷、搶床，一起撐到天亮',kind:'合作・危機',cats:['合作','策略'],players:'1–4 人',time:'35 分鐘',
+  bg:'#2F6563',ink:'#EFF2E8',acc:'#D9573E',desc:'全合作。檢傷分級、搶床位、處理突發重症，醫療團隊一起撐到天亮。有單人模式和四種難度。',
+  artStyle:'align-items:stretch',
+  art:'<svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%"><path d="M6 70h70l14-30 18 60 16-44 12 14h158" fill="none" stroke="#EFF2E8" stroke-width="6" stroke-linejoin="round"/><rect x="200" y="20" width="56" height="56" rx="12" fill="#D9573E"/><path d="M222 32h12v12h12v12h-12v12h-12v-12h-12v-12h12z" fill="#EFF2E8"/></svg>'},
+ {id:'cat-cafe',name:'貓咪咖啡廳',en:'Cat Café',tag:'擺對位置，貓才肯搬進來',kind:'拼放・家庭',cats:['家庭','經營'],players:'2–4 人',time:'30 分鐘',
+  bg:'#E9CDBB',ink:'#3B2A22',acc:'#7FA88E',desc:'挑家具板塊拼出自己的小店。10 種貓咪各有脾氣，擺對位置牠們才肯搬進來。',
+  artStyle:'align-items:center;justify-content:center',
+  art:'<span style="display:grid;grid-template-columns:repeat(3,34px);gap:5px"><i style="height:34px;border-radius:7px;background:#D9B98C"></i><i style="height:34px;border-radius:7px;background:#F6E6DA;display:grid;place-items:center;font-style:normal;font-size:22px">🐈</i><i style="height:34px;border-radius:7px;background:#A8C9B4"></i><i style="height:34px;border-radius:7px;background:#F0DDA0;display:grid;place-items:center;font-style:normal;font-size:20px">🪴</i><i style="height:34px;border-radius:7px;background:#D9B98C;display:grid;place-items:center;font-style:normal;font-size:20px">☕</i><i style="height:34px;border-radius:7px;background:#F6E6DA"></i></span>'},
+ {id:'influencer',name:'網紅爆紅計畫',en:'Going Viral',tag:'追演算法，躲過炎上',kind:'輪抽・收集',cats:['經營','派對'],players:'2–5 人',time:'25 分鐘',
+  bg:'#D46A4C',ink:'#FBF0DF',acc:'#2F6563',desc:'輪流抽選美食、旅遊、開箱、業配內容卡經營頻道。追演算法、躲炎上，三季後粉絲最多的人勝。',
+  art:'<span class="bar" style="height:22%;background:#2F6563"></span><span class="bar" style="height:34%;background:#FBF0DF"></span><span class="bar" style="height:30%;background:#EFD48A"></span><span class="bar" style="height:58%;background:#2F6563"></span><span class="bar" style="height:96%;background:#FBF0DF"></span>'},
+ {id:'pudu',name:'中元普渡',en:'Ghost Festival Feast',tag:'貪多翻桌，見好就收',kind:'推運氣・派對',cats:['派對'],players:'2–6 人',time:'15 分鐘',
+  bg:'#2C2642',ink:'#F3E3CC',acc:'#E07B39',desc:'從供桌一張張翻供品，翻越多分越高。好兄弟一不爽就翻桌歸零，要自己決定何時收手。',
+  artStyle:'align-items:stretch',
+  art:'<svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMax meet" style="width:100%;height:100%"><rect x="30" y="92" width="240" height="10" rx="3" fill="#B0703A"/><rect x="60" y="62" width="22" height="30" rx="3" fill="#3E9A4B"/><path d="M98 70h40a20 18 0 0 1-40 0z" fill="#E07B39"/><rect x="152" y="74" width="16" height="18" rx="2" fill="#D9A93A"/><rect x="170" y="74" width="16" height="18" rx="2" fill="#D9A93A"/><path d="M214 92V58a20 20 0 0 1 40 0v34l-7-6-6 6-7-6-6 6-7-6z" fill="#ECEFF4"/><circle cx="227" cy="58" r="3" fill="#2C2642"/><circle cx="241" cy="58" r="3" fill="#2C2642"/></svg>'},
+ {id:'taipei-rent',name:'台北租屋大逃殺',en:'Taipei Rent Royale',tag:'換房、漲租、檢舉違建',kind:'交易・談判',cats:['策略','派對'],players:'3–6 人',time:'40 分鐘',
+  bg:'#4D5A60',ink:'#F1EADF',acc:'#D9A93A',desc:'房東、二房東、房客互相開條件：換房間、漲房租、檢舉違建。每人藏一張秘密目標，談判有限時。',
+  art:'<span class="bar" style="height:46%;background:#E2CFA8"></span><span class="bar" style="height:70%;background:#C9AE84"></span><span class="bar" style="height:56%;background:#7FA88E"></span><span class="bar" style="height:92%;background:#D9A93A"></span><span class="bar" style="height:40%;background:#A9B4B8"></span>'},
+ {id:'magic-exam',name:'魔法學院期末考',en:'Magic Academy Finals',tag:'擲骰作答，全班同時應考',kind:'擲骰・填表',cats:['家庭','派對'],players:'1–8 人',time:'15 分鐘',
+  bg:'#3D2E5C',ink:'#F3E3B8',acc:'#D9A93A',desc:'每題擲骰，全班同時在考卷上勾咒語格。魔藥、占星、飛行、變形四科，有單人模式，也能印出紙本考卷。',
+  artStyle:'align-items:center;justify-content:center',
+  art:'<span style="display:grid;grid-template-columns:repeat(4,26px);gap:5px"><i style="height:26px;border-radius:6px;border:2px solid #F3E3B8"></i><i style="height:26px;border-radius:6px;background:#F3E3B8"></i><i style="height:26px;border-radius:6px;border:2px solid #F3E3B8"></i><i style="height:26px;border-radius:6px;background:#D9A93A"></i><i style="height:26px;border-radius:6px;background:#F3E3B8"></i><i style="height:26px;border-radius:6px;background:#F3E3B8"></i><i style="height:26px;border-radius:6px;border:2px solid #F3E3B8"></i><i style="height:26px;border-radius:6px;border:2px solid #F3E3B8"></i></span>'},
+ {id:'claw-master',name:'夾娃娃大師',en:'Claw Master',tag:'放手的那一刻決定一切',kind:'手眼・派對',cats:['派對','家庭'],players:'2–6 人',time:'15 分鐘',
+  bg:'#BFDCCD',ink:'#1F3B36',acc:'#E58FA0',desc:'按住按鈕移動爪子，放手就夾下去。小隻的比較值錢，碰倒旁邊的要扣分，落後的人有救援卡翻盤。',
+  artStyle:'align-items:stretch',
+  art:'<svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%"><path d="M150 0v34M136 50l14-14 14 14M136 50l-4 12M164 50l4 12" stroke="#1F3B36" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="150" cy="38" r="8" fill="#D9573E"/><circle cx="110" cy="96" r="18" fill="#F0C24A"/><circle cx="152" cy="98" r="20" fill="#B07A42"/><circle cx="194" cy="96" r="16" fill="#E58FA0"/><circle cx="232" cy="100" r="13" fill="#FBF4EA"/></svg>'},
+ {id:'time-pawn',name:'時空當鋪',en:'The Time Pawnshop',tag:'穿越者的寶物，小心贗品',kind:'競標・收集',cats:['策略','經營'],players:'3–5 人',time:'30 分鐘',
+  bg:'#3A2C1E',ink:'#EED9A6',acc:'#B07A3A',desc:'收穿越者寶物的當鋪。三種競標輪流出現，湊成同時代套組賣給收藏家，小心拍賣人手上的贗品。',
+  artStyle:'align-items:center;justify-content:center;gap:8px',
+  art:'<span style="width:13%;aspect-ratio:5/7;border-radius:6px;background:#4F9E61"></span><span style="width:13%;aspect-ratio:5/7;border-radius:6px;background:#D9A93A"></span><span style="width:13%;aspect-ratio:5/7;border-radius:6px;background:#2E7DC0"></span><span style="width:13%;aspect-ratio:5/7;border-radius:6px;background:#EED9A6;display:grid;place-items:center;color:#3A2C1E;font:900 18px var(--f-serif)">贗</span>'}
+];
+const CATS=['策略','推理','派對','經營','家庭','合作'];
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const state={view:location.hash==='#fav'?'fav':'hall',cat:'全部',q:'',expanded:false,fav:new Set(store.get('lobby.fav',[]))};
+const heart='<svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-9-9.3C2 7.4 4.2 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.1 0 5.3 2.9 4.3 6.2-1.5 4.7-9 9.3-9 9.3z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+const arrow='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12L12 4M6 4h6v6"/></svg>';
+
+/* 封面圖：存在就顯示，不存在就留佔位圖 */
+function coverImg(g,cls){return `<img src="covers/${g.id}.webp" alt="" loading="lazy" decoding="async" onload="this.parentNode.classList.add('has-art')" onerror="this.remove()">`;}
+
+function cardHTML(g){
+  const on=state.fav.has(g.id);
+  const vars=`--g-bg:${g.bg};--g-ink:${g.ink};--g-acc:${g.acc}`;
+  return `<article class="card" style="${vars}">
+    <a class="banner${g.textInArt?' text-in-art':''}" href="games/${g.id}/" aria-label="${esc(g.name)}：開始遊戲">
+      <div class="ph" aria-hidden="true"><div class="ph-art" style="${g.artStyle||''}">${g.art}</div></div>
+      ${coverImg(g)}
+      <div class="grain" aria-hidden="true"></div>
+      <div class="txt" aria-hidden="true"><span class="t${g.name.length>5?' long':''}">${esc(g.name)}</span><span class="en">${esc(g.en)}</span><span class="tag">${esc(g.tag)}</span></div>
+    </a>
+    <button class="fav" type="button" data-fav="${g.id}" aria-pressed="${on}" aria-label="${on?'取消收藏':'收藏'}${esc(g.name)}">${heart}</button>
+    <div class="meta"><a class="name" href="games/${g.id}/" tabindex="-1">${esc(g.name)}</a><span class="kind">${esc(g.kind)}</span><a class="go" href="games/${g.id}/" tabindex="-1">開始遊戲${arrow}</a></div>
+    <p class="info">${g.players} · ${g.time}${g.online?' · 線上連線':''}</p>
+  </article>`;
+}
+
+function matches(g){
+  if(state.view==='fav'&&!state.fav.has(g.id))return false;
+  if(state.cat!=='全部'&&!g.cats.includes(state.cat))return false;
+  const q=state.q.trim().toLowerCase();
+  if(q){const hay=(g.name+g.en+g.tag+g.kind+g.cats.join('')+g.desc+(g.online?'線上連線':'')).toLowerCase();if(!q.split(/\s+/).every(w=>hay.includes(w)))return false;}
+  return true;
+}
+const pageSize=()=>matchMedia('(min-width:640px)').matches?6:4;
+
+function render(){
+  const list=GAMES.filter(matches);
+  const filtered=state.view==='fav'||state.cat!=='全部'||state.q.trim();
+  const limit=(!filtered&&!state.expanded)?pageSize():Infinity;
+  const shown=list.slice(0,limit);
+  let html=shown.map(cardHTML).join('');
+  if(!list.length){
+    html=state.view==='fav'&&!state.fav.size
+      ?'<div class="empty"><b>還沒有收藏</b>點封面右上角的愛心，常玩的遊戲就會出現在這裡。</div>'
+      :'<div class="empty"><b>找不到符合的遊戲</b>換個關鍵字或分類試試看。</div>';
+  }
+  $('#grid').innerHTML=html;
+  const more=$('#more');
+  more.hidden=list.length<=limit;
+  more.textContent=`查看全部 ${GAMES.length} 款遊戲 ↓`;
+  $('#count').innerHTML=`${state.view==='fav'?'我的收藏':'全部遊戲'}<em>${state.view==='fav'?state.fav.size:GAMES.length}</em>`;
+  document.querySelectorAll('[data-view]').forEach(b=>b.toggleAttribute('aria-current',b.dataset.view===state.view)||b.dataset.view===state.view&&b.setAttribute('aria-current','page'));
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat===state.cat));
+}
+
+$('#chips').innerHTML=['全部',...CATS].map(c=>`<button class="chip" type="button" data-cat="${c}" aria-pressed="false">${c}${c==='全部'?`<span>${GAMES.length}</span>`:''}</button>`).join('');
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;state.cat=b.dataset.cat;render();});
+$('#q').addEventListener('input',e=>{state.q=e.target.value;render();});
+$('#more').addEventListener('click',()=>{state.expanded=true;render();});
+$('#grid').addEventListener('click',e=>{
+  const b=e.target.closest('[data-fav]');if(!b)return;
+  const id=b.dataset.fav;state.fav.has(id)?state.fav.delete(id):state.fav.add(id);
+  store.set('lobby.fav',[...state.fav]);render();
+});
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{
+  state.view=b.dataset.view;history.replaceState(null,'',state.view==='fav'?'#fav':location.pathname+location.search);
+  render();scrollTo({top:0,behavior:'smooth'});
+}));
+$('#searchJump').addEventListener('click',()=>{$('#q').focus();$('#q').scrollIntoView({block:'center',behavior:'smooth'});});
+let lastPage=pageSize();addEventListener('resize',()=>{const p=pageSize();if(p!==lastPage){lastPage=p;render();}});
+
+/* 標語右側的遊戲盒（桌面版） */
+$('#boxes').innerHTML=[['proxy-war','left:6%;top:56px;width:62%;height:60px;transform:rotate(-1deg)'],['unsigned','left:2%;top:112px;width:64%;height:62px'],['blank-agents','left:64%;top:6px;width:34%;height:168px']].map(([id,pos])=>{
+  const g=GAMES.find(x=>x.id===id);
+  return `<div class="box" style="${pos};--g-bg:${g.bg};--g-ink:${g.ink}">${coverImg(g)}<b>${g.name}<small>${g.en.toUpperCase()}</small></b></div>`;
+}).join('');
+
+/* 說明 */
+const help=$('#help');
+document.querySelectorAll('[data-help]').forEach(b=>b.addEventListener('click',()=>help.showModal?help.showModal():help.setAttribute('open','')));
+help.addEventListener('click',e=>{if(e.target===help||e.target.closest('[data-close]'))help.close();});
+
+/* 安裝 */
 let deferred=null;
-const btn=document.getElementById('installBtn');
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;btn.hidden=false;});
-btn.addEventListener('click',async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice.catch(()=>{});deferred=null;btn.hidden=true;});
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-if(standalone){document.getElementById('installHelp').hidden=true;}
-addEventListener('appinstalled',()=>{btn.hidden=true;document.getElementById('installText').innerHTML='<b>已安裝。</b>之後從主畫面圖示打開就好。';});
+if(standalone)document.querySelectorAll('#installBtn,[data-install]').forEach(b=>b.hidden=true);
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;});
+document.querySelectorAll('#installBtn,[data-install]').forEach(b=>b.addEventListener('click',async()=>{
+  if(deferred){deferred.prompt();await deferred.userChoice.catch(()=>{});deferred=null;return;}
+  help.showModal?help.showModal():help.setAttribute('open','');
+  $('#installText').scrollIntoView({block:'center'});
+}));
+addEventListener('appinstalled',()=>{document.querySelectorAll('#installBtn,[data-install]').forEach(b=>b.hidden=true);$('#installText').textContent='已安裝。之後從主畫面圖示打開就好。';});
+
+render();
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>

@@ -27,6 +27,7 @@
 - `index.html`：遊戲大廳
 - `games/<id>/index.html`：每款遊戲各自是一個自足的 HTML 檔
 - `manifest.webmanifest`、`icons/`：PWA 安裝資訊
+- `covers/<id>.webp`：大廳封面圖（1536×640，12:5）。檔案存在就會蓋過程式畫的佔位圖，沒有就維持佔位圖，不用改程式。封面圖不放進 `PRECACHE`，第一次看過之後才會被快取
 - `sw.js`：離線快取。新增遊戲時把檔案加進 `PRECACHE`，並把 `VERSION` 加一
 - `.github/workflows/pages.yml`：推到 `main` 就自動部署到 GitHub Pages
 
