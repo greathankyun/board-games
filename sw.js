@@ -1,6 +1,6 @@
 // 桌遊大廳 service worker：先用快取、背景更新，讓遊戲離線也能玩。
 // 新增遊戲時把檔案加進 PRECACHE，並把 VERSION 加一。
-const VERSION = 'v11';
+const VERSION = 'v12';
 const CACHE = 'board-games-' + VERSION;
 const FONT_CACHE = 'board-games-fonts';
 const PRECACHE = [
@@ -30,7 +30,17 @@ const PRECACHE = [
   './games/cat-cafe/',
   './games/cat-cafe/index.html',
   './games/influencer/',
-  './games/influencer/index.html'
+  './games/influencer/index.html',
+  './games/pudu/',
+  './games/pudu/index.html',
+  './games/taipei-rent/',
+  './games/taipei-rent/index.html',
+  './games/magic-exam/',
+  './games/magic-exam/index.html',
+  './games/claw-master/',
+  './games/claw-master/index.html',
+  './games/time-pawn/',
+  './games/time-pawn/index.html'
 ];
 
 self.addEventListener('install', e => {
