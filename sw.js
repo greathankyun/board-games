@@ -43,6 +43,7 @@ const PRECACHE = [
   './games/time-pawn/index.html',
   './assets/table.js',
   './assets/net.js',
+  './assets/intro.js',
   './assets/ui.css',
   './assets/avatars/avatar-1.webp',
   './assets/avatars/avatar-2.webp',
