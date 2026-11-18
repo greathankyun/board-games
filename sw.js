@@ -1,6 +1,6 @@
 // 遊戲群島 Playlands service worker：先用快取、背景更新，讓遊戲離線也能玩。
 // 新增遊戲時把檔案加進 PRECACHE，並把 VERSION 加一。
-const VERSION = 'v18';
+const VERSION = 'v19';
 const CACHE = 'board-games-' + VERSION;
 const FONT_CACHE = 'board-games-fonts';
 const PRECACHE = [
@@ -43,6 +43,7 @@ const PRECACHE = [
   './games/time-pawn/index.html',
   './assets/table.js',
   './assets/net.js',
+  './assets/intro.js',
   './assets/ui.css',
   './assets/avatars/avatar-1.webp',
   './assets/avatars/avatar-2.webp',
