@@ -31,7 +31,7 @@
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' fill='none' stroke='%23D3C5AF' stroke-width='.7'%3E%3Cpath d='M0 .5H240M.5 0V240'/%3E%3Cpath d='M52 150q5-5 10 0t10 0M172 62q5-5 10 0t10 0' stroke='%23C9B9A2' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px))}
 a{color:inherit}
 button{font:inherit;color:inherit}
@@ -160,6 +160,65 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
 .sheet ul{padding-left:20px;margin:0}
 .sheet .close{float:right;background:none;border:1.5px solid var(--line);border-radius:4px;padding:3px 12px;cursor:pointer}
 
+/* ── 群島海圖：可以點的手繪群島地圖 ── */
+.atlas{margin:0 0 30px}
+.sec-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;margin:0 0 12px}
+.sec-head h2{margin:0;font-family:var(--f-serif);font-weight:900;font-size:22px;letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+.sec-head h2 svg{width:20px;height:20px;color:#8A6A45}
+.sec-head p{margin:0;font-size:13px;letter-spacing:.1em;color:var(--muted)}
+.sec-head .en{font-family:var(--f-latin);font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted)}
+.atlas-frame{position:relative;border:1.5px solid #8A6A45;border-radius:6px;padding:6px;background:#EADFCB;box-shadow:0 10px 26px -18px rgba(40,28,18,.6)}
+.atlas-frame::before{content:"";position:absolute;inset:3px;border:1px solid rgba(138,106,69,.45);border-radius:4px;pointer-events:none}
+.atlas-map svg{display:block;width:100%;height:auto;border-radius:3px}
+.atlas-map text{font-family:var(--f-serif)}
+.isle{cursor:pointer;outline:none}
+.isle .lift{transition:transform .25s ease}
+.isle:hover .lift,.isle:focus-visible .lift,.isle.on .lift{transform:translateY(-4px)}
+.isle .land{transition:fill .2s}
+.isle:hover .land,.isle.on .land{fill:#FFF8EA}
+.isle .ring{opacity:0;transition:opacity .2s}
+.isle:focus-visible .ring,.isle.on .ring{opacity:1}
+.isle .fav-mark{display:none}
+.isle.is-fav .fav-mark{display:inline}
+.isle.dim{opacity:.28}
+.isle.dim:hover,.isle.dim:focus-visible{opacity:.7}
+.isle-name{paint-order:stroke;stroke:#EADFCB;stroke-width:5px;stroke-linejoin:round}
+.ship{animation:bob 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes bob{50%{transform:translateY(-3px) rotate(-2deg)}}
+@media (prefers-reduced-motion:reduce){ .ship{animation:none} .isle .lift{transition:none} .isle:hover .lift,.isle:focus-visible .lift,.isle.on .lift{transform:none} }
+/* 島嶼介紹卡 */
+.isle-pop{position:absolute;z-index:30;width:min(360px,calc(100% - 24px));background:var(--paper);border:1.5px solid #8A6A45;border-radius:8px;padding:14px 14px 16px;box-shadow:0 18px 40px -18px rgba(30,27,24,.6)}
+.isle-pop .pop-top{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;font-family:var(--f-latin);font-size:11px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase}
+.isle-pop .pop-x{background:none;border:1.5px solid var(--line);border-radius:50%;width:32px;height:32px;display:grid;place-items:center;cursor:pointer;padding:0}
+.isle-pop .pop-x svg{width:14px;height:14px}
+.isle-pop .card .banner{outline:0;box-shadow:0 2px 0 rgba(30,27,24,.08),0 8px 18px -10px rgba(30,27,24,.45)}
+.isle-pop .card .isle-tag,.isle-pop .meta .go{display:none}
+.isle-pop .banner .tag{white-space:nowrap;font-size:11px;letter-spacing:.12em}
+.isle-pop .desc{margin:10px 0 12px;font-size:14px;line-height:1.7;color:#3B342D}
+.isle-pop .land-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:var(--accent-ink);border-radius:4px;padding:10px 16px;font-family:var(--f-serif);font-weight:900;font-size:17px;letter-spacing:.2em;text-decoration:none}
+.isle-pop .land-btn svg{width:14px;height:14px}
+@media (max-width:759px){
+  .isle-pop{position:fixed;left:12px;right:12px;width:auto;bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom,0px));max-height:calc(100vh - var(--nav-h) - 40px);overflow:auto}
+}
+
+/* ── 島嶼名錄：卡片沿著航線排成島鏈 ── */
+main{position:relative}
+.voyage{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:visible}
+.grid{position:relative;z-index:1}
+.grid .card{padding-top:35px}
+.grid .fav{top:43px}
+.isle-tag{position:absolute;top:0;left:0;right:0;height:18px;display:flex;align-items:center;gap:10px;margin:0;font-family:var(--f-latin);font-size:11px;letter-spacing:.2em;color:var(--muted);white-space:nowrap;overflow:hidden}
+.isle-tag b{font-family:var(--f-serif);font-weight:900;font-size:13px;letter-spacing:.14em;color:var(--accent)}
+.isle-tag::after{content:"";flex:1;min-width:12px;border-top:1px dashed var(--line);order:1}
+.isle-tag span{order:2}
+/* 封面外圍兩圈等深線，像海圖上的島岸 */
+.grid .banner{box-shadow:0 0 0 5px var(--bg),0 0 0 6px rgba(138,106,69,.42),0 10px 20px -10px rgba(30,27,24,.45);outline:1px dashed rgba(138,106,69,.42);outline-offset:11px}
+.grid .banner:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@media (hover:hover){
+  .grid .card:hover .banner,.grid .card:focus-within .banner{box-shadow:0 0 0 5px var(--bg),0 0 0 6px rgba(138,106,69,.6),0 18px 26px -14px rgba(30,27,24,.55)}
+}
+.grid{gap:44px 40px;padding:14px 12px 4px}
+
 /* 平板以上 */
 @media (min-width:640px){
   .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -195,6 +254,8 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
   .route-strip{display:flex}
   .bottom{display:none}
 }
+@media (min-width:640px) and (max-width:999px){ .grid>.card:nth-child(2n){margin-top:40px} }
+@media (min-width:1000px){ .grid>.card:nth-child(3n+2){margin-top:44px} }
 @media (max-width:999px){ :root{--nav-h:64px} .icon-btn{display:none} }
 @media (max-width:380px){ .install span{display:none} .install{padding:8px 11px} }
 
@@ -228,7 +289,7 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
       <span><b>遊戲群島</b><small>PLAYLANDS</small></span>
     </a>
     <nav class="tabs" aria-label="分頁">
-      <button type="button" data-view="hall" aria-current="page">遊戲館</button>
+      <button type="button" data-view="hall" aria-current="page">群島</button>
       <button type="button" data-view="fav">我的小島</button>
     </nav>
     <button class="icon-btn" id="searchJump" type="button" aria-label="搜尋遊戲"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l6 6"/></svg></button>
@@ -254,32 +315,44 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
   </section>
   <div class="route" aria-hidden="true"><svg><use href="#i-compass"/></svg></div>
 
+  <section class="atlas" aria-labelledby="atlasTitle">
+    <div class="sec-head"><h2 id="atlasTitle"><svg aria-hidden="true"><use href="#i-compass"/></svg>群島海圖</h2><span class="en">Chart of the Archipelago</span><p>點一座島，看看島上在玩什麼。</p></div>
+    <div class="atlas-frame">
+      <div class="atlas-map" id="atlas"></div>
+      <div class="isle-pop" id="islePop" role="dialog" aria-labelledby="popTitle" hidden></div>
+    </div>
+  </section>
+
+  <div class="sec-head"><h2>島嶼名錄</h2><span class="en">Island Register</span><p>沿著航線，一座一座登島。</p></div>
   <main>
+    <svg class="voyage" id="voyage" aria-hidden="true"></svg>
     <div class="grid" id="grid"></div>
     <button class="more" id="more" type="button" hidden></button>
   </main>
 
   <div class="route route-strip" aria-hidden="true"><svg><use href="#i-compass"/></svg></div>
   <section class="strip">
-    <p>隨時入席，離線也能玩。</p>
+    <p>隨時出航，離線也能登島。</p>
     <span class="sep"></span>
     <button class="ghost" type="button" data-install><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>安裝到主畫面</button>
-    <button class="ghost" type="button" data-help>遊戲說明</button>
+    <button class="ghost" type="button" data-help>航海指南</button>
   </section>
   <p class="foot">遊戲群島 Playlands · 所有遊戲皆為原創設計</p>
 </div>
 
 <nav class="bottom" aria-label="主選單">
-  <button type="button" data-view="hall" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5M3 16.5L12 21l9-4.5"/></svg>遊戲館</button>
+  <button type="button" data-view="hall" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3.5 16c1.6-4.6 4.6-7.5 8.5-7.5s6.9 2.9 8.5 7.5z"/><path d="M13 8.5V3l4 1.4-4 1.4"/><path d="M2 20c1.7-1.2 3.3-1.2 5 0s3.3 1.2 5 0 3.3-1.2 5 0 3.3 1.2 5 0"/></svg>群島</button>
   <button type="button" data-view="fav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7.5-4.6-9-9.3C2 7.4 4.2 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.1 0 5.3 2.9 4.3 6.2-1.5 4.7-9 9.3-9 9.3z"/></svg>我的小島</button>
-  <button type="button" data-help><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 3 5v13.5c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5zM12 6.5V20"/></svg>說明</button>
+  <button type="button" data-help><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 3 5v13.5c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5zM12 6.5V20"/></svg>指南</button>
 </nav>
 
 <dialog id="help">
   <div class="sheet">
     <button class="close" type="button" data-close>關閉</button>
-    <h2>遊戲說明</h2>
-    <p>這裡每一款都是原創桌遊，規則都寫在遊戲裡，開局前可以先看。</p>
+    <h2>航海指南</h2>
+    <p>群島上的每一座島都是一款原創桌遊，規則都寫在島上，登島後開局前可以先看。</p>
+    <h3>群島海圖</h3>
+    <p>點海圖上的島可以看介紹，再按「登島」開始玩。上方選了分類或搜尋時，不符合的島會變淡。</p>
     <h3>怎麼玩</h3>
     <ul>
       <li><b>AI 對手：</b>人不夠時讓電腦補位，一個人也能開局。</li>
@@ -373,6 +446,7 @@ function cardHTML(g){
   const on=state.fav.has(g.id);
   const vars=`--g-bg:${g.bg};--g-ink:${g.ink};--g-acc:${g.acc}`;
   return `<article class="card" style="${vars}">
+    <p class="isle-tag" aria-hidden="true"><b>第 ${isleNo(g)} 島</b><span>${coords(g)}</span></p>
     <a class="banner${g.textInArt?' text-in-art':''}" href="games/${g.id}/" aria-label="${esc(g.name)}：開始遊戲">
       <div class="ph" aria-hidden="true"><div class="ph-art" style="${g.artStyle||''}">${g.art}</div></div>
       ${coverImg(g)}
@@ -408,10 +482,11 @@ function render(){
   $('#grid').innerHTML=html;
   const more=$('#more');
   more.hidden=list.length<=limit;
-  more.textContent=`查看全部 ${GAMES.length} 款遊戲 ↓`;
+  more.textContent=`探索全部 ${GAMES.length} 座島 ↓`;
   $('#count').innerHTML=`<svg aria-hidden="true"><use href="#i-compass"/></svg>${state.view==='fav'?'我的小島':'群島總覽'}<em>${state.view==='fav'?state.fav.size:GAMES.length}<small>座島</small></em>`;
   document.querySelectorAll('[data-view]').forEach(b=>b.toggleAttribute('aria-current',b.dataset.view===state.view)||b.dataset.view===state.view&&b.setAttribute('aria-current','page'));
   document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat===state.cat));
+  if(typeof syncAtlas==='function'){syncAtlas();requestAnimationFrame(drawVoyage);}
 }
 
 $('#chips').innerHTML=['全部',...CATS].map(c=>`<button class="chip" type="button" data-cat="${c}" aria-pressed="false">${c}${c==='全部'?`<span>${GAMES.length}</span>`:''}</button>`).join('');
@@ -428,7 +503,172 @@ document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',(
   render();scrollTo({top:0,behavior:'smooth'});
 }));
 $('#searchJump').addEventListener('click',()=>{$('#q').focus();$('#q').scrollIntoView({block:'center',behavior:'smooth'});});
-let lastPage=pageSize();addEventListener('resize',()=>{const p=pageSize();if(p!==lastPage){lastPage=p;render();}});
+let lastPage=pageSize();addEventListener('resize',()=>{const p=pageSize();if(p!==lastPage){lastPage=p;render();}renderAtlas();drawVoyage();});
+
+/* ── 群島海圖 ──
+   每款遊戲是一座島。島形用遊戲 id 當種子隨機生成，所以每次打開都長一樣。
+   寬螢幕排 6×3、手機排 3×6，空出來的格子放圖名框、羅盤和海浪。 */
+const SEP='#8A6A45',LAND='#F6EEDD',SHADE='#D8C8AC',SEA='#EADFCB';
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let s=seed||1;return()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296}}
+const f1=n=>n.toFixed(1);
+function blobPts(R,rand){
+  const n=11,st=.8+rand()*.4,rot=rand()*Math.PI,pts=[];
+  for(let i=0;i<n;i++){const a=i/n*Math.PI*2,r=R*(.74+rand()*.34),x=Math.cos(a)*r*st,y=Math.sin(a)*r/st;
+    pts.push([x*Math.cos(rot)-y*Math.sin(rot),x*Math.sin(rot)+y*Math.cos(rot)]);}
+  return pts;
+}
+function smooth(pts,k){
+  const P=pts.map(([x,y])=>[x*k,y*k]),n=P.length;let d=`M${f1(P[0][0])} ${f1(P[0][1])}`;
+  for(let i=0;i<n;i++){const a=P[(i-1+n)%n],b=P[i],c=P[(i+1)%n],e=P[(i+2)%n];
+    d+=`C${f1(b[0]+(c[0]-a[0])/6)} ${f1(b[1]+(c[1]-a[1])/6)} ${f1(c[0]-(e[0]-b[0])/6)} ${f1(c[1]-(e[1]-b[1])/6)} ${f1(c[0])} ${f1(c[1])}`;}
+  return d+'Z';
+}
+function coords(g){const r=rng(hash(g.id+'@'));const la=21+r()*4.6,lo=119.3+r()*2.9;
+  const dm=v=>`${Math.floor(v)}°${String(Math.floor(v%1*60)).padStart(2,'0')}′`;return `${dm(la)}N ${dm(lo)}E`;}
+const isleNo=g=>String(GAMES.indexOf(g)+1).padStart(2,'0');
+
+const LAYOUTS={
+  wide:{W:1200,H:600,cols:6,rows:3,empty:['0,0','5,2','3,1'],R:[46,60],name:19,num:11,jx:34,jy:16},
+  tall:{W:390,H:780,cols:3,rows:6,empty:['0,0','1,3','2,5'],R:[32,39],name:14,num:9,jx:7,jy:8}
+};
+const layoutKey=()=>matchMedia('(min-width:760px)').matches?'wide':'tall';
+
+function waveMark(x,y,s){return `<path d="M${f1(x)} ${f1(y)}q${s} -${s} ${s*2} 0t${s*2} 0" />`;}
+function compassRose(cx,cy,r){
+  let star='';for(let i=0;i<8;i++){const a=i*Math.PI/4,big=i%2===0,L=big?r:r*.62,w=big?r*.16:r*.11;
+    const tip=[Math.sin(a)*L,-Math.cos(a)*L],l=[Math.sin(a-Math.PI/2)*w,-Math.cos(a-Math.PI/2)*w],rt=[-l[0],-l[1]];
+    star+=`<path d="M0 0L${f1(l[0])} ${f1(l[1])}L${f1(tip[0])} ${f1(tip[1])}Z" fill="${big?'#7B2A25':SEP}" opacity="${big?.85:.6}"/><path d="M0 0L${f1(rt[0])} ${f1(rt[1])}L${f1(tip[0])} ${f1(tip[1])}Z" fill="${LAND}" stroke="${SEP}" stroke-width=".8"/>`;}
+  return `<g transform="translate(${cx} ${cy})" aria-hidden="true"><circle r="${r*1.08}" fill="none" stroke="${SEP}" stroke-width="1"/><circle r="${r*.9}" fill="none" stroke="${SEP}" stroke-width=".6" stroke-dasharray="2 4"/>${star}<circle r="${r*.07}" fill="${SEP}"/><text y="${-r*1.22}" text-anchor="middle" font-size="${Math.round(r*.32)}" font-weight="900" fill="#7B2A25" font-family="Georgia,serif">N</text></g>`;
+}
+
+function atlasSVG(key){
+  const L=LAYOUTS[key],cw=L.W/L.cols,ch=L.H/L.rows;
+  // 蛇行排列：第一列由左到右、第二列由右到左…，跳過空格
+  const cells=[];for(let r=0;r<L.rows;r++){const row=[];for(let c=0;c<L.cols;c++)if(!L.empty.includes(c+','+r))row.push([c,r]);cells.push(...(r%2?row.reverse():row));}
+  const isles=GAMES.map((g,i)=>{const [c,r]=cells[i],rand=rng(hash(g.id));
+    const R=L.R[0]+rand()*(L.R[1]-L.R[0]);
+    return {g,R,rand,x:(c+.5)*cw+(rand()-.5)*2*L.jx,y:(r+.5)*ch-L.name*.55+(rand()-.5)*2*L.jy};});
+  let s=`<svg viewBox="0 0 ${L.W} ${L.H}" role="group" aria-label="群島海圖，共 ${GAMES.length} 座島">`;
+  s+=`<rect width="${L.W}" height="${L.H}" fill="${SEA}"/>`;
+  // 經緯格
+  s+=`<g stroke="#CDBB9F" stroke-width=".8" fill="none" aria-hidden="true">`;
+  const gx=key==='wide'?120:78,gy=key==='wide'?100:104;
+  for(let x=gx;x<L.W;x+=gx)s+=`<path d="M${x} 0V${L.H}"/>`;
+  for(let y=gy;y<L.H;y+=gy)s+=`<path d="M0 ${y}H${L.W}"/>`;
+  s+=`</g><g font-family="Georgia,serif" font-size="${key==='wide'?10:8}" fill="#A08C72" letter-spacing="1" aria-hidden="true">`;
+  for(let y=gy,i=0;y<L.H;y+=gy,i++)s+=`<text x="5" y="${y-4}">${26-i}°N</text>`;
+  s+=`</g>`;
+  // 海浪
+  const wr=rng(hash('waves'+key));s+=`<g stroke="#B4A084" stroke-width="1.1" fill="none" stroke-linecap="round" aria-hidden="true">`;
+  for(let k=0;k<(key==='wide'?90:60);k++){const x=wr()*L.W,y=wr()*L.H;
+    if(isles.some(o=>Math.hypot(o.x-x,(o.y-y)*1.1)<o.R+(key==='wide'?44:30)))continue;
+    if(key==='wide'&&x<230&&y<190)continue;s+=waveMark(x,y,key==='wide'?5:4);}
+  s+=`</g>`;
+  // 航線
+  const pts=isles.map(o=>[o.x,o.y]);const start=key==='wide'?[150,215]:[cw*.5,ch*.55];
+  let d=`M${f1(start[0])} ${f1(start[1])}`;let prev=start;
+  pts.forEach((p,i)=>{const mx=(prev[0]+p[0])/2,my=(prev[1]+p[1])/2,dx=p[0]-prev[0],dy=p[1]-prev[1],bend=(i%2?1:-1)*.18;
+    d+=`Q${f1(mx-dy*bend)} ${f1(my+dx*bend)} ${f1(p[0])} ${f1(p[1])}`;prev=p;});
+  s+=`<path d="${d}" fill="none" stroke="${SEP}" stroke-width="1.6" stroke-dasharray="7 7" stroke-linecap="round" opacity=".6" aria-hidden="true"/>`;
+  // 帆船（航線起點）
+  const sc=key==='wide'?1.25:.95;
+  s+=`<g transform="translate(${f1(start[0])} ${f1(start[1])}) scale(${sc})" aria-hidden="true"><g class="ship"><path d="M-16 6h32l-6 8h-20z" fill="#7B2A25"/><path d="M0 6V-22" stroke="${SEP}" stroke-width="1.6"/><path d="M2 -20l14 20H2z" fill="${LAND}" stroke="${SEP}" stroke-width="1.2"/><path d="M-2 -16L-13 2H-2z" fill="${LAND}" stroke="${SEP}" stroke-width="1.2"/><path d="M0 -22l7 3-7 3" fill="#B07A3A"/></g></g>`;
+  // 圖名框（寬版）與羅盤、比例尺
+  if(key==='wide'){
+    s+=`<g transform="translate(26 26)" aria-hidden="true"><rect width="196" height="118" fill="${LAND}" stroke="${SEP}" stroke-width="1.4"/><rect x="5" y="5" width="186" height="108" fill="none" stroke="${SEP}" stroke-width=".7"/>
+      <text x="98" y="36" text-anchor="middle" font-family="Georgia,serif" font-size="11" letter-spacing="5" fill="${SEP}">PLAYLANDS</text>
+      <text x="98" y="70" text-anchor="middle" font-size="26" font-weight="900" letter-spacing="3" fill="#1E1B18">遊戲群島</text>
+      <path d="M40 82h116" stroke="${SEP}" stroke-width=".7"/>
+      <text x="98" y="100" text-anchor="middle" font-size="12" letter-spacing="3" fill="#6B6258">全圖・十五島</text></g>`;
+    s+=compassRose(5.5*cw,2.5*ch-6,58);
+    s+=`<g transform="translate(${3*cw+40} ${2*ch-34})" font-family="Georgia,serif" font-size="10" fill="${SEP}" aria-hidden="true"><path d="M0 0h120" stroke="${SEP}" stroke-width="1"/><path d="M0 0h30M60 0h30" stroke="${SEP}" stroke-width="4"/><path d="M0 -5v10M120 -5v10" stroke="${SEP}"/><text y="-9">0</text><text x="112" y="-9">100 浬</text></g>`;
+  }else{
+    s+=compassRose(2.5*cw,5.5*ch-4,40);
+  }
+  // 島
+  isles.forEach(({g,R,rand,x,y})=>{
+    const p=blobPts(R,rand),no=isleNo(g);
+    const m1=[(rand()-.6)*R*.5,(rand()-.4)*R*.35],m2=[m1[0]+R*.32,m1[1]+R*.12];
+    const mtn=([mx,my],k)=>`<path d="M${f1(mx-9*k)} ${f1(my+5*k)}L${f1(mx)} ${f1(my-7*k)}L${f1(mx+9*k)} ${f1(my+5*k)}" fill="none" stroke="${SEP}" stroke-width="1.3" stroke-linejoin="round"/><path d="M${f1(mx)} ${f1(my-7*k)}L${f1(mx+4*k)} ${f1(my+5*k)}" stroke="${SEP}" stroke-width=".8"/>`;
+    const k=R/55,fx=R*.28,fy=-R*.42;
+    s+=`<g class="isle" data-isle="${g.id}" tabindex="0" role="button" aria-label="第 ${no} 島 ${esc(g.name)}，${esc(g.kind)}，${g.players}。看介紹" transform="translate(${f1(x)} ${f1(y)})"><g class="lift">
+      <path d="${smooth(p,1.32)}" fill="none" stroke="${SEP}" stroke-width=".8" stroke-dasharray="3 4" opacity=".55"/>
+      <path d="${smooth(p,1.15)}" fill="none" stroke="${SEP}" stroke-width=".8" opacity=".5"/>
+      <path class="ring" d="${smooth(p,1.5)}" fill="none" stroke="#7B2A25" stroke-width="2" stroke-dasharray="5 4"/>
+      <path d="${smooth(p,1)}" transform="translate(3 4)" fill="${SHADE}"/>
+      <path class="land" d="${smooth(p,1)}" fill="${LAND}" stroke="${SEP}" stroke-width="1.7"/>
+      <path d="${smooth(p,.82)}" fill="${g.bg}" opacity=".13"/>
+      <circle cx="${f1(m1[0]-R*.12)}" cy="${f1(m1[1]+R*.42)}" r="${f1(2.6*k)}" fill="#7E8B5E" opacity=".75"/><circle cx="${f1(m1[0]+R*.02)}" cy="${f1(m1[1]+R*.5)}" r="${f1(2.2*k)}" fill="#7E8B5E" opacity=".65"/>
+      ${mtn(m1,k*1.1)}${mtn(m2,k*.85)}
+      <path d="M${f1(fx)} ${f1(fy)}v${f1(-R*.5)}" stroke="#3B342D" stroke-width="1.4"/>
+      <path d="M${f1(fx)} ${f1(fy-R*.5)}l${f1(R*.34)} ${f1(R*.1)}-${f1(R*.34)} ${f1(R*.12)}z" fill="${g.bg}" stroke="#3B342D" stroke-width=".9"/>
+      <g class="fav-mark" transform="translate(${f1(-R*.62)} ${f1(-R*.5)}) scale(${f1(k*.8)})"><path d="M0 7s-8-4.6-9-9.3C-10-5.6-7.8-8.5-4.7-8.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.1 0 5.3 2.9 4.3 6.2C8 2.4 0 7 0 7z" fill="#7B2A25" stroke="${LAND}" stroke-width="1.5"/></g>
+      <g transform="translate(${f1(-R*.86)} ${f1(R*.42)})"><circle r="${f1(L.num*.95)}" fill="${LAND}" stroke="${SEP}" stroke-width="1"/><text y="${f1(L.num*.36)}" text-anchor="middle" font-family="Georgia,serif" font-size="${L.num}" fill="#5A4A36">${no}</text></g>
+      <text class="isle-name" y="${f1(R*1.0+L.name+4)}" text-anchor="middle" font-size="${L.name}" font-weight="900" letter-spacing="1.5" fill="#1E1B18">${esc(g.name)}</text>
+    </g></g>`;
+  });
+  return s+'</svg>';
+}
+
+let atlasKey='';
+function renderAtlas(force){
+  const key=layoutKey();if(!force&&key===atlasKey)return;atlasKey=key;
+  closePop(false);$('#atlas').innerHTML=atlasSVG(key);syncAtlas();
+}
+function syncAtlas(){
+  document.querySelectorAll('.isle').forEach(el=>{const g=GAMES.find(x=>x.id===el.dataset.isle);
+    el.classList.toggle('dim',!matches(g));el.classList.toggle('is-fav',state.fav.has(g.id));});
+}
+
+/* 點島 → 島嶼介紹卡 */
+const pop=$('#islePop');let popFrom=null;
+const xIcon='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg>';
+function openPop(el){
+  const g=GAMES.find(x=>x.id===el.dataset.isle);
+  document.querySelectorAll('.isle.on').forEach(x=>x.classList.remove('on'));el.classList.add('on');popFrom=el;
+  pop.innerHTML=`<div class="pop-top"><span id="popTitle">第 ${isleNo(g)} 島 · ${coords(g)}</span><button class="pop-x" type="button" data-pop-close aria-label="關閉介紹">${xIcon}</button></div>
+    ${cardHTML(g)}<p class="desc">${esc(g.desc)}</p><a class="land-btn" href="games/${g.id}/">登島${arrow}</a>`;
+  pop.hidden=false;
+  if(layoutKey()==='wide'){
+    const fr=$('.atlas-frame').getBoundingClientRect(),r=el.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight;
+    let left=r.right-fr.left+14;if(left+pw>fr.width-8)left=r.left-fr.left-pw-14;left=Math.max(8,left);
+    let top=r.top-fr.top+r.height/2-ph/2;top=Math.max(8,Math.min(top,fr.height-ph-8));
+    pop.style.left=left+'px';pop.style.top=top+'px';
+  }else{pop.style.left='';pop.style.top='';}
+  pop.querySelector('[data-pop-close]').focus({preventScroll:true});
+}
+function closePop(refocus=true){
+  if(pop.hidden)return;pop.hidden=true;document.querySelectorAll('.isle.on').forEach(x=>x.classList.remove('on'));
+  if(refocus&&popFrom)popFrom.focus({preventScroll:true});popFrom=null;
+}
+$('#atlas').addEventListener('click',e=>{const el=e.target.closest('.isle');if(el){e.stopPropagation();el===popFrom&&!pop.hidden?closePop():openPop(el);}});
+$('#atlas').addEventListener('keydown',e=>{const el=e.target.closest('.isle');if(el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openPop(el);}});
+pop.addEventListener('click',e=>{
+  if(e.target.closest('[data-pop-close]')){closePop();return;}
+  const b=e.target.closest('[data-fav]');if(!b)return;
+  const id=b.dataset.fav;state.fav.has(id)?state.fav.delete(id):state.fav.add(id);store.set('lobby.fav',[...state.fav]);
+  const on=state.fav.has(id);b.setAttribute('aria-pressed',on);b.setAttribute('aria-label',`${on?'從我的小島移除':'收進我的小島'}：${GAMES.find(x=>x.id===id).name}`);render();
+});
+document.addEventListener('click',e=>{if(!pop.hidden&&!pop.contains(e.target)&&!e.target.closest('.isle'))closePop(false);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!pop.hidden)closePop();});
+
+/* 名錄的航線：串起畫面上每張卡片的封面中心，畫在卡片後面，只在空隙露出來 */
+function drawVoyage(){
+  const svg=$('#voyage'),main=svg.parentNode,mr=main.getBoundingClientRect();
+  const bs=[...document.querySelectorAll('#grid .banner')].map(b=>b.getBoundingClientRect());
+  svg.setAttribute('viewBox',`0 0 ${f1(mr.width)} ${f1(mr.height)}`);
+  if(bs.length<2){svg.innerHTML='';return;}
+  const single=bs.every(b=>Math.abs(b.left-bs[0].left)<2);
+  const P=bs.map((b,i)=>[b.left-mr.left+b.width*(single?(i%2?.72:.28):.5),b.top-mr.top+b.height*.5]);
+  let d=`M${f1(P[0][0])} ${f1(P[0][1])}`;
+  for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i],my=(a[1]+b[1])/2;
+    d+=Math.abs(a[1]-b[1])<40?`Q${f1((a[0]+b[0])/2)} ${f1(Math.max(a[1],b[1])+bs[0].height*.75)} ${f1(b[0])} ${f1(b[1])}`:`C${f1(a[0])} ${f1(my)} ${f1(b[0])} ${f1(my)} ${f1(b[0])} ${f1(b[1])}`;}
+  svg.innerHTML=`<path d="${d}" fill="none" stroke="${SEP}" stroke-width="1.6" stroke-dasharray="7 7" stroke-linecap="round" opacity=".55"/>`;
+}
+
+renderAtlas(true);render();
+if(document.fonts)document.fonts.ready.then(drawVoyage);
 
 /* 標語右側的遊戲盒（桌面版） */
 $('#boxes').innerHTML='<img class="hero-art" src="covers/hero.webp" alt="" onload="this.parentNode.classList.add(\'has-hero\')" onerror="this.remove()">'+[['proxy-war','left:8%;top:48px;width:56%;height:58px;--d:12px;padding-bottom:6px',''],['unsigned','left:3%;top:120px;width:60%;height:58px;--d:12px',''],['blank-agents','left:65%;top:14px;width:32%;height:164px;--d:16px','tall']].map(([id,pos,cls])=>{
