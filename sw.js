@@ -1,6 +1,6 @@
 // 遊戲群島 Playlands service worker：先用快取、背景更新，讓遊戲離線也能玩。
 // 新增遊戲時把檔案加進 PRECACHE，並把 VERSION 加一。
-const VERSION = 'v20';
+const VERSION = 'v21';
 const CACHE = 'board-games-' + VERSION;
 const FONT_CACHE = 'board-games-fonts';
 const PRECACHE = [
@@ -154,7 +154,7 @@ const PRECACHE = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE.map(u => new Request(u, {cache: 'reload'})))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -187,6 +187,15 @@ self.addEventListener('fetch', e => {
     e.respondWith(caches.open(CACHE).then(async c => {
       try { const res = await fetch(req); if (res.ok) c.put(req, res.clone()); return res; }
       catch (err) { return (await c.match(req, {ignoreSearch: true})) || (await c.match('./index.html')) || Response.error(); }
+    }));
+    return;
+  }
+
+  // 程式與樣式（.js/.css）：網路優先，避免新頁面配到舊的樣式或程式；離線才用快取
+  if (/\.(js|css)$/.test(url.pathname)) {
+    e.respondWith(caches.open(CACHE).then(async c => {
+      try { const res = await fetch(req, {cache: 'no-cache'}); if (res.ok) c.put(req, res.clone()); return res; }
+      catch (err) { return (await c.match(req, {ignoreSearch: true})) || Response.error(); }
     }));
     return;
   }
