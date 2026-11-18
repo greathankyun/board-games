@@ -233,7 +233,7 @@ const NET={
     for(let i=this.joins.length+1;i<n;i++)rows.push(`<div class="seat">${avatar(i)}<b style="color:var(--muted)">${GAME.aiNames[i%GAME.aiNames.length]}（AI 補位）</b><span class="tag">AI</span></div>`);
     const ks=[];for(let k=GAME.min;k<=GAME.max;k++)ks.push(k);
     const share=navigator.share?`<button class="btn" data-m="share">傳房號給朋友</button>`:'';
-    openModal(`<h2>線上房間已開好</h2><p class="sub">請朋友打開桌遊大廳 →《${esc(GAME.name)}》→「加入房間」，輸入下面的房號。${GAME.secretHint||''}</p>
+    openModal(`<h2>線上房間已開好</h2><p class="sub">請朋友打開遊戲群島 →《${esc(GAME.name)}》→「加入房間」，輸入下面的房號。${GAME.secretHint||''}</p>
       <div class="roomcode num" aria-label="房號">${this.code.split('').map(d=>`<span>${d}</span>`).join('')}</div>
       <div class="field"><span>總人數（空位由 AI 補上）</span><div class="seg">${ks.map(k=>`<button data-m="ns:${k}" class="${k===n?'on':''}" ${k<min?'disabled':''}>${k} 人</button>`).join('')}</div></div>
       <div class="seats">${rows.join('')}</div>

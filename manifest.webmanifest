@@ -1,7 +1,7 @@
 {
-  "name": "桌遊大廳",
-  "short_name": "桌遊大廳",
-  "description": "原創策略桌遊合集，可離線遊玩，支援 AI 對手與同機多人。",
+  "name": "遊戲群島 Playlands",
+  "short_name": "遊戲群島",
+  "description": "遊戲群島 Playlands：原創桌遊合集，每款遊戲都是一座島。可離線遊玩，支援 AI 對手與同機多人。",
   "lang": "zh-Hant",
   "start_url": "./",
   "scope": "./",

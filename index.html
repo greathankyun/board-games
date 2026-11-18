@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>桌遊大廳</title>
-<meta name="description" content="原創桌遊合集，可安裝到手機主畫面、離線遊玩，支援 AI 對手、同機多人與線上連線。">
+<title>遊戲群島 Playlands</title>
+<meta name="description" content="遊戲群島 Playlands：原創桌遊合集，每款遊戲都是一座島。可安裝到手機主畫面、離線遊玩，支援 AI 對手、同機多人與線上連線。">
 <meta name="theme-color" content="#F1EADF">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="桌遊大廳">
+<meta name="apple-mobile-web-app-title" content="遊戲群島">
+<meta name="application-name" content="遊戲群島">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@500;700&display=swap">
@@ -52,18 +53,31 @@ button{font:inherit;color:inherit}
 .install svg{width:16px;height:16px}
 
 /* 標語 */
-.hero{display:grid;gap:18px;align-items:center;padding:20px 0 6px}
-.eyebrow{display:flex;white-space:nowrap;align-items:center;gap:18px;margin:0;font-family:var(--f-latin);font-size:clamp(9px,2.5vw,11px);letter-spacing:clamp(.12em,.6vw,.32em);color:var(--muted);text-transform:uppercase}
-.eyebrow::after{content:"";width:70px;height:1px;background:var(--line)}
+.hero{position:relative;isolation:isolate;display:grid;gap:18px;align-items:center;padding:20px 0 6px}
+.hero>*{position:relative;z-index:1}
+/* 極淡的復古海圖：經緯格、虛線航線、小羅盤（靜態，不動畫，不另外載檔） */
+.hero::before{content:"";position:absolute;z-index:0;inset:4px -16px 0;pointer-events:none;opacity:.55;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='760' height='260' viewBox='0 0 760 260' fill='none' stroke='%23C9B9A2'%3E%3Cg stroke-width='.8'%3E%3Cpath d='M0 40H760M0 100H760M0 160H760M0 220H760'/%3E%3Cpath d='M60 0Q48 130 60 260M190 0Q182 130 190 260M320 0V260M450 0Q458 130 450 260M580 0Q592 130 580 260M710 0Q726 130 710 260'/%3E%3C/g%3E%3Cpath d='M28 214C130 190 170 120 280 128S440 196 540 150 650 66 744 52' stroke-width='1.4' stroke-dasharray='6 7' stroke-linecap='round'/%3E%3Cpath d='M276 122l8 8M284 122l-8 8M736 46l8 8M744 46l-8 8' stroke-width='1.4' stroke-linecap='round'/%3E%3Cg transform='translate(628 172)' stroke-width='1'%3E%3Ccircle r='30'/%3E%3Ccircle r='24' stroke-dasharray='2 4'/%3E%3Cpath d='M0-40V40M-40 0H40'/%3E%3Cpath d='M0-30L6 0 0 30-6 0Z' fill='%23D7C8B3'/%3E%3Cpath d='M-30 0L0-6 30 0 0 6Z'/%3E%3C/g%3E%3C/svg%3E") left top/760px 260px no-repeat;
+  -webkit-mask-image:radial-gradient(ellipse 70% 75% at 40% 50%,#000 35%,transparent 100%);mask-image:radial-gradient(ellipse 70% 75% at 40% 50%,#000 35%,transparent 100%)}
+.eyebrow{display:flex;white-space:nowrap;align-items:center;gap:clamp(10px,3vw,18px);margin:0;font-family:var(--f-latin);font-size:clamp(8px,2.45vw,11px);letter-spacing:clamp(.08em,.45vw,.32em);color:var(--muted);text-transform:uppercase}
+.eyebrow::after{content:"";flex:0 1 70px;min-width:0;height:1px;background:var(--line)}
 .hero h1{font-family:var(--f-serif);font-weight:900;font-size:clamp(30px,7.6vw,52px);letter-spacing:.06em;line-height:1.25;margin:10px 0 6px}
 .hero p.sub{margin:0;letter-spacing:.18em;font-size:clamp(14px,3.6vw,17px)}
-.hero .sub .long{display:none}
+.hero .sub .long{display:block}
 .boxes{display:none;position:relative;height:190px}
 
 /* 分類與搜尋 */
-.toolbar{display:grid;gap:14px;padding:16px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.toolbar{display:grid;gap:14px;padding:16px 0 18px}
+/* 區塊分隔：細線＋虛線航線，中間一枚小羅盤 */
+.route{display:flex;align-items:center;gap:10px;margin:0 0 22px;color:#8A6A45}
+.route::before{content:"";flex:1;height:1px;background:var(--line)}
+.route::after{content:"";flex:1;height:0;border-top:1.5px dashed var(--line)}
+.route svg{width:16px;height:16px;flex:none}
+.route-strip{display:none;margin:30px 0 0}
 .count{display:none;font-family:var(--f-serif);font-weight:900;font-size:20px;letter-spacing:.06em;white-space:nowrap}
+.count svg{width:18px;height:18px;vertical-align:-2px;margin-right:8px;color:#8A6A45}
 .count em{font-style:normal;color:var(--accent);margin-left:10px}
+.count em small{font-family:var(--f-body);font-weight:700;font-size:13px;letter-spacing:.12em;color:var(--muted);margin-left:5px}
 .chips{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;min-width:76px;border:1.5px solid var(--ink);background:transparent;border-radius:999px;padding:6px 18px;font-weight:700;letter-spacing:.12em;cursor:pointer}
@@ -93,9 +107,23 @@ button{font:inherit;color:inherit}
 .banner .en{font-family:var(--f-latin);font-size:clamp(8px,2.3vw,11px);letter-spacing:.28em;text-transform:uppercase;margin-top:8px;opacity:.9}
 .banner .tag{margin-top:auto;font-size:clamp(10px,2.8vw,13px);letter-spacing:.2em;opacity:.92}
 .banner.text-in-art .txt{display:none}
-.fav{position:absolute;right:8px;top:8px;z-index:5;width:40px;height:40px;display:grid;place-items:center;background:none;border:0;cursor:pointer;color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
-.fav svg{width:26px;height:26px}
-.fav[aria-pressed="true"] path{fill:#C8432F;stroke:#fff}
+/* 收藏鈕：半透明米白小圓鈕，任何封面上都看得見，且不壓到左側標題 */
+.fav{position:absolute;right:8px;top:8px;z-index:5;width:36px;height:36px;display:grid;place-items:center;padding:0;border-radius:50%;cursor:pointer;
+  background:rgba(247,242,233,.86);border:1px solid rgba(30,27,24,.18);color:var(--ink);box-shadow:0 1px 3px rgba(30,27,24,.25);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);transition:transform .25s ease,background-color .2s ease}
+.fav svg{width:20px;height:20px;margin-top:1px}
+.fav:hover{background:rgba(247,242,233,.97)}
+.fav[aria-pressed="true"] path{fill:var(--accent);stroke:var(--accent)}
+/* 卡片 hover：輕微上浮＋柔和陰影 */
+.banner{transition:transform .25s ease,box-shadow .25s ease}
+@media (hover:hover){
+  .card:hover .banner,.card:focus-within .banner{transform:translateY(-3px);box-shadow:0 2px 0 rgba(30,27,24,.06),0 16px 26px -14px rgba(30,27,24,.55)}
+  .card:hover .fav,.card:focus-within .fav{transform:translateY(-3px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .banner,.fav{transition:none}
+  .card:hover .banner,.card:focus-within .banner,.card:hover .fav,.card:focus-within .fav{transform:none}
+}
 .meta{display:flex;align-items:center;gap:12px;padding-top:9px;min-width:0}
 .meta a.name{font-family:var(--f-serif);font-weight:900;font-size:20px;letter-spacing:.04em;text-decoration:none;white-space:nowrap}
 .meta .kind{font-weight:700;font-size:14px;letter-spacing:.14em;color:#3B342D;border-left:1.5px solid var(--ink);padding-left:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -107,7 +135,7 @@ button{font:inherit;color:inherit}
 
 .more{display:block;width:100%;margin:26px 0 0;padding:11px;border:1.5px solid var(--accent);border-radius:6px;background:transparent;color:var(--accent);font-family:var(--f-serif);font-weight:900;font-size:19px;letter-spacing:.12em;cursor:pointer}
 
-.strip{display:none;align-items:center;gap:22px;margin-top:30px;padding:18px 0 30px;border-top:1px solid var(--line)}
+.strip{display:none;align-items:center;gap:22px;padding:18px 0 30px}
 .strip p{margin:0;font-family:var(--f-serif);font-weight:900;font-size:18px;letter-spacing:.1em}
 .strip .ghost{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:4px;background:transparent;padding:5px 16px;letter-spacing:.1em;cursor:pointer}
 .strip .ghost svg{width:15px;height:15px}
@@ -149,6 +177,7 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
   .icon-btn{display:block}
   .hero{grid-template-columns:1fr 420px;padding:26px 24px 10px}
   .hero .sub .long{display:inline}
+  .hero::before{inset:0 auto 0 0;width:calc(100% - 400px)}
   .boxes{display:block}
   .toolbar{grid-template-columns:auto 1fr minmax(220px,320px);align-items:center;gap:0;padding:14px 24px}
   .count{order:1;display:block;padding-right:28px;border-right:1px solid var(--line);margin-right:28px}
@@ -163,6 +192,7 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
   .more::before,.more::after{content:"";flex:1;height:1px;background:var(--line)}
   .more-row{display:block}
   .strip{display:flex}
+  .route-strip{display:flex}
   .bottom{display:none}
 }
 @media (max-width:999px){ :root{--nav-h:64px} .icon-btn{display:none} }
@@ -190,15 +220,16 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M12 4.5l2.4 7.5h-4.8z" fill="currentColor"/><path d="M12 19.5l2.4-7.5h-4.8z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 1v2M12 21v2M1 12h2M21 12h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol></svg>
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="./" aria-label="桌遊大廳 首頁">
-      <svg viewBox="0 0 38 34" aria-hidden="true"><rect x="1" y="14" width="10" height="20" fill="#5C6B4E"/><rect x="14" y="6" width="10" height="28" fill="#7B2A25"/><rect x="27" y="0" width="10" height="34" fill="#B07A3A"/></svg>
-      <span><b>桌遊大廳</b><small>TABLE &amp; PLAY</small></span>
+    <a class="brand" href="./" aria-label="遊戲群島 Playlands 首頁">
+      <svg viewBox="0 0 38 34" aria-hidden="true"><circle cx="19" cy="17" r="14.5" fill="none" stroke="#B07A3A" stroke-width="1.5"/><path d="M19 1.5v3.2M19 29.3v3.2M3.5 17h3.2M31.3 17h3.2" stroke="#B07A3A" stroke-width="1.5" stroke-linecap="round"/><path d="M19 5.5l3.4 11.5h-6.8z" fill="#7B2A25"/><path d="M19 28.5l3.4-11.5h-6.8z" fill="none" stroke="#7B2A25" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.5 24.5c2.2-2.6 4.4-2.6 6.6 0M21.9 24.5c2.2-2.6 4.4-2.6 6.6 0" fill="none" stroke="#B07A3A" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <span><b>遊戲群島</b><small>PLAYLANDS</small></span>
     </a>
     <nav class="tabs" aria-label="分頁">
       <button type="button" data-view="hall" aria-current="page">遊戲館</button>
-      <button type="button" data-view="fav">我的收藏</button>
+      <button type="button" data-view="fav">我的小島</button>
     </nav>
     <button class="icon-btn" id="searchJump" type="button" aria-label="搜尋遊戲"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l6 6"/></svg></button>
     <button class="install" id="installBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span>安裝</span></button>
@@ -206,39 +237,41 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
 
   <section class="hero">
     <div>
-      <p class="eyebrow">Original Board Game Collection</p>
+      <p class="eyebrow">An Archipelago of Original Board Games</p>
       <h1>每一局，都值得入席。</h1>
-      <p class="sub"><span class="long">精選原創桌遊，</span>找到今天想玩的那一款。</p>
+      <p class="sub"><span class="long">每款遊戲都是一座島，</span>找到今天想登陸的那一座。</p>
     </div>
     <div class="boxes" id="boxes" aria-hidden="true"></div>
   </section>
 
   <section class="toolbar" aria-label="篩選">
-    <div class="count" id="count">全部遊戲<em>15</em></div>
+    <div class="count" id="count">群島總覽<em>15<small>座島</small></em></div>
     <div class="search" id="searchWrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l6 6"/></svg>
       <input id="q" type="search" placeholder="搜尋遊戲" aria-label="搜尋遊戲" autocomplete="off" enterkeyhint="search">
     </div>
     <div class="chips" id="chips" role="group" aria-label="遊戲分類"></div>
   </section>
+  <div class="route" aria-hidden="true"><svg><use href="#i-compass"/></svg></div>
 
   <main>
     <div class="grid" id="grid"></div>
     <button class="more" id="more" type="button" hidden></button>
   </main>
 
+  <div class="route route-strip" aria-hidden="true"><svg><use href="#i-compass"/></svg></div>
   <section class="strip">
     <p>隨時入席，離線也能玩。</p>
     <span class="sep"></span>
     <button class="ghost" type="button" data-install><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>安裝到主畫面</button>
     <button class="ghost" type="button" data-help>遊戲說明</button>
   </section>
-  <p class="foot">v2 · 所有遊戲皆為原創設計</p>
+  <p class="foot">遊戲群島 Playlands · 所有遊戲皆為原創設計</p>
 </div>
 
 <nav class="bottom" aria-label="主選單">
   <button type="button" data-view="hall" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5M3 16.5L12 21l9-4.5"/></svg>遊戲館</button>
-  <button type="button" data-view="fav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7.5-4.6-9-9.3C2 7.4 4.2 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.1 0 5.3 2.9 4.3 6.2-1.5 4.7-9 9.3-9 9.3z"/></svg>收藏</button>
+  <button type="button" data-view="fav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7.5-4.6-9-9.3C2 7.4 4.2 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.1 0 5.3 2.9 4.3 6.2-1.5 4.7-9 9.3-9 9.3z"/></svg>我的小島</button>
   <button type="button" data-help><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 3 5v13.5c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5zM12 6.5V20"/></svg>說明</button>
 </nav>
 
@@ -256,8 +289,8 @@ dialog::backdrop{background:rgba(30,27,24,.45)}
     </ul>
     <h3>安裝到主畫面</h3>
     <p id="installText">Android 或電腦版 Chrome 按右上角「安裝」。iPhone 和 iPad 請用 Safari 開啟，點「分享」再點「加入主畫面」。裝好之後沒有網路也能玩。</p>
-    <h3>收藏</h3>
-    <p>點封面右上角的愛心，就會出現在「收藏」分頁。收藏只存在這台裝置上。</p>
+    <h3>我的小島</h3>
+    <p>點封面右上角的愛心，那座島就會收進「我的小島」分頁。收藏只存在這台裝置上。</p>
   </div>
 </dialog>
 
@@ -346,8 +379,8 @@ function cardHTML(g){
       <div class="grain" aria-hidden="true"></div>
       <div class="txt" aria-hidden="true"><span class="t${g.name.length>5?' long':''}">${esc(g.name)}</span><span class="en">${esc(g.en)}</span><span class="tag">${esc(g.tag)}</span></div>
     </a>
-    <button class="fav" type="button" data-fav="${g.id}" aria-pressed="${on}" aria-label="${on?'取消收藏':'收藏'}${esc(g.name)}">${heart}</button>
-    <div class="meta"><a class="name" href="games/${g.id}/" tabindex="-1">${esc(g.name)}</a><span class="kind">${esc(g.kind)}</span><a class="go" href="games/${g.id}/" tabindex="-1">開始遊戲${arrow}</a></div>
+    <button class="fav" type="button" data-fav="${g.id}" aria-pressed="${on}" aria-label="${on?'從我的小島移除':'收進我的小島'}：${esc(g.name)}" title="${on?'從我的小島移除':'收進我的小島'}">${heart}</button>
+    <div class="meta"><a class="name" href="games/${g.id}/" tabindex="-1">${esc(g.name)}</a><span class="kind">${esc(g.kind)}</span><a class="go" href="games/${g.id}/" tabindex="-1">登島${arrow}</a></div>
     <p class="info">${g.players} · ${g.time}${g.online?' · 線上連線':''}</p>
   </article>`;
 }
@@ -369,14 +402,14 @@ function render(){
   let html=shown.map(cardHTML).join('');
   if(!list.length){
     html=state.view==='fav'&&!state.fav.size
-      ?'<div class="empty"><b>還沒有收藏</b>點封面右上角的愛心，常玩的遊戲就會出現在這裡。</div>'
-      :'<div class="empty"><b>找不到符合的遊戲</b>換個關鍵字或分類試試看。</div>';
+      ?'<div class="empty"><b>這片海域還沒有發現島嶼</b>點封面右上角的愛心，常去的島就會出現在這裡。</div>'
+      :'<div class="empty"><b>航線上找不到這座島</b>換個關鍵字或分類，再出航一次。</div>';
   }
   $('#grid').innerHTML=html;
   const more=$('#more');
   more.hidden=list.length<=limit;
   more.textContent=`查看全部 ${GAMES.length} 款遊戲 ↓`;
-  $('#count').innerHTML=`${state.view==='fav'?'我的收藏':'全部遊戲'}<em>${state.view==='fav'?state.fav.size:GAMES.length}</em>`;
+  $('#count').innerHTML=`<svg aria-hidden="true"><use href="#i-compass"/></svg>${state.view==='fav'?'我的小島':'群島總覽'}<em>${state.view==='fav'?state.fav.size:GAMES.length}<small>座島</small></em>`;
   document.querySelectorAll('[data-view]').forEach(b=>b.toggleAttribute('aria-current',b.dataset.view===state.view)||b.dataset.view===state.view&&b.setAttribute('aria-current','page'));
   document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat===state.cat));
 }
