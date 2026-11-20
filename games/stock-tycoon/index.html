@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>股市大亨</title>
+<meta name="description" content="原創股市策略桌遊：每天偷偷埋一張內線卡操縱收盤價，搶在別人之前買進放空，六個交易日後身價最高的人成為股市大亨。">
+<meta name="theme-color" content="#1F3A5F">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="遊戲群島">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}img.av{display:block;border-radius:50%;object-fit:cover}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Outfit:wght@600;700;800&display=swap">
+<style>
+/* Layout: illustrated market board — hero + company cards (with live feed in the last slot) on the left,
+   a deep-green "next move" desk on the right, player strip along the bottom. Single warm-paper look by design. */
+:root{
+  --paper:#F5EEE1; --paper2:#EFE6D4; --card:#FFFBF4; --ink:#1F2B27; --muted:#6E7068; --line:#E5D9C3; --line2:#D9CBB1;
+  --green:#1F3A5F; --green2:#2C5282; --green-ink:#F3F7EF; --yellow:#F5C443; --yellow-ink:#2A2310;
+  --orange:#E9643B; --pink:#F7DDD3; --pink2:#EFC6B8; --up:#2C8F4E; --up-bg:#D5EEDA; --down:#C8432F; --down-bg:#F7DAD3; --flat-bg:#ECE5D7;
+  --c0:#2E7DC0; --c1:#D7542B; --c2:#22987A; --c3:#B7791F; --c4:#7A5AD3;
+  --p0:#E58FA0; --p1:#8B67D6; --p2:#4F9E61; --p3:#E0922F; --p4:#3E9CC4; --p5:#C2577A;
+  --scrim:rgba(40,32,20,.45);
+  --f-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+  --f-num:'Outfit','Noto Sans TC',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;font-weight:500}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(rgba(120,90,40,.07) 1px,transparent 1px);background-size:5px 5px}
+.wrap{position:relative;z-index:1;max-width:1600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 28px}
+h1,h2,h3,h4{text-wrap:balance;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+svg{display:block}
+
+/* ---------- header ---------- */
+.top{display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap;padding-block:6px 12px;border-bottom:1.5px solid var(--line2)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand svg{width:44px;height:44px;flex:none}
+.brand h1{font-size:clamp(26px,3.4vw,38px);font-weight:900;letter-spacing:.06em;line-height:1}
+.brand small{font-family:var(--f-num);font-size:12px;letter-spacing:.42em;color:var(--ink);font-weight:600;margin-left:6px}
+.homelink{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:900;color:var(--ink);text-decoration:none;border:1.5px solid var(--ink);border-radius:12px;padding:7px 12px;background:var(--card)}.homelink svg{width:18px;height:18px}
+.homelink:hover{color:var(--ink);border-color:var(--ink)}
+.vsep{width:1.5px;align-self:stretch;background:var(--line2);margin-block:6px}
+.steps{display:flex;align-items:center;flex:1;min-width:0;justify-content:center}
+.step{font-family:var(--f-num);font-weight:700;font-size:15px;padding:5px 14px;border-radius:999px;border:1.5px solid var(--line2);background:var(--card);color:var(--ink);white-space:nowrap}
+.step.done{color:var(--muted);background:var(--paper2)}
+.step.now{background:var(--green);border-color:var(--green);color:var(--green-ink);font-size:17px;padding:6px 18px}
+.link{flex:1;min-width:8px;max-width:56px;height:2px;background:repeating-linear-gradient(90deg,var(--line2) 0 4px,transparent 4px 8px);position:relative}
+.link.done{background:var(--green)}
+.tops{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:12px;cursor:pointer;font-weight:700;line-height:1.2;text-decoration:none}
+.btn svg{width:18px;height:18px}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.dark{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.btn.ghost{background:transparent}
+
+/* ---------- layout ---------- */
+.board{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,430px);grid-template-areas:"hero desk" "main desk";grid-template-rows:auto 1fr;gap:14px 18px;margin-top:12px;align-items:start}
+.hero{grid-area:hero;position:relative;min-height:150px;display:flex;align-items:center;overflow:hidden;border-radius:18px}
+.hero-txt{position:relative;z-index:2;padding:8px 0 10px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-family:var(--f-num);font-weight:600;letter-spacing:.32em;font-size:13px}
+.eyebrow::after{content:"";width:80px;height:1.5px;background:var(--ink)}
+.hero h2{font-size:clamp(30px,4.2vw,52px);font-weight:900;letter-spacing:.03em;line-height:1.15;margin-top:6px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.swoosh{display:block;width:150px;height:14px;margin-top:-2px}
+.qbadge{position:relative;font-size:17px;font-weight:900;border:2px solid var(--ink);border-radius:999px;padding:3px 14px;background:var(--card);letter-spacing:.04em}
+.qbadge::after{content:"";position:absolute;right:-16px;top:-14px;width:22px;height:18px;
+  background:linear-gradient(var(--orange),var(--orange)) 0 100%/3px 9px no-repeat,linear-gradient(var(--orange),var(--orange)) 9px 40%/3px 11px no-repeat,linear-gradient(var(--orange),var(--orange)) 18px 100%/3px 9px no-repeat;transform:rotate(18deg)}
+.hero-art{position:absolute;right:0;top:0;bottom:0;width:min(62%,640px);z-index:1;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 28%);mask-image:linear-gradient(90deg,transparent 0%,#000 28%)}
+.hero-art svg{width:100%;height:100%}
+main{grid-area:main;min-width:0}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:1280px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---------- company card ---------- */
+.co{--cc:var(--c0);position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 0 var(--line),0 8px 20px rgba(90,70,30,.07);min-width:0}
+.co.pick{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.co.pick:hover{transform:translateY(-2px);box-shadow:0 2px 0 var(--line),0 14px 26px rgba(90,70,30,.12)}
+.co.sel{border:3px solid var(--green);box-shadow:0 0 0 3px rgba(31,58,95,.12),0 12px 26px rgba(31,58,95,.18)}
+.co .art{height:112px;position:relative;overflow:hidden}
+.co .art svg{width:100%;height:100%}
+.co .art .emb{position:absolute;right:10px;top:8px;bottom:8px;height:calc(100% - 16px);aspect-ratio:1;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.7);object-fit:cover}
+.check{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;background:var(--green);display:grid;place-items:center;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.check svg{width:18px;height:18px}
+.co .body{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.cohead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.co h3{font-size:26px;font-weight:900;letter-spacing:.03em;line-height:1.1}
+.tick{font-family:var(--f-num);font-size:12px;font-weight:800;letter-spacing:.06em;color:#fff;background:var(--cc);border-radius:999px;padding:2px 9px}
+.sector{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:14px}
+.sector svg{width:20px;height:20px;color:var(--cc)}
+.prow{display:flex;align-items:center;gap:12px}
+.price{font-family:var(--f-num);font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.delta{font-family:var(--f-num);font-weight:800;font-size:17px;border-radius:999px;padding:3px 12px;display:inline-flex;gap:4px;align-items:center}
+.delta.up{background:var(--up-bg);color:var(--up)} .delta.down{background:var(--down-bg);color:var(--down)} .delta.flat{background:var(--flat-bg);color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);margin:2px 0 0}
+.stats div{padding:0 10px;border-left:1.5px solid var(--line2)}
+.stats div:first-child{padding-left:0;border-left:none}
+.stats dt{font-size:12px;color:var(--muted);font-weight:500}
+.stats dd{margin:0;font-family:var(--f-num);font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+.ceo{display:flex;align-items:center;gap:8px;font-size:14px;min-height:24px;flex-wrap:wrap}
+.ceo .k{font-family:var(--f-num);font-weight:600;color:var(--muted)}
+.ceo b{font-weight:900}
+.emb{font-size:11px;font-weight:700;color:var(--down);background:var(--down-bg);border-radius:999px;padding:1px 8px}
+.holdrow{display:flex;align-items:center;gap:10px}
+.hold{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.cell{height:12px;border-radius:4px;background:var(--flat-bg)}
+.cell.f{background:var(--pc)}
+.hbadge{font-size:12px;font-weight:700;background:var(--paper2);border-radius:8px;padding:2px 8px;white-space:nowrap}
+.hlist{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--muted);min-height:18px}
+.hlist span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pc);margin-right:4px}
+
+/* ---------- feed ---------- */
+.feed{background:transparent;padding:6px 6px 0;display:flex;flex-direction:column;min-width:0}
+.feed h3{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:900;padding-bottom:10px;border-bottom:1.5px solid var(--line2)}
+.feed h3 svg{width:28px;height:28px;color:var(--orange)}
+.feedlist{list-style:none;margin:0;padding:0;overflow:auto;max-height:300px}
+.feedlist li{display:grid;grid-template-columns:auto 40px minmax(0,1fr);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.qtag{font-family:var(--f-num);font-weight:700;font-size:12px;border:1.5px solid var(--line2);border-radius:6px;padding:1px 6px;background:var(--card)}
+.feedlist .av{width:40px;height:40px}
+.feedlist .txt{font-size:13.5px;line-height:1.45;min-width:0}
+.feedlist .ic{width:40px;height:40px;border-radius:50%;background:var(--paper2);display:grid;place-items:center;color:var(--green)}
+.feedlist .ic svg{width:20px;height:20px}
+.feedlist li.q .txt{font-weight:900;color:var(--green)}
+.feedlist li.k .txt{color:#8A4A12}
+.pn{font-weight:900;color:var(--ink)}
+.cn{font-weight:900}
+
+/* ---------- desk (right panel) ---------- */
+.desk{grid-area:desk;position:sticky;top:max(10px,env(safe-area-inset-top,0px));background:var(--green);color:var(--green-ink);border-radius:26px;padding:24px 24px 22px;overflow:hidden;display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 40px rgba(20,36,60,.25)}
+.desk .leaf{position:absolute;right:-30px;top:-20px;width:190px;height:190px;opacity:.9;pointer-events:none}
+.desk>*{position:relative}
+.dhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dhead h2{font-size:clamp(28px,2.8vw,40px);font-weight:900;letter-spacing:.04em;line-height:1.1}
+.pill{background:var(--orange);color:#fff;font-weight:900;border-radius:999px;padding:5px 14px;font-size:16px;white-space:nowrap}
+.pill.soft{background:rgba(255,255,255,.16)}
+.dsub{font-weight:700;font-size:16px;margin-top:-6px;opacity:.9}
+.dlab{font-size:14px;opacity:.85;font-weight:700}
+.target{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:-6px}
+.target svg{width:30px;height:30px}
+.target b{font-size:26px;font-weight:900;letter-spacing:.03em}
+.target .vs{width:1.5px;height:24px;background:rgba(255,255,255,.4)}
+.target .cur{font-weight:700;font-size:17px}
+.target .cur span{font-family:var(--f-num);font-size:28px;font-weight:800;margin-left:6px}
+.toggle{display:grid;grid-template-columns:1fr 1fr;border:2px solid rgba(255,255,255,.85);border-radius:12px;overflow:hidden}
+.toggle button{border:none;background:transparent;color:var(--green-ink);font-weight:900;font-size:17px;padding:10px;cursor:pointer}
+.toggle button.on{background:var(--card);color:var(--ink)}
+.qrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qrow>span{font-weight:700;font-size:16px}
+.stepper{display:grid;grid-template-columns:52px 1fr 52px;background:var(--yellow);border-radius:12px;min-width:220px;overflow:hidden}
+.stepper button{border:none;background:rgba(255,255,255,.35);color:var(--yellow-ink);font-size:24px;font-weight:700;cursor:pointer;line-height:1;padding:8px 0}
+.stepper button:disabled{opacity:.4;cursor:not-allowed}
+.stepper b{display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:24px;color:var(--yellow-ink);background:#FBE7A6}
+.est{margin:0;display:flex;flex-direction:column}
+.est div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid rgba(255,255,255,.22)}
+.est div:first-child{border-top:none}
+.est dt{font-weight:700;font-size:15px}
+.est dd{margin:0;font-family:var(--f-num);font-weight:800;font-size:20px}
+.dnote{font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px}
+.dnote.warn{background:rgba(233,100,59,.28)}
+.confirm{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:none;border-radius:16px;background:var(--yellow);color:var(--yellow-ink);font-size:24px;font-weight:900;padding:14px;cursor:pointer;box-shadow:0 4px 0 #C99A1E;letter-spacing:.06em}
+.confirm svg{width:26px;height:26px}
+.confirm:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #C99A1E}
+.confirm:disabled{opacity:.5;cursor:not-allowed}
+.passbtn{width:100%;border:2px solid rgba(255,255,255,.85);background:transparent;color:var(--green-ink);border-radius:14px;font-weight:900;font-size:18px;padding:11px;cursor:pointer}
+.passbtn:hover{background:rgba(255,255,255,.08)}
+.empty{border:2px dashed rgba(255,255,255,.35);border-radius:16px;padding:22px 16px;text-align:center;font-weight:700;opacity:.92}
+.empty b{display:block;font-size:20px;margin-bottom:4px}
+.think{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.1);border-radius:16px;padding:14px}
+.think .av{width:56px;height:56px;flex:none}
+.think b{font-size:20px}
+.dots::after{content:"…";display:inline-block;animation:blink 1.1s steps(3) infinite}
+@keyframes blink{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none}.co.pick,.btn{transition:none}}
+
+/* private intel card */
+.intel{position:relative;background:var(--pink);color:var(--ink);border-radius:14px;padding:16px 18px 14px;transform:rotate(-1.2deg);box-shadow:0 6px 14px rgba(0,0,0,.18);margin-top:6px}
+.intel::after{content:"";position:absolute;right:0;top:0;width:30px;height:30px;background:linear-gradient(225deg,var(--green) 50%,var(--pink2) 50%);border-bottom-left-radius:8px}
+.intel .ilab{display:flex;align-items:center;gap:8px;font-weight:900;color:#B24A35;font-size:17px;padding-bottom:8px;border-bottom:1.5px solid var(--pink2)}
+.intel .ilab svg{width:20px;height:20px}
+.intel .ititle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 6px;flex-wrap:wrap}
+.intel h4{font-size:24px;font-weight:900;letter-spacing:.03em}
+.intel .inote{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;font-size:13px;color:#5B4A40}
+.stamp{border:1.5px solid #B24A35;color:#B24A35;border-radius:8px;padding:2px 10px;font-weight:900;font-size:13px;white-space:nowrap;transform:rotate(-3deg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:14px;font-weight:900;padding:2px 10px;border-radius:8px;background:var(--flat-bg);color:var(--ink)}
+.chip.up{background:var(--up-bg);color:var(--up)}
+.chip.down{background:#E8573F;color:#fff}
+.chip.sp{background:#F4D58A;color:#5A4210}
+
+/* ---------- players strip ---------- */
+.players{margin-top:18px;background:var(--card);border:1.5px solid var(--line);border-radius:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));padding:8px;gap:6px;box-shadow:0 8px 20px rgba(90,70,30,.06)}
+.pl{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;position:relative;min-width:0}
+.pl+.pl::before{content:"";position:absolute;left:-4px;top:16px;bottom:16px;width:1.5px;background:var(--line2)}
+.pl.cur{background:var(--pink)}
+.pl.cur::before,.pl.cur+.pl::before{display:none}
+.pl .av{width:60px;height:60px;flex:none}
+.pl .nm{font-size:19px;font-weight:900;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:700;border:1.5px solid var(--line2);border-radius:6px;padding:0 5px;color:var(--muted);background:var(--card)}
+.pl .fig{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.pl .fig b{font-family:var(--f-num);font-weight:800;color:var(--ink);font-size:16px;margin-left:3px}
+.pl .ceos{display:flex;gap:4px;margin-top:3px}
+.pl .ceos i{font-style:normal;font-size:10px;font-weight:900;color:#fff;background:var(--cc);border-radius:5px;padding:0 5px;font-family:var(--f-num)}
+
+/* ---------- responsive ---------- */
+@media (max-width:1040px){
+  .board{grid-template-columns:minmax(0,1fr);grid-template-areas:"hero" "desk" "main"}
+  .desk{position:relative;top:0}
+  .hero-art{width:70%;opacity:.55}
+}
+@media (max-width:640px){
+  .cards{grid-template-columns:minmax(0,1fr)}
+  .vsep{display:none}
+  .steps{order:3;flex-basis:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px}
+  .step{padding:4px 10px;font-size:13px}.step.now{padding:5px 12px;font-size:15px}
+  .brand small{display:none}
+  .stepper{min-width:170px}
+  .desk{padding:20px 18px;border-radius:22px}
+  .co h3{font-size:23px}
+}
+
+/* ---------- modals ---------- */
+.overlay{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--card);color:var(--ink);border-radius:24px;border:1.5px solid var(--line);width:min(640px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:26px;box-shadow:0 30px 70px rgba(40,30,10,.3)}
+.modal h2{font-size:28px;font-weight:900;margin-bottom:6px;letter-spacing:.03em}
+.modal .sub{color:var(--muted);margin:0 0 16px}
+.modal .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
+.modal .acts .btn{padding:10px 20px;font-size:16px}
+.modal .intel{transform:none;margin-bottom:6px}
+.modal .intel::after{background:linear-gradient(225deg,var(--card) 50%,var(--pink2) 50%)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line2);background:var(--paper)}
+.opt:hover:not(:disabled){border-color:var(--green);background:var(--card)}
+.opt b{font-size:17px;font-weight:900}
+.opt span{font-size:13px;color:var(--muted)}
+.opt .go{font-weight:900;color:var(--green);font-size:14px;white-space:nowrap}
+.evlist{display:grid;gap:8px}
+.ev{border:1.5px solid var(--line2);border-radius:14px;padding:12px 14px;background:var(--paper);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.ev h4{font-size:18px;font-weight:900;margin:0 0 6px}
+.ev .kn{font-size:12px;color:var(--muted);font-weight:700}
+.ev.hidden-card{border-style:dashed;background:var(--card)}
+table.res{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+table.res th{font-size:12px;color:var(--muted);text-align:right;font-weight:700;padding:4px 6px}
+table.res td{text-align:right;padding:8px 6px;border-top:1px solid var(--line);font-family:var(--f-num);font-weight:700;font-variant-numeric:tabular-nums}
+table.res th:first-child,table.res td:first-child{text-align:left;font-family:var(--f-body)}
+.tablewrap{overflow-x:auto}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--muted)}
+.seats{display:flex;flex-direction:column;gap:10px}
+.seat{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center}
+.seat .av{width:44px;height:44px}
+.seat input{font:inherit;font-weight:700;padding:9px 12px;border:1.5px solid var(--line2);border-radius:12px;background:var(--paper);color:var(--ink);min-width:0;width:100%}
+.seg{display:inline-flex;border:1.5px solid var(--line2);border-radius:12px;overflow:hidden;background:var(--paper)}
+.seg button{border:none;background:transparent;color:var(--muted);padding:8px 12px;cursor:pointer;font-weight:700}
+.seg button.on{background:var(--green);color:var(--green-ink)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;flex-wrap:wrap}
+.field>span{font-weight:900;font-size:16px}
+.note{font-size:12px;color:var(--muted)}
+.pitch{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 6px}
+.pitch div{background:var(--paper);border-radius:14px;padding:12px;font-size:13px;color:var(--muted)}
+.pitch b{display:block;color:var(--ink);font-size:15px;font-weight:900;margin-bottom:2px}
+.setup-art{height:120px;margin:-26px -26px 16px;overflow:hidden;border-radius:24px 24px 0 0}
+.setup-art svg{width:100%;height:100%}
+.rules{font-size:15px;line-height:1.8}
+.rules h3{font-size:19px;font-weight:900;margin:18px 0 6px;color:var(--green)}
+.rules p,.rules li{max-width:62ch}
+.rules ol,.rules ul{padding-left:1.3em;margin:6px 0}
+.trackline{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--f-num);font-weight:700;font-size:12px}
+.trackline span{border:1.5px solid var(--line2);padding:0 6px;border-radius:6px;background:var(--paper)}
+.win{font-size:34px;font-weight:900;color:var(--green);margin:4px 0}
+.handoff .av{width:84px;height:84px;margin-bottom:10px}
+.roomcode{display:flex;gap:10px;justify-content:center;margin:6px 0 4px}
+.roomcode span{width:64px;height:78px;display:grid;place-items:center;font-size:44px;font-weight:800;background:var(--green);color:var(--green-ink);border-radius:14px;box-shadow:0 4px 0 #13263F}
+.codein{font:inherit;font-weight:800;font-size:20px;padding:9px 14px;border:1.5px solid var(--line2);border-radius:12px;background:var(--paper);color:var(--ink);width:min(220px,100%)}
+.seat b{font-weight:900}
+.roombar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:700;opacity:.9;border-top:1px solid rgba(255,255,255,.2);padding-top:12px}
+.roombar b{font-size:20px;letter-spacing:.12em;background:rgba(255,255,255,.14);border-radius:8px;padding:0 10px}
+
+/* ---------- 股市大亨 additions ---------- */
+.desk .leaf{opacity:.55}
+.ticker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;background:var(--card);border:1.5px solid var(--line2);border-radius:14px;padding:8px 12px;max-width:640px;box-shadow:0 4px 12px rgba(90,70,30,.06)}
+.ticker .tk{font-size:12px;font-weight:900;color:#fff;background:var(--down);border-radius:6px;padding:1px 8px;letter-spacing:.08em}
+.ticker .tk.hid{background:var(--ink)}
+.ticker b{font-size:17px;font-weight:900}
+.ticker+.ticker{margin-top:6px}
+.spark{width:100%;height:34px;margin:-2px 0 0}
+.co .prow{justify-content:space-between}
+.co .prow .pl1{display:flex;align-items:center;gap:10px}
+.lim{font-size:12px;font-weight:900;border-radius:6px;padding:1px 7px;color:#fff}
+.lim.up{background:var(--up)}.lim.down{background:var(--down)}.lim.sp{background:#B7791F}
+.poss{display:flex;flex-wrap:wrap;gap:4px 6px;min-height:22px}
+.ps{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:999px;padding:1px 8px 1px 3px;background:var(--paper2)}
+.ps .av{width:18px;height:18px}
+.ps.l b{color:var(--up)}.ps.s b{color:var(--down)}
+.ps.none{padding:1px 8px;color:var(--muted);background:transparent}
+.hand{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.icard{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:none;border-radius:12px;padding:10px 6px 8px;background:var(--card);color:var(--ink);cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);text-align:center;min-height:96px}
+.icard .sym{font-family:var(--f-num);font-weight:800;font-size:28px;line-height:1.1}
+.icard .nm{font-size:13px;font-weight:900;line-height:1.25}
+.icard .ds{font-size:11px;color:var(--muted);line-height:1.3}
+.icard.up .sym{color:var(--up)}.icard.down .sym{color:var(--down)}.icard.sp .sym{color:#B7791F}.icard.zero .sym{color:var(--muted)}
+.icard.on{outline:4px solid var(--yellow);transform:translateY(-3px)}
+.icard:disabled{cursor:default}
+.icard.mini{min-height:0;padding:6px 8px;flex-direction:row;gap:8px;box-shadow:none;border:1.5px solid var(--line2);cursor:default}
+.icard.mini .sym{font-size:20px}
+.readies{display:flex;flex-wrap:wrap;gap:6px}
+.readies span{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:999px;padding:2px 10px 2px 3px}
+.readies .av{width:22px;height:22px}
+.readies span.ok{background:rgba(245,196,67,.3)}
+.goals{display:grid;gap:6px;margin-top:8px}
+.goal{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:13px;background:rgba(255,255,255,.5);border-radius:10px;padding:6px 10px}
+.goal b{font-size:14px;font-weight:900}
+.goal .gv{font-family:var(--f-num);font-weight:800;color:#B24A35;white-space:nowrap}
+.goal.ok{background:#E3F2E1}.goal.ok .gv{color:var(--up)}
+.plantline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 2px;font-weight:700}
+.rumor{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rumor button{border:1.5px solid rgba(255,255,255,.6);background:rgba(255,255,255,.08);color:var(--green-ink);border-radius:12px;padding:8px;font-weight:900;cursor:pointer}
+.rumor button:disabled{opacity:.4;cursor:not-allowed}
+.rumor button:hover:not(:disabled){background:rgba(255,255,255,.16)}
+.plantrow{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.plantrow .av{width:34px;height:34px}
+.parts{font-size:12px;color:var(--muted);font-family:var(--f-num)}
+.goalres{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.goalres span{font-family:var(--f-body);font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;background:var(--flat-bg);color:var(--muted)}
+.goalres span.ok{background:var(--up-bg);color:var(--up)}
+@media (max-width:640px){.hand{grid-template-columns:repeat(2,minmax(0,1fr))}.ticker b{font-size:15px}}
+</style>
+<link rel="stylesheet" href="../../assets/ui.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="homelink" href="../../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>大廳</a>
+    <div class="brand"><svg viewBox="0 0 56 48" aria-hidden="true"><path d="M10 6v36M22 12v28M34 4v34M46 14v24" stroke="#1F3A5F" stroke-width="2.5" stroke-linecap="round"/><rect x="6" y="14" width="8" height="18" rx="2" fill="#2C8F4E"/><rect x="18" y="20" width="8" height="12" rx="2" fill="#C8432F"/><rect x="30" y="10" width="8" height="20" rx="2" fill="#2C8F4E"/><rect x="42" y="18" width="8" height="14" rx="2" fill="#F5C443"/></svg><h1>股市大亨</h1><small>MARKET TYCOON</small></div>
+    <span class="vsep"></span>
+    <nav class="steps" id="steps" aria-label="交易日進度"></nav>
+    <span class="vsep"></span>
+    <div class="tops">
+      <button class="btn" id="btnRules" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>規則</button>
+      <button class="btn dark" id="btnNew" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新遊戲</button>
+    </div>
+  </header>
+  <div class="board">
+    <section class="hero" id="hero"></section>
+    <aside class="desk" id="desk" aria-live="polite"></aside>
+    <main><div class="cards" id="cards"></div></main>
+  </div>
+  <section class="players" id="players" aria-label="玩家"></section>
+</div>
+<div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="overlay" id="rulesOv" hidden><div class="modal" id="rulesModal" role="dialog" aria-modal="true"></div></div>
+<script src="../../assets/net.js"></script>
+<script src="../../assets/intro.js"></script>
+<script>
+'use strict';
+const LOBBY='../../';
+/* ================= constants ================= */
+const TRACK=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18,20,22,24,26,28,30];
+const MAXI=TRACK.length-1, SPLIT_IDX=15, RELIST_IDX=6;
+const STOCKS=[
+  {name:'鯨躍半導體',short:'鯨躍',sec:'半導體',tick:'WHL'},
+  {name:'火鳥電動車',short:'火鳥',sec:'電動車',tick:'FBD'},
+  {name:'珊瑚觀光',short:'珊瑚',sec:'觀光',tick:'CRL'},
+  {name:'鐵牛營建',short:'鐵牛',sec:'營建',tick:'OXN'},
+  {name:'星砂遊戲',short:'星砂',sec:'遊戲',tick:'SND'},
+];
+const NS=STOCKS.length, DAYS=6, APD=2, START_CASH=100, MAX_QTY=5, SHORT_MAX=5, HAND0=3, LIMIT=4, RUMOR_COST=5;
+const CARD_DEF={
+  p1:{n:'利多耳語',v:1,d:'收盤 ▲1'},
+  p2:{n:'法說會報喜',v:2,d:'收盤 ▲2'},
+  p3:{n:'大戶進場',v:3,d:'收盤 ▲3'},
+  m1:{n:'利空耳語',v:-1,d:'收盤 ▼1'},
+  m2:{n:'財報暴雷',v:-2,d:'收盤 ▼2'},
+  m3:{n:'檢調搜索',v:-3,d:'收盤 ▼3'},
+  x2:{n:'主力炒作',x:2,d:'這檔今天漲跌加倍'},
+  halt:{n:'暫停交易',halt:1,d:'這檔今天收盤不動'},
+  smoke:{n:'煙霧彈',v:0,d:'沒有效果，專門騙人'},
+};
+const DECK=[].concat(...Object.entries({p1:5,p2:5,p3:2,m1:5,m2:5,m3:2,x2:2,halt:2,smoke:3}).map(([k,n])=>Array(n).fill(k)));
+const NEWS=[
+  {n:'AI 伺服器訂單滿到明年',fx:[[0,3]]},
+  {n:'晶片庫存去化不如預期',fx:[[0,-3]]},
+  {n:'新世代製程良率突破',fx:[[0,2],[4,1]]},
+  {n:'鋰礦價格暴漲',fx:[[1,-2],[0,-1]]},
+  {n:'電動車補助延長三年',fx:[[1,3]]},
+  {n:'自駕車事故登上頭條',fx:[[1,-3]]},
+  {n:'充電樁大型標案開標',fx:[[1,2],[3,1]]},
+  {n:'邊境全面解封',fx:[[2,3]]},
+  {n:'颱風連續兩個登陸',fx:[[2,-2],[3,-1]]},
+  {n:'國旅補助加碼',fx:[[2,2]]},
+  {n:'航空公司大罷工',fx:[[2,-3]]},
+  {n:'央行祭出打房令',fx:[[3,-3]]},
+  {n:'都更條例鬆綁',fx:[[3,3]]},
+  {n:'鋼筋水泥齊漲',fx:[[3,-2],[1,-1]]},
+  {n:'年度大作全球同步上市',fx:[[4,3]]},
+  {n:'遊戲版號暫停核發',fx:[[4,-3]]},
+  {n:'電競納入亞運正式項目',fx:[[4,2],[0,1]]},
+  {n:'手遊抽卡機率遭重罰',fx:[[4,-2]]},
+  {n:'外資連續十天買超',t:'all',v:1},
+  {n:'國際股災連鎖崩跌',t:'all',v:-2},
+  {n:'年底作帳行情',t:'low',v:2},
+  {n:'高檔獲利了結賣壓',t:'high',v:-2},
+  {n:'風平浪靜的一天',fx:[]},
+  {n:'觀光工廠爆紅',fx:[[2,1],[4,1]]},
+];
+const price=(st,c)=>TRACK[st.st[c].idx];
+const hiStocks=st=>{const m=Math.max(...st.st.map(s=>s.idx));return st.st.map((s,c)=>s.idx===m?c:-1).filter(c=>c>=0);};
+const loStocks=st=>{const m=Math.min(...st.st.map(s=>s.idx));return st.st.map((s,c)=>s.idx===m?c:-1).filter(c=>c>=0);};
+const GOALS=[
+  ...STOCKS.map((s,c)=>({n:`${s.short}鐵粉`,d:`結束時持有${s.name}至少 6 股`,v:30,ok:(st,i)=>st.players[i].pos[c]>=6,pg:(st,i)=>st.players[i].pos[c]/6})),
+  {n:'分散投資',d:'結束時至少 4 檔股票都持有多單',v:25,ok:(st,i)=>st.players[i].pos.filter(x=>x>=1).length>=4,pg:(st,i)=>st.players[i].pos.filter(x=>x>=1).length/4},
+  {n:'空頭狙擊手',d:'結束時放空一檔股價 $6 以下的股票至少 3 股',v:30,ok:(st,i)=>st.players[i].pos.some((x,c)=>x<=-3&&price(st,c)<=6)},
+  {n:'現金為王',d:'結束時手上現金至少 $160',v:25,ok:(st,i)=>st.players[i].cash>=160},
+  {n:'飆股達人',d:'某天收盤漲停時，你正持有它至少 5 股',v:25,ok:(st,i)=>!!st.players[i].fl.split},
+  {n:'崩盤收割',d:'某天收盤跌停時，你正放空它至少 2 股',v:25,ok:(st,i)=>!!st.players[i].fl.bk},
+  {n:'龍頭大股東',d:'結束時股價最高的股票，你的持股最多（不能平手）',v:30,ok:(st,i)=>hiStocks(st).some(c=>{const me=st.players[i].pos[c];return me>0&&st.players.every((p,j)=>j===i||p.pos[c]<me);})},
+  {n:'逆勢抄底',d:'結束時持有股價最低的股票至少 5 股',v:25,ok:(st,i)=>loStocks(st).some(c=>st.players[i].pos[c]>=5),pg:(st,i)=>Math.max(...loStocks(st).map(c=>st.players[i].pos[c]))/5},
+];
+const AI_NAMES=['當沖少女','主力大戶','韭菜阿明','退休阿伯','外資分析師','鐵口直斷'];
+const SPEEDS={快:300,中:750,慢:1300};
+const SAVE_KEY='stocktycoon-save-v1';
+
+/* ================= state ================= */
+let S=null, UI={sel:null,qty:1,mode:'buy',card:null,pending:false}, timer=null, SPEED=750;
+let setupCfg={n:4,seats:[{name:'你',ai:false},...AI_NAMES.map(n=>({name:n,ai:true}))],speed:'中'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const NP=()=>S.players.length;
+const humans=()=>S.players.filter(p=>!p.ai&&!p.remote);
+const curP=()=>(S.start+S.acts)%NP();
+const pn=i=>`<b class="pn" data-p="${i}">${esc(S.players[i].name)}</b>`;
+const pnTxt=i=>esc(S.players[i].name);
+const cn=c=>`<b class="cn" style="color:var(--c${c})">${STOCKS[c].name}</b>`;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function log(html,cls=''){const m=/data-p="(\d+)"/.exec(html);S.log.unshift({h:html,c:cls,a:m?+m[1]:null,d:S.day});if(S.log.length>150)S.log.length=150;}
+function save(){if(NET.role==='client')return;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
+function clearSave(){lsSet(SAVE_KEY,null);}
+function loadSave(){return lsGet(SAVE_KEY);}
+function drawCard(){if(!S.deck.length){S.deck=shuffle(S.disc);S.disc=[];}return S.deck.length?S.deck.pop():null;}
+function drawNews(){if(!S.ndeck.length)S.ndeck=shuffle(NEWS.map((_,i)=>i));return S.ndeck.pop();}
+function clone(st){return {players:st.players.map(p=>({cash:p.cash,pos:p.pos.slice(),tr:{...p.tr},plant:p.plant,fl:{...p.fl},goals:p.goals})),
+  st:st.st.map(s=>({idx:s.idx,open:s.open,rumor:s.rumor,vol:s.vol})),news:st.news,belief:st.belief,day:st.day};}
+
+/* ================= core rules (pure on st) ================= */
+const impact=n=>Math.floor((n+1)/3);
+function shift(st,c,d){const s=st.st[c];s.idx=Math.max(1,Math.min(MAXI,s.idx+d));}
+function canBuy(st,pi,c,n){const p=st.players[pi];return n>=1&&n<=MAX_QTY&&p.tr[c]!=='s'&&p.cash>=price(st,c)*n;}
+function canSell(st,pi,c,n){const p=st.players[pi];return n>=1&&n<=MAX_QTY&&p.tr[c]!=='b'&&p.pos[c]-n>=-SHORT_MAX;}
+function canRumor(st,pi){return st.players[pi].cash>=RUMOR_COST;}
+function opBuy(st,pi,c,n){const p=st.players[pi],cost=price(st,c)*n;p.cash-=cost;p.pos[c]+=n;p.tr[c]='b';st.st[c].vol+=n;shift(st,c,impact(n));return cost;}
+function opSell(st,pi,c,n){const p=st.players[pi],gain=price(st,c)*n;p.cash+=gain;p.pos[c]-=n;p.tr[c]='s';st.st[c].vol+=n;shift(st,c,-impact(n));return gain;}
+function opRumor(st,pi,c,d){st.players[pi].cash-=RUMOR_COST;st.st[c].rumor+=d;}
+function newsFx(st,ni,c){
+  const ev=NEWS[ni];if(!ev)return 0;
+  if(ev.fx){let d=0;ev.fx.forEach(([cc,v])=>{if(cc===c)d+=v;});return d;}
+  if(ev.t==='all')return ev.v;
+  const op=st.st.map(s=>s.open),m=ev.t==='low'?Math.min(...op):Math.max(...op);
+  return op[c]===m?ev.v:0;
+}
+function dayMoves(st,plants){
+  return st.st.map((s,c)=>{
+    const np=newsFx(st,st.news.pub,c),nh=newsFx(st,st.news.hid,c),nw=np+nh;
+    let ins=0,x=1,halt=false;
+    plants.filter(q=>q.c===c).forEach(q=>{const d=CARD_DEF[DECK[q.id]];if(d.halt)halt=true;else if(d.x)x=Math.min(4,x*d.x);else ins+=d.v;});
+    const raw=(nw+ins+s.rumor)*x;
+    const total=halt?0:Math.max(-LIMIT,Math.min(LIMIT,raw));
+    return {np,nh,nw,ins,rumor:s.rumor,x,halt,raw,total};
+  });
+}
+function applyMoves(st,mv){
+  mv.forEach((m,c)=>{const s=st.st[c],ni=s.open+m.total;
+    if(m.total>=LIMIT)st.players.forEach(p=>{if(p.pos[c]>=5)p.fl.split=1;});
+    if(m.total<=-LIMIT)st.players.forEach(p=>{if(p.pos[c]<=-2)p.fl.bk=1;});
+    if(ni>MAXI){st.players.forEach(p=>{p.pos[c]*=2;});s.idx=SPLIT_IDX;m.split=true;}
+    else if(ni<=0){st.players.forEach(p=>{p.pos[c]=0;});s.idx=RELIST_IDX;m.bk=true;}
+    else s.idx=ni;
+  });
+}
+function goalsOf(st,i){const p=st.players[i];return (p.goals||[]).map(g=>({g,ok:GOALS[g].ok(st,i),v:GOALS[g].v}));}
+function worthOf(st,i,withGoals){const p=st.players[i];let stock=0;
+  for(let c=0;c<NS;c++)stock+=p.pos[c]*price(st,c);
+  const gl=withGoals?goalsOf(st,i).reduce((a,x)=>a+(x.ok?x.v:0),0):0;
+  return {cash:p.cash,stock,goals:gl,total:p.cash+stock+gl};}
+
+/* ================= card text ================= */
+function cardCls(k){const d=CARD_DEF[k];return d.halt||d.x?'sp':d.v>0?'up':d.v<0?'down':'zero';}
+function cardSym(k){const d=CARD_DEF[k];return d.halt?'停':d.x?'×2':d.v>0?'▲'+d.v:d.v<0?'▼'+(-d.v):'？';}
+function cardHTML(id,opt={}){const k=DECK[id],d=CARD_DEF[k];
+  return `<button type="button" class="icard ${cardCls(k)} ${opt.on?'on':''} ${opt.mini?'mini':''}" ${opt.pick?`data-card="${id}"`:'disabled'} aria-pressed="${!!opt.on}"><span class="sym">${cardSym(k)}</span><span><span class="nm">${d.n}</span>${opt.mini?'':`<br><span class="ds">${d.d}</span>`}</span></button>`;}
+function newsChips(ni){
+  const ev=NEWS[ni];if(!ev)return '';const ch=(t,cls)=>`<span class="chip ${cls}">${t}</span>`;
+  if(ev.fx){if(!ev.fx.length)return ch('無影響','');return ev.fx.map(([c,d])=>ch(`${STOCKS[c].short} ${d>0?'▲':'▼'}${Math.abs(d)}`,d>0?'up':'down')).join('');}
+  if(ev.t==='all')return ch(`全部股票 ${ev.v>0?'▲':'▼'}${Math.abs(ev.v)}`,ev.v>0?'up':'down');
+  if(ev.t==='low')return ch(`開盤最便宜的股票 ▲${ev.v}`,'sp');
+  if(ev.t==='high')return ch(`開盤最貴的股票 ▼${-ev.v}`,'sp');
+  return '';
+}
+
+/* ================= AI ================= */
+function interp(fi){if(fi<=0)return 0;fi=Math.min(MAXI,fi);const a=Math.floor(fi),b=Math.min(MAXI,a+1);return TRACK[a]+(TRACK[b]-TRACK[a])*(fi-a);}
+function expSteps(st,viewer,c){
+  let e=newsFx(st,st.news.pub,c)+st.st[c].rumor+(st.belief?st.belief[viewer][c]:0);
+  const pl=st.players[viewer].plant;let x=1;
+  if(pl&&pl.c===c){const d=CARD_DEF[DECK[pl.id]];if(d.halt)return 0;if(d.x)x=2;else e+=d.v;}
+  return Math.max(-LIMIT,Math.min(LIMIT,e*x));
+}
+function aiWorth(st,pi,viewer){
+  const p=st.players[pi];let v=p.cash;
+  for(let c=0;c<NS;c++){const ep=interp(st.st[c].open+expSteps(st,viewer,c));v+=p.pos[c]*ep;if(p.pos[c]<0)v-=-p.pos[c]*0.8;}
+  return v;
+}
+function aiGoalVal(st,pi){const w=0.15+0.85*(st.day/DAYS);return w*goalsOf(st,pi).reduce((a,x)=>{if(x.ok)return a+x.v;const pg=GOALS[x.g].pg;if(!pg)return a;const f=Math.max(0,Math.min(1,pg(st,pi)));return a+f*f*x.v*0.6;},0);}
+function aiScore(st,pi){let best=0;for(let j=0;j<st.players.length;j++)if(j!==pi)best=Math.max(best,aiWorth(st,j,pi));return aiWorth(st,pi,pi)+aiGoalVal(st,pi)-0.25*best;}
+function aiAction(pi){
+  const base=clone(S);
+  const cands=[{k:'pass',sc:aiScore(base,pi)+0.6}];
+  for(let c=0;c<NS;c++){
+    for(let n=1;n<=MAX_QTY;n++){
+      if(canBuy(base,pi,c,n)){const st=clone(base);opBuy(st,pi,c,n);cands.push({k:'buy',c,n,sc:aiScore(st,pi)});}
+      if(canSell(base,pi,c,n)){const st=clone(base);opSell(st,pi,c,n);cands.push({k:'sell',c,n,sc:aiScore(st,pi)});}
+    }
+    if(canRumor(base,pi))[1,-1].forEach(d=>{const st=clone(base);opRumor(st,pi,c,d);cands.push({k:'rumor',c,d,sc:aiScore(st,pi)-0.5});});
+  }
+  cands.forEach(o=>o.sc+=(Math.random()-.5)*2.5);
+  cands.sort((a,b)=>b.sc-a.sc);
+  const o=cands[0];
+  if(o.k==='buy')doBuy(pi,o.c,o.n);else if(o.k==='sell')doSell(pi,o.c,o.n);else if(o.k==='rumor')doRumor(pi,o.c,o.d);else doPass(pi);
+}
+function aiPlant(pi){
+  const p=S.players[pi],late=S.day>=DAYS;let best=null,bs=-1e9;
+  const keep=k=>{const d=CARD_DEF[k];return late?0:(d.halt||d.x?1.6:Math.abs(d.v||0)*0.9);};
+  const noPlant=clone(S);noPlant.players[pi].plant=null;
+  p.hand.forEach(id=>{for(let c=0;c<NS;c++){
+    const st=clone(S);st.players[pi].plant={id,c};
+    const pr=price(S,c),e0=interp(S.st[c].open+expSteps(noPlant,pi,c)),e1=interp(S.st[c].open+expSteps(st,pi,c));
+    const dl=e1-pr,gain=e1-e0;
+    const room=dl>0?Math.min(MAX_QTY*APD,Math.floor(p.cash/Math.max(1,pr))):dl<0?Math.min(MAX_QTY*APD,SHORT_MAX+p.pos[c]):0;
+    const sc=p.pos[c]*gain+room*Math.abs(dl)*0.45-keep(DECK[id])+(Math.random()-.5)*1.5;
+    if(sc>bs){bs=sc;best={id,c};}
+  }});
+  return best;
+}
+function beliefUpd(pi,c,amt){S.players.forEach((p,j)=>{if(j!==pi&&p.ai)S.belief[j][c]=Math.max(-2,Math.min(2,S.belief[j][c]+amt));});}
+
+/* ================= game flow ================= */
+function setupGame(cfg){
+  clearTimeout(timer);closeModal();
+  const deck=shuffle(DECK.map((_,i)=>i)),gdeck=shuffle(GOALS.map((_,i)=>i));
+  S={players:cfg.map((p,i)=>({id:i,name:p.name,ai:p.ai,remote:!!p.remote,pid:p.pid||null,cash:START_CASH,pos:Array(NS).fill(0),hand:[],plant:null,goals:[gdeck.pop(),gdeck.pop()],fl:{},tr:{}})),
+     st:STOCKS.map(()=>{const idx=8+(Math.random()*5|0);return {idx,open:idx,hist:[TRACK[idx]],vol:0,rumor:0};}),
+     day:0,start:Math.random()*cfg.length|0,acts:0,phase:'idle',news:{pub:null,hid:null},done:[],deck,disc:[],ndeck:[],log:[],
+     belief:cfg.map(()=>Array(NS).fill(0)),viewer:null,cfg,reveal:null,gid:Date.now()%100000};
+  S.players.forEach(p=>{for(let k=0;k<HAND0;k++)p.hand.push(drawCard());});
+  const hs=humans();S.viewer=hs.length===1?hs[0].id:null;
+  log(`新局開始：${S.players.length} 位玩家，每人 $${START_CASH} 本金，共 ${DAYS} 個交易日。`,'q');
+  startDay();
+}
+function startDay(){
+  S.day++;S.phase='plant';S.acts=0;S.done=[];S.reveal=null;
+  S.news={pub:drawNews(),hid:drawNews()};
+  S.st.forEach(s=>{s.open=s.idx;s.vol=0;s.rumor=0;});
+  S.players.forEach(p=>{p.tr={};p.plant=null;const id=drawCard();if(id!=null)p.hand.push(id);});
+  S.belief=S.players.map(()=>Array(NS).fill(0));
+  UI.sel=null;UI.card=null;UI.qty=1;UI.pending=false;
+  log(`第 ${S.day} 個交易日。今日頭條：「${NEWS[S.news.pub].n}」`,'q');
+  if(humans().length>1)S.viewer=null;
+  save();render();
+  timer=setTimeout(proceedPlant,humans().length?60:SPEED*.4);
+}
+function proceedPlant(){
+  clearTimeout(timer);
+  if(S.phase!=='plant')return;
+  S.players.forEach((p,i)=>{if(p.ai&&!S.done.includes(i)){const ch=aiPlant(i);if(ch)setPlant(i,ch.id,ch.c);else S.done.push(i);}});
+  const pend=S.players.map((_,i)=>i).filter(i=>!S.done.includes(i));
+  save();
+  if(!pend.length){render();timer=setTimeout(beginTrade,humans().length?300:SPEED*.4);return;}
+  const locals=pend.filter(i=>!S.players[i].remote);
+  if(!locals.length){render();return;}
+  const pi=locals[0];
+  if(humans().length>1&&S.viewer!==pi){S.viewer=null;render();handoff(pi,'輪到你佈局今天的內線',()=>{S.viewer=pi;UI.sel=null;UI.card=null;render();});}
+  else{S.viewer=pi;render();}
+}
+function setPlant(i,id,c){const p=S.players[i],k=p.hand.indexOf(id);if(k<0||!(c>=0&&c<NS))return false;p.hand.splice(k,1);p.plant={id,c};S.done.push(i);return true;}
+function doPlant(i,id,c){
+  if(S.phase!=='plant'||S.done.includes(i))return;
+  if(!setPlant(i,id,c))return;
+  UI.sel=null;UI.card=null;
+  if(humans().length>1&&!S.players[i].remote)S.viewer=null;
+  proceedPlant();
+}
+function beginTrade(){
+  clearTimeout(timer);if(S.phase!=='plant')return;
+  S.phase='trade';S.acts=0;log('內線全部埋好，開始交易','q');proceed();
+}
+function proceed(){
+  clearTimeout(timer);
+  if(S.phase!=='trade')return;
+  if(S.acts>=NP()*APD){closeDay();return;}
+  const pi=curP();UI.sel=null;UI.qty=1;UI.pending=false;
+  save();
+  const p=S.players[pi],multi=humans().length>1;
+  if(p.ai){if(multi)S.viewer=null;render();timer=setTimeout(()=>{if(S.phase==='trade'&&curP()===pi)aiAction(pi);},SPEED);}
+  else if(p.remote){render();}
+  else if(multi&&S.viewer!==pi){S.viewer=null;render();handoff(pi,'輪到你下單',()=>{S.viewer=pi;render();});}
+  else{S.viewer=pi;render();}
+}
+function doBuy(pi,c,n){const b=price(S,c);const cost=opBuy(S,pi,c,n);
+  log(`${pn(pi)} 買進 ${cn(c)} ${n} 股，付 $${cost}${price(S,c)!==b?`，股價 $${b}→$${price(S,c)}`:''}`);beliefUpd(pi,c,0.3*n);S.acts++;proceed();}
+function doSell(pi,c,n){const b=price(S,c),had=S.players[pi].pos[c];const g=opSell(S,pi,c,n);const sh=S.players[pi].pos[c]<0&&had<n;
+  log(`${pn(pi)} ${sh?(had>0?'賣出並放空':'放空'):'賣出'} ${cn(c)} ${n} 股，得 $${g}${price(S,c)!==b?`，股價 $${b}→$${price(S,c)}`:''}`);beliefUpd(pi,c,-0.3*n);S.acts++;proceed();}
+function doRumor(pi,c,d){opRumor(S,pi,c,d);log(`${pn(pi)} 花 $${RUMOR_COST} 放話${d>0?'看好':'唱衰'} ${cn(c)}，收盤 ${d>0?'▲':'▼'}1`,'k');S.acts++;proceed();}
+function doPass(pi){log(`${pn(pi)} 觀望不動`);S.acts++;proceed();}
+function closeDay(){
+  clearTimeout(timer);S.phase='close';
+  const plants=S.players.map((p,i)=>p.plant?{p:i,id:p.plant.id,c:p.plant.c}:null).filter(Boolean);
+  const before=S.st.map(s=>s.idx);
+  const mv=dayMoves(S,plants);applyMoves(S,mv);
+  plants.forEach(q=>S.disc.push(q.id));
+  S.st.forEach(s=>s.hist.push(TRACK[s.idx]));
+  S.reveal={plants,mv,before,open:S.st.map(s=>s.open)};
+  log(`收盤。盤後消息：「${NEWS[S.news.hid].n}」`,'q');
+  mv.forEach((m,c)=>{if(m.split)log(`${cn(c)} 衝破 $${TRACK[MAXI]}，一股分割成兩股，股價回到 $${TRACK[SPLIT_IDX]}`,'k');
+    if(m.bk)log(`${cn(c)} 股價歸零下市！多單作廢、空單全賺，以 $${TRACK[RELIST_IDX]} 重新上市`,'k');});
+  if(humans().length>1)S.viewer=null;
+  save();render();settleModal();
+  if(!humans().length)timer=setTimeout(()=>{if(S.phase==='close')endDay();},SPEED*3);
+}
+function endDay(){
+  clearTimeout(timer);if(S.phase!=='close')return;closeModal();S.start=(S.start+1)%NP();
+  if(S.day>=DAYS)endGame();else startDay();
+}
+function endGame(){S.phase='end';clearSave();log('六個交易日結束，結算身價','q');render();endModal();}
+
+/* ================= modals ================= */
+let modalCb=null;
+function openModal(html,cb){$('#modal').innerHTML=html;$('#overlay').hidden=false;$('#modal').scrollTop=0;modalCb=cb;const f=$('#modal .primary');f&&f.focus({preventScroll:true});}
+function closeModal(){$('#overlay').hidden=true;$('#modal').innerHTML='';modalCb=null;}
+$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b&&!b.disabled&&modalCb)modalCb(b.dataset.m,b);});
+function handoff(pi,why,cb){
+  openModal(`<div class="handoff">${avatar(pi)}</div><h2>請把裝置交給 ${esc(S.players[pi].name)}</h2><p class="sub">${why}。其他人請別偷看，接下來會顯示 ${esc(S.players[pi].name)} 的內線卡和大亨目標。</p>
+   <div class="acts"><button class="btn primary" data-m="go">我是 ${esc(S.players[pi].name)}，開始</button></div>`,()=>{closeModal();cb();});
+}
+function moveCls(t){return t>0?'up':t<0?'down':'flat';}
+function settleModal(){
+  const R=S.reveal;if(!R)return;
+  const plantRows=R.plants.map(q=>`<div class="plantrow">${avatar(q.p)}${cardHTML(q.id,{mini:true})}<div>${pn(q.p)} 埋在 ${cn(q.c)}</div></div>`).join('');
+  const rows=S.st.map((s,c)=>{const m=R.mv[c],a=TRACK[R.open[c]],mid=TRACK[R.before[c]],z=TRACK[s.idx];
+    const parts=m.halt?'暫停交易':[m.np?`頭條${m.np>0?'+':''}${m.np}`:'',m.nh?`盤後${m.nh>0?'+':''}${m.nh}`:'',m.ins?`內線${m.ins>0?'+':''}${m.ins}`:'',m.rumor?`放話${m.rumor>0?'+':''}${m.rumor}`:'',m.x>1?`炒作×${m.x}`:''].filter(Boolean).join('　')||'無';
+    const tag=m.split?' <span class="lim sp">分割</span>':m.bk?' <span class="lim down">下市</span>':m.raw>=LIMIT?' <span class="lim up">漲停</span>':m.raw<=-LIMIT?' <span class="lim down">跌停</span>':'';
+    return `<tr><td>${cn(c)}${tag}<div class="parts">${parts}</div></td><td>$${a}</td><td>$${mid}</td><td class="${moveCls(m.total)}">${m.total>0?'▲':m.total<0?'▼':'±'}${Math.abs(m.total)}</td><td><b>$${z}</b></td></tr>`;}).join('');
+  const last=S.day>=DAYS;
+  openModal(`<h2>第 ${S.day} 天 · 收盤揭牌</h2><p class="sub">收盤價 = 開盤價 + 收盤變動（頭條 + 盤後消息 + 所有人埋的內線 + 放話，炒作加倍、暫停交易歸零，單日最多 ±${LIMIT} 格）。盤中被買賣推動的價格不算。</p>
+   <div class="evlist"><div class="ev"><div><h4>今日頭條：${NEWS[S.news.pub].n}</h4><div class="chips">${newsChips(S.news.pub)}</div></div><div class="kn">早上公開</div></div>
+   <div class="ev hidden-card"><div><h4>盤後消息：${NEWS[S.news.hid].n}</h4><div class="chips">${newsChips(S.news.hid)}</div></div><div class="kn">剛剛揭曉</div></div></div>
+   <h3 style="margin:16px 0 4px;font-size:18px">誰埋了什麼</h3>${plantRows||'<p class="note">今天沒有人埋內線。</p>'}
+   <div class="tablewrap"><table class="res"><thead><tr><th>股票</th><th>開盤</th><th>盤中</th><th>收盤變動</th><th>收盤</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <div class="acts"><button class="btn primary" data-m="next">${NET.role==='client'?'知道了，等房主繼續':last?'查看最終結算':'進入第 '+(S.day+1)+' 天'}</button></div>`,
+   ()=>{if(NET.role==='client'){closeModal();return;}endDay();});
+}
+function endModal(){
+  const rows=S.players.map((p,i)=>({i,...worthOf(S,i,true),gl:goalsOf(S,i)})).sort((a,b)=>b.total-a.total||b.cash-a.cash);
+  const w=rows[0];
+  openModal(`<h2>最終結算</h2><p class="sub">身價 = 現金 + 持股市值（放空的股票以收盤價扣回）+ 達成的大亨目標獎金。</p>
+   <div class="win">${esc(S.players[w.i].name)} 成為股市大亨</div>
+   <div class="tablewrap"><table class="res"><thead><tr><th>玩家</th><th>現金</th><th>股票</th><th>大亨目標</th><th>總身價</th></tr></thead><tbody>
+   ${rows.map((r,k)=>`<tr><td>${k+1}. ${pn(r.i)}<div class="goalres">${r.gl.map(x=>`<span class="${x.ok?'ok':''}">${x.ok?'✓':'✗'} ${GOALS[x.g].n}</span>`).join('')}</div></td><td>$${r.cash}</td><td>$${r.stock}</td><td>$${r.goals}</td><td><b>$${r.total}</b></td></tr>`).join('')}
+   </tbody></table></div>
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="setup">更改設定</button><button class="btn primary" data-m="again">再來一局</button></div>`,
+   m=>{if(NET.role){NET.leave();showSetup();return;}if(m==='again')setupGame(S.cfg);else showSetup();});
+}
+
+/* ================= setup ================= */
+function showSetup(){
+  clearTimeout(timer);
+  const sv=loadSave(),n=setupCfg.n;
+  const seats=setupCfg.seats.slice(0,n).map((s,i)=>`<div class="seat">${avatar(i)}<input id="seat${i}" data-seat="${i}" value="${esc(s.name)}" maxlength="10" aria-label="玩家 ${i+1} 名稱"><div class="seg"><button data-m="h:${i}" class="${s.ai?'':'on'}">人類</button><button data-m="a:${i}" class="${s.ai?'on':''}">AI</button></div></div>`).join('');
+  openModal(`<div class="setup-art">${heroArt()}</div><h2>股市大亨</h2><p class="sub">六個交易日，五檔股票。每天早上大家先偷偷把一張內線卡埋在某檔股票上，再輪流買進、賣出、放空。收盤時所有內線一起翻開：誰在炒作、誰在唱衰，股價說了算。最後身價最高的人就是股市大亨。</p>
+   <div class="pitch"><div><b>埋內線</b>每天蓋一張卡在一檔股票上，只有你知道它收盤會往哪走。</div><div><b>搶先下單</b>買賣會推高盤中價，晚出手的人買得比較貴；看壞也可以放空。</div><div><b>大亨目標</b>每人兩張祕密目標，鐵粉、抄底、空頭狙擊，達成多拿獎金。</div></div>
+   <div class="field"><span>玩家人數</span><div class="seg">${[2,3,4,5,6].map(k=>`<button data-m="n:${k}" class="${k===n?'on':''}">${k} 人</button>`).join('')}</div></div>
+   <div class="seats">${seats}</div>
+   <div class="field"><span>AI 速度</span><div class="seg">${Object.keys(SPEEDS).map(k=>`<button data-m="sp:${k}" class="${k===setupCfg.speed?'on':''}">${k}</button>`).join('')}</div></div>
+   <p class="note">多位人類玩家可共用同一台裝置輪流操作（熱座模式），換人時會遮住內線卡。</p>
+   <div class="acts"><a class="btn ghost" href="${LOBBY}">← 回大廳</a><button class="btn" data-m="rules">先看規則</button>${NET.setupBtns()}${sv&&sv.phase&&sv.phase!=='end'&&sv.phase!=='idle'?'<button class="btn" data-m="resume">繼續上一局</button>':''}<button class="btn primary" data-m="start">開始遊戲</button></div>`,
+  m=>{
+    readSeats();
+    if(m.startsWith('n:')){setupCfg.n=+m.slice(2);showSetup();}
+    else if(m.startsWith('h:')||m.startsWith('a:')){setupCfg.seats[+m.slice(2)].ai=m[0]==='a';showSetup();}
+    else if(m.startsWith('sp:')){setupCfg.speed=m.slice(3);SPEED=SPEEDS[setupCfg.speed];showSetup();}
+    else if(m==='rules')showRules();
+    else if(m.startsWith('net:'))NET.setupHandle(m);
+    else if(m==='resume'){closeModal();SPEED=SPEEDS[setupCfg.speed];resumeGame(sv);}
+    else if(m==='start'){closeModal();SPEED=SPEEDS[setupCfg.speed];
+      const used=new Set();
+      const cfg=setupCfg.seats.slice(0,setupCfg.n).map((s,i)=>{let nm=(s.name||'').trim()||(s.ai?AI_NAMES[i%AI_NAMES.length]:'玩家'+(i+1));if(used.has(nm))nm+=i+1;used.add(nm);return {name:nm,ai:s.ai};});
+      setupGame(cfg);}
+  });
+}
+function readSeats(){document.querySelectorAll('[data-seat]').forEach(inp=>{setupCfg.seats[+inp.dataset.seat].name=inp.value;});}
+async function resumeGame(sv){
+  S=sv;
+  if(sv.online&&!(await NET.resumeHost(sv))){S.players.forEach(p=>{if(p.remote){p.remote=false;p.ai=true;}});delete S.online;}
+  const hs=humans();S.viewer=hs.length===1?hs[0].id:null;
+  resumeAfterModal();
+}
+function resumeAfterModal(){
+  if(!S)return;if(NET.role==='client'){NET.resync();return;}
+  if(S.phase==='plant')proceedPlant();else if(S.phase==='trade')proceed();else if(S.phase==='close'){render();settleModal();}else if(S.phase==='end'){render();endModal();}else render();
+}
+
+/* ================= rules ================= */
+function showRules(){
+  $('#rulesModal').innerHTML=`<h2>遊戲規則</h2><div class="rules">
+  <p><b>目標：</b>${DAYS} 個交易日後，身價最高的人成為股市大亨。身價 = 現金 + 持股市值（放空的部位以收盤價扣回）+ 達成的大亨目標獎金。</p>
+  <h3>配置</h3>
+  <ul><li>5 檔股票，股價沿著下面的股價軌移動，▲▼ 的數字代表移動幾格：</li></ul>
+  <div class="trackline">${TRACK.map(v=>`<span>$${v}</span>`).join('')}</div>
+  <ul><li>每人本金 $${START_CASH}，手上 ${HAND0} 張內線卡，再發兩張祕密的<b>大亨目標</b>。所有人的現金和持股都公開。</li></ul>
+  <h3>每個交易日</h3>
+  <ol>
+   <li><b>早盤：</b>翻開一張<b>今日頭條</b>（公開）和一張<b>盤後消息</b>（蓋著，收盤才揭曉）。每人補抽 1 張內線卡。</li>
+   <li><b>埋內線：</b>所有人同時從手牌選 1 張內線卡，蓋在任一檔股票上。只有你知道自己埋了什麼。
+     <ul><li>▲1～▲3 / ▼1～▼3：收盤時這檔股票上漲或下跌幾格。</li>
+     <li>主力炒作：這檔今天的漲跌加倍（兩張就是 ×4）。</li>
+     <li>暫停交易：這檔今天收盤完全不動，新聞、內線、放話全部作廢。</li>
+     <li>煙霧彈：沒有效果，用來騙人。</li></ul></li>
+   <li><b>交易：</b>從起始玩家開始輪流，每人每天 ${APD} 次行動，每次擇一：
+     <ul><li><b>買進</b>一檔股票 1～${MAX_QTY} 股，以現價付款。</li>
+     <li><b>賣出</b>一檔股票 1～${MAX_QTY} 股，以現價收款。持股不夠就是<b>放空</b>，每檔最多放空 ${SHORT_MAX} 股；之後買回來就是回補。</li>
+     <li>每筆下單會推動<b>盤中價</b>：2～4 股推 1 格，5 股推 2 格（買往上、賣往下），後面的人就得用新價格成交，所以越早出手越划算。盤中價只影響當天成交，收盤價一律從開盤價起算。</li>
+     <li><b>放話：</b>付 $${RUMOR_COST}，公開讓一檔股票收盤 ▲1 或 ▼1。</li>
+     <li><b>觀望</b>不動。</li></ul>
+     同一天同一檔股票只能買或只能賣，不能先拉抬再倒貨。</li>
+   <li><b>收盤：</b>翻開盤後消息和所有人埋的內線。收盤價 = <b>開盤價</b> + 收盤變動；收盤變動 = 頭條 + 盤後消息 + 內線 + 放話，再套用炒作與暫停交易，單日最多漲跌 ${LIMIT} 格（漲停／跌停）。大家搶著追高的股票，收盤可能比盤中價還低。</li>
+   <li><b>分割：</b>股價衝破 $${TRACK[MAXI]}，一股變兩股，股價回到 $${TRACK[SPLIT_IDX]}（放空的股數也加倍）。</li>
+   <li><b>下市：</b>股價跌到 $0，所有多單作廢，空單不用回補（賣空拿到的錢全部變成獲利），公司以 $${TRACK[RELIST_IDX]} 重新上市。</li>
+   <li>起始玩家輪到下一位，進入下一個交易日。</li>
+  </ol>
+  <h3>大亨目標</h3>
+  <ul>${GOALS.map(g=>`<li><b>${g.n}</b>（+$${g.v}）：${g.d}</li>`).join('')}</ul>
+  <h3>致勝心法</h3>
+  <ul><li>你埋的卡只有你知道。對手一開盤就猛買某檔？他可能在那裡埋了大利多，也可能是煙霧彈陷阱。</li>
+  <li>頭條是公開的，大家都會搶，先出手的人吃到最多；追在最後面的人可能買在收盤價之上。</li>
+  <li>放空可以跟利空卡配合，但遇到別人埋利多或炒作會被軋空。</li>
+  <li>暫停交易是保命牌：自己重押的股票遇到壞頭條時特別好用。</li>
+  <li>最後一天別忘了大亨目標，一張就值 $25～$30。</li></ul>
+  </div><div class="acts"><button class="btn primary" id="closeRules">知道了</button></div>`;
+  $('#rulesOv').hidden=false;$('#closeRules').focus({preventScroll:true});
+}
+$('#rulesOv').addEventListener('click',e=>{if(e.target.id==='closeRules'||e.target.id==='rulesOv')$('#rulesOv').hidden=true;});
+$('#btnRules').addEventListener('click',showRules);
+$('#btnNew').addEventListener('click',()=>{if(S&&S.phase!=='end'&&S.phase!=='idle'){openModal(`<h2>${NET.role==='client'?'離開房間？':'放棄目前這局？'}</h2><p class="sub">${NET.role==='client'?'離開後可以從設定畫面「回到房間」重新加入。':NET.role==='host'?'房間會關閉，所有朋友都會被請出。':'目前的進度會被清除。'}</p><div class="acts"><button class="btn" data-m="no">繼續玩</button><button class="btn primary" data-m="yes">開新遊戲</button></div>`,m=>{if(m==='yes'){clearTimeout(timer);if(NET.role!=='client')clearSave();NET.leave();showSetup();}else{closeModal();resumeAfterModal();}});}else showSetup();});
+
+/* ================= art ================= */
+const ICONS={
+  chip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 3v3M12 3v3M15 3v3M9 18v3M12 18v3M15 18v3M3 9h3M3 12h3M3 15h3M18 9h3M18 12h3M18 15h3"/></svg>',
+  car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 15v-3l2-5h11l4 5h1v3z"/><circle cx="7.5" cy="16" r="2"/><circle cx="16.5" cy="16" r="2"/><path d="M11 3 9 7h3l-2 4"/></svg>',
+  palm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c0-5 .5-9 2-12"/><path d="M14 9c-3-3-7-3-9-1 3 0 5 1 6 3M14 9c1-3 4-5 7-4-2 1-3 2-4 4M14 9c3-1 6 0 7 3-2-1-4-1-6 0"/><path d="M3 21h18"/></svg>',
+  crane:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4h2v17M4 21h8M8 5h12M8 5l-4 3h4M18 5v6"/><rect x="16" y="11" width="4" height="3"/></svg>',
+  pad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12a4 4 0 0 1 4 4v1a4 4 0 0 1-7 2.5L14 14h-4l-1 1.5A4 4 0 0 1 2 13v-1a4 4 0 0 1 4-4z"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".8" fill="currentColor"/><circle cx="18" cy="13" r=".8" fill="currentColor"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>',
+  bars:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M6 17v-4M10 17V9M14 17v-6M18 17V5"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>',
+};
+const SECTOR_ICON=['chip','car','palm','crane','pad'];
+const avatar=i=>`<img class="av" src="../../assets/avatars/avatar-${i%8+1}.webp" alt="" aria-hidden="true"${i>=8?` style="filter:hue-rotate(${150*Math.floor(i/8)}deg) saturate(1.2)"`:''}>`;
+function sky(id,a,b){return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="320" height="112" fill="url(#${id})"/>`;}
+function tree(x,y,r,col){return `<rect x="${x-1.6}" y="${y}" width="3.2" height="${r*1.3}" fill="#8A6A4A"/><circle cx="${x}" cy="${y-r*.2}" r="${r}" fill="${col}"/><circle cx="${x-r*.6}" cy="${y+r*.25}" r="${r*.7}" fill="${col}"/><circle cx="${x+r*.65}" cy="${y+r*.2}" r="${r*.72}" fill="${col}"/>`;}
+const ART=[
+ // 鯨躍半導體：海上晶圓廠與躍出的鯨魚
+ ()=>`${sky('a0','#BFDDF5','#EEF6FC')}
+  <rect x="150" y="34" width="120" height="50" rx="4" fill="#DCE8F3"/><rect x="150" y="30" width="120" height="8" fill="#9FBCD8"/>
+  ${[0,1,2,3,4].map(i=>`<rect x="${160+i*22}" y="46" width="14" height="10" rx="2" fill="#7FA6CC"/><rect x="${160+i*22}" y="62" width="14" height="10" rx="2" fill="#7FA6CC"/>`).join('')}
+  <rect x="246" y="12" width="10" height="22" fill="#9FBCD8"/><circle cx="251" cy="8" r="5" fill="#fff" fill-opacity=".7"/>
+  <rect x="190" y="18" width="34" height="14" rx="3" fill="#2E7DC0"/><rect x="198" y="21" width="18" height="8" rx="1.5" fill="none" stroke="#fff" stroke-width="1.6"/>
+  <rect y="80" width="320" height="32" fill="#5E9ED6"/>
+  <path d="M30 86c10-30 50-40 76-18 6-6 14-8 18-4-6 0-9 4-10 8-14 18-56 26-84 14z" fill="#2F5E9E"/><path d="M40 90c20 6 50 2 70-8" stroke="#BFDDF5" stroke-width="3" fill="none"/><circle cx="92" cy="72" r="2.4" fill="#fff"/>
+  <path d="M60 52q4-12 0-20M60 52q-8-8-14-6M60 52q8-8 14-6" stroke="#BFDDF5" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M0 100 q20-5 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#fff" stroke-opacity=".55" stroke-width="2" fill="none"/>`,
+ // 火鳥電動車：公路、紅色跑車、充電站
+ ()=>`${sky('a1','#F7CBB6','#FCEEE5')}
+  <path d="M0 70 L50 46 L100 62 L160 36 L220 58 L270 40 L320 56 V112 H0Z" fill="#E9B497"/>
+  <circle cx="250" cy="30" r="14" fill="#F6A04D" fill-opacity=".8"/>
+  <rect y="80" width="320" height="32" fill="#5B5450"/><path d="M0 96 H320" stroke="#F5C443" stroke-width="3" stroke-dasharray="18 14"/>
+  <rect x="236" y="44" width="26" height="40" rx="4" fill="#F4EDE6"/><rect x="241" y="50" width="16" height="10" rx="2" fill="#7FCF9A"/><path d="M262 60 q14 4 10 22" stroke="#3A3330" stroke-width="3" fill="none"/>
+  <path d="M70 84 v-10 l16-14 h50 l26 14 h14 v10z" fill="#D7542B"/><path d="M92 62 h40 l18 12 H84z" fill="#F7D9CB"/><circle cx="96" cy="86" r="9" fill="#2A2320"/><circle cx="96" cy="86" r="4" fill="#B9B0A8"/><circle cx="160" cy="86" r="9" fill="#2A2320"/><circle cx="160" cy="86" r="4" fill="#B9B0A8"/>
+  <path d="M118 40 l-8 14 h10 l-6 12" stroke="#F5C443" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  ${tree(30,62,12,'#E07B5A')}${tree(300,62,12,'#E79A6F')}`,
+ // 珊瑚觀光：沙灘、度假飯店、椰子樹
+ ()=>`${sky('a2','#BFEDE3','#F0FBF8')}
+  <circle cx="60" cy="30" r="15" fill="#F8D57E"/>
+  <rect x="150" y="26" width="90" height="56" rx="4" fill="#FBF4E8"/>${[0,1,2,3].map(r=>[0,1,2,3].map(k=>`<rect x="${158+k*20}" y="${32+r*12}" width="14" height="7" rx="1.5" fill="#7ECBC0"/>`).join('')).join('')}
+  <path d="M146 26 h98 l-6 -8 h-86z" fill="#22987A"/>
+  <rect y="70" width="320" height="18" fill="#4FB7C9"/><path d="M0 88 Q80 76 160 86 T320 84 V112 H0Z" fill="#F2DDB0"/>
+  <path d="M60 104 q4-30 20-46" stroke="#8A6A4A" stroke-width="4" fill="none"/><path d="M80 58 q-18-8-30 2 M80 58 q16-12 30-4 M80 58 q-6-16-20-18 M80 58 q12 2 18 14" stroke="#3F9E6A" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M262 98 q6-14 2-24 M266 92 q8-6 6-14 M258 90 q-8-4-8-12" stroke="#E86F6F" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M0 76 q20-4 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#fff" stroke-opacity=".6" stroke-width="2" fill="none"/>`,
+ // 鐵牛營建：塔吊與蓋到一半的大樓
+ ()=>`${sky('a3','#F3E1B8','#FBF4E4')}
+  <path d="M0 72 L60 52 L120 66 L190 44 L250 62 L320 50 V112 H0Z" fill="#E4CC98"/>
+  <rect x="150" y="40" width="70" height="56" fill="#D9C4A0"/>${[0,1,2,3].map(r=>`<rect x="150" y="${40+r*14}" width="70" height="2.5" fill="#B7791F"/>`).join('')}${[0,1,2,3].map(k=>`<rect x="${152+k*22}" y="40" width="2.5" height="56" fill="#B7791F"/>`).join('')}
+  <rect x="160" y="70" width="50" height="26" fill="#C9AE84"/>
+  <path d="M96 96 V18 M104 96 V18 M96 26 h8 M96 40 h8 M96 54 h8 M96 68 h8 M96 82 h8" stroke="#E2A72E" stroke-width="3"/>
+  <path d="M80 18 H250 M100 18 L120 8 L140 18" stroke="#E2A72E" stroke-width="4" fill="none"/><rect x="74" y="16" width="16" height="10" fill="#7A5236"/>
+  <path d="M230 18 V44" stroke="#3A3330" stroke-width="1.8"/><rect x="222" y="44" width="16" height="10" fill="#B7791F"/>
+  <rect y="96" width="320" height="16" fill="#CDB98E"/>
+  ${tree(30,84,12,'#9CB86A')}${tree(290,84,13,'#B5C677')}`,
+ // 星砂遊戲：夜空、遊戲手把、星星
+ ()=>`${sky('a4','#3E3366','#7A6AB0')}
+  ${[[20,18],[60,40],[110,14],[250,22],[290,48],[200,10],[150,34],[30,60],[300,14]].map(([x,y],k)=>`<circle cx="${x}" cy="${y}" r="${k%3?1.4:2.2}" fill="#FFF3C4"/>`).join('')}
+  <path d="M0 84 Q80 70 160 82 T320 78 V112 H0Z" fill="#E9D3A4"/><path d="M0 96 Q90 88 170 96 T320 92 V112 H0Z" fill="#D9BC86"/>
+  <path d="M110 46 h100 a22 22 0 0 1 22 22 v2 a18 18 0 0 1-32 10 l-8-8 h-64 l-8 8 a18 18 0 0 1-32-10 v-2 a22 22 0 0 1 22-22z" fill="#7A5AD3"/><path d="M126 58 v14 M119 65 h14" stroke="#FFF3C4" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="190" cy="60" r="4" fill="#F5C443"/><circle cx="202" cy="70" r="4" fill="#E86F6F"/><circle cx="178" cy="70" r="4" fill="#7FCF9A"/>
+  <path d="M262 30 l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#F5C443"/>`,
+];
+function heroArt(){return `<svg viewBox="0 0 640 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+  <defs><linearGradient id="hs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5EEE1"/><stop offset="1" stop-color="#EFE3CC"/></linearGradient></defs>
+  <rect width="640" height="180" fill="url(#hs)"/>
+  ${[[380,40,40,100],[420,20,36,120],[456,56,30,84],[486,8,44,132],[530,36,34,104],[564,24,40,116],[604,50,36,90]].map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#C9D3DB"/>${Array.from({length:Math.floor(h/14)},(_,k)=>`<rect x="${x+4}" y="${y+8+k*14}" width="${w-8}" height="4" fill="#EEF2F5"/>`).join('')}`).join('')}
+  <path d="M240 150 L300 120 L340 132 L390 92 L430 104 L480 60 L520 74 L570 36 L640 20" stroke="#1F3A5F" stroke-width="5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  ${[[270,118,26,'#C8432F'],[320,112,30,'#2C8F4E'],[370,96,24,'#2C8F4E'],[420,90,30,'#C8432F'],[470,58,34,'#2C8F4E'],[520,62,26,'#2C8F4E'],[570,30,30,'#2C8F4E']].map(([x,y,h,c])=>`<path d="M${x} ${y-10}v${h+20}" stroke="${c}" stroke-width="2"/><rect x="${x-6}" y="${y}" width="12" height="${h}" rx="2" fill="${c}"/>`).join('')}
+  <path d="M570 20 l14 4 -10 10z" fill="#E9643B"/>
+  <rect x="200" y="152" width="440" height="28" fill="#E9DCC0"/>
+ </svg>`;}
+const leafDeco=`<svg class="leaf" viewBox="0 0 200 200" aria-hidden="true">${[[40,90,60,'#2C8F4E'],[80,60,70,'#2C8F4E'],[120,80,50,'#C8432F'],[160,30,90,'#2C8F4E']].map(([x,y,h,c])=>`<path d="M${x} ${y-14}v${h+28}" stroke="${c}" stroke-width="4" opacity=".6"/><rect x="${x-10}" y="${y}" width="20" height="${h}" rx="4" fill="${c}" opacity=".55"/>`).join('')}</svg>`;
+function spark(c){
+  const h=S.st[c].hist.slice(-12),mn=Math.min(...h),mx=Math.max(...h),span=Math.max(1,mx-mn);
+  if(h.length<2)return `<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 15H100" stroke="var(--line2)" stroke-width="2" stroke-dasharray="4 4"/></svg>`;
+  const pts=h.map((v,k)=>`${(k/(h.length-1)*100).toFixed(1)},${(26-(v-mn)/span*22).toFixed(1)}`).join(' ');
+  const up=h[h.length-1]>=h[0];
+  return `<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${up?'var(--up)':'var(--down)'}" stroke-width="2.4" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+
+/* ================= view helpers ================= */
+const viewerHand=()=>S.viewer!=null&&S.players[S.viewer]&&Array.isArray(S.players[S.viewer].hand)?S.players[S.viewer].hand:null;
+function canPlantNow(){
+  if(!S||S.phase!=='plant'||S.viewer==null||!$('#overlay').hidden||UI.pending)return false;
+  const p=S.players[S.viewer];if(!p||S.done.includes(S.viewer)||p.ai)return false;
+  if(NET.role!=='client'&&p.remote)return false;
+  return !!viewerHand();
+}
+function myTurn(){if(!S||S.phase!=='trade')return false;const pi=curP(),p=S.players[pi];if(p.ai||S.viewer!==pi||!$('#overlay').hidden||UI.pending)return false;if(NET.role==='client')return pi===NET.seat;return !p.remote;}
+function intelHTML(pi){
+  const p=S.players[pi];if(!p)return '';
+  if(!p.goals||!Array.isArray(p.hand))return `<div class="intel"><div class="ilab">${ICONS.lock}私人情報</div><div class="inote"><span>內線傳送中<span class="dots"></span></span></div></div>`;
+  const pl=p.plant;
+  const gl=goalsOf(S,pi).map(x=>`<div class="goal ${x.ok?'ok':''}"><div><b>${GOALS[x.g].n}</b><br>${GOALS[x.g].d}</div><span class="gv">${x.ok?'✓ ':''}+$${x.v}</span></div>`).join('');
+  return `<div class="intel"><div class="ilab">${ICONS.lock}私人情報 · 只有 ${esc(p.name)} 看得到</div>
+   ${pl?`<div class="plantline">今天埋在 ${cn(pl.c)}：${cardHTML(pl.id,{mini:true})}</div>`:''}
+   ${S.phase!=='plant'&&p.hand.length?`<div class="plantline">手牌：${p.hand.map(id=>`<span class="chip ${cardCls(DECK[id])}">${cardSym(DECK[id])}</span>`).join('')}</div>`:''}
+   <div class="goals">${gl}</div></div>`;
+}
+const HEADLINES={plant:'先埋內線，再下單',trade:'開盤搶單',close:'收盤揭牌',end:'誰是股市大亨',idle:'先埋內線，再下單'};
+
+/* ================= render ================= */
+function render(){
+  if(!S)return;
+  let st='';for(let i=1;i<=DAYS;i++){if(i>1)st+=`<span class="link ${i<=S.day?'done':''}"></span>`;st+=`<span class="step ${i<S.day?'done':i===S.day&&S.phase!=='idle'&&S.phase!=='end'?'now':S.phase==='end'?'done':''}">D${i}</span>`;}
+  $('#steps').innerHTML=st;
+  const showHid=S.phase==='close'||S.phase==='end';
+  const tick=S.news&&S.news.pub!=null?`<div class="ticker"><span class="tk">今日頭條</span><b>${NEWS[S.news.pub].n}</b><span class="chips">${newsChips(S.news.pub)}</span></div>`+(showHid&&S.news.hid!=null?`<div class="ticker"><span class="tk hid">盤後消息</span><b>${NEWS[S.news.hid].n}</b><span class="chips">${newsChips(S.news.hid)}</span></div>`:''):'';
+  $('#hero').innerHTML=`<div class="hero-art">${heroArt()}</div><div class="hero-txt"><div class="eyebrow">MARKET DAY</div><h2>${HEADLINES[S.phase]||HEADLINES.idle}<span class="qbadge">${S.phase==='idle'?'準備開局':S.phase==='end'?'收盤結算':'第 '+S.day+' 天'}</span></h2>${tick}</div>`;
+  renderCards();renderDesk();renderPlayers();
+  NET.publish();
+}
+function renderCards(){
+  const pick=myTurn()||canPlantNow();
+  const cards=S.st.map((s,c)=>{
+    const pr=TRACK[s.idx],d=pr-TRACK[s.open],sel=pick&&UI.sel===c;
+    const nw=S.news&&S.news.pub!=null&&S.phase!=='idle'?newsFx(S,S.news.pub,c):0;
+    const poss=S.players.map((p,i)=>p.pos[c]?`<span class="ps ${p.pos[c]>0?'l':'s'}">${avatar(i)}${esc(p.name)} <b>${p.pos[c]>0?'多 '+p.pos[c]:'空 '+(-p.pos[c])}</b></span>`:'').join('');
+    return `<article class="co ${pick?'pick':''} ${sel?'sel':''}" data-c="${c}" style="--cc:var(--c${c})" ${pick?`tabindex="0" role="button" aria-pressed="${sel}" aria-label="選擇 ${STOCKS[c].name}"`:''}>
+      <div class="art"><svg viewBox="0 0 320 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${ART[c]()}</svg>${sel?`<span class="check">${ICONS.check}</span>`:''}</div>
+      <div class="body">
+        <div class="cohead"><h3>${STOCKS[c].name}</h3><span class="tick">${STOCKS[c].tick}</span><span class="sector">${ICONS[SECTOR_ICON[c]]}${STOCKS[c].sec}</span></div>
+        <div class="prow"><div class="pl1"><span class="price">$${pr}</span><span class="delta ${d>0?'up':d<0?'down':'flat'}">${d>0?'▲ '+d:d<0?'▼ '+(-d):'± 0'}</span></div></div>
+        ${spark(c)}
+        <dl class="stats"><div><dt>今日頭條</dt><dd class="${moveCls(nw)}">${nw>0?'▲'+nw:nw<0?'▼'+(-nw):'—'}</dd></div><div><dt>放話</dt><dd class="${moveCls(s.rumor)}">${s.rumor>0?'▲'+s.rumor:s.rumor<0?'▼'+(-s.rumor):'—'}</dd></div><div><dt>今日成交</dt><dd>${s.vol} 股</dd></div></dl>
+        <div class="poss">${poss||'<span class="ps none">還沒有人進場</span>'}</div>
+      </div></article>`;
+  });
+  const feed=S.log.slice(0,14).map(l=>{
+    const who=l.a!=null&&S.players[l.a]?avatar(l.a):`<span class="ic">${l.c==='q'?ICONS.bell:l.c==='k'?ICONS.spark:ICONS.bars}</span>`;
+    return `<li class="${l.c}"><span class="qtag">D${l.d||1}</span>${who}<span class="txt">${l.h}</span></li>`;}).join('');
+  cards.push(`<section class="feed" aria-label="盤面快訊"><h3>${ICONS.bars}盤面快訊</h3><ul class="feedlist">${feed||'<li><span class="txt" style="grid-column:1/-1;color:var(--muted)">開盤後的每一筆交易都會出現在這裡。</span></li>'}</ul></section>`);
+  $('#cards').innerHTML=cards.join('');
+}
+function tradePreview(pi,c){
+  const me=S.players[pi],pr=price(S,c),buy=UI.mode==='buy';
+  const n=UI.qty,ok=buy?canBuy(S,pi,c,n):canSell(S,pi,c,n);
+  let after=null;if(ok){after=clone(S);buy?opBuy(after,pi,c,n):opSell(after,pi,c,n);}
+  let why=null;
+  if(!ok){if(buy)why=me.tr[c]==='s'?'今天已經賣過這檔，不能再買':`現金不足，需要 $${pr*n}`;
+    else why=me.tr[c]==='b'?'今天已經買過這檔，不能再賣':`最多只能放空 ${SHORT_MAX} 股`;}
+  const maxQ=buy?Math.max(1,Math.min(MAX_QTY,Math.floor(me.cash/Math.max(1,pr)))):Math.max(1,Math.min(MAX_QTY,me.pos[c]+SHORT_MAX));
+  return {n,ok,amt:pr*n,after,why,maxQ};
+}
+function renderDesk(){
+  let h=leafDeco;
+  if(S.phase==='plant'){
+    const ready=`<div class="readies">${S.players.map((p,i)=>`<span class="${S.done.includes(i)?'ok':''}">${avatar(i)}${esc(p.name)} ${S.done.includes(i)?'✓':'…'}</span>`).join('')}</div>`;
+    if(canPlantNow()){
+      const hand=viewerHand();
+      h+=`<div class="dhead"><h2>埋內線</h2><span class="pill">第 ${S.day} 天</span></div><div class="dsub">${esc(S.players[S.viewer].name)}：選一張卡，再點一檔股票</div>
+        <div class="hand">${hand.map(id=>cardHTML(id,{pick:1,on:UI.card===id})).join('')}</div>
+        ${UI.sel!=null?`<div class="target">${ICONS[SECTOR_ICON[UI.sel]]}<b>${STOCKS[UI.sel].name}</b><span class="vs"></span><span class="cur">現價<span>$${price(S,UI.sel)}</span></span></div>`:'<div class="dnote">點左邊任一張股票卡，選擇要埋的目標。</div>'}
+        <button class="confirm" id="btnPlant" ${UI.card!=null&&UI.sel!=null?'':'disabled'}>蓋牌埋下 ${ICONS.arrow}</button>${ready}`;
+    }else{
+      h+=`<div class="dhead"><h2>${UI.pending?'送出中':'等待佈局'}</h2><span class="pill soft">第 ${S.day} 天</span></div><div class="empty"><b>大家正在偷偷埋內線</b>全部埋好就開盤交易。</div>${ready}`;
+    }
+    if(S.viewer!=null)h+=intelHTML(S.viewer);
+  }else if(S.phase==='trade'){
+    const pi=curP(),p=S.players[pi],k=Math.floor(S.acts/NP())+1;
+    if(myTurn()){
+      h+=`<div class="dhead"><h2>你的下一步</h2><span class="pill">輪到你了</span></div><div class="dsub">${esc(p.name)} · 現金 $${p.cash} · 第 ${k}/${APD} 手</div>`;
+      if(UI.sel!=null){
+        const c=UI.sel,pr=price(S,c),t=tradePreview(pi,c),buy=UI.mode==='buy';
+        const shortNote=!buy&&t.ok&&t.after.players[pi].pos[c]<0?`<div class="dnote">這筆會${p.pos[c]>0?'賣光再':''}放空，收盤若下跌你就賺。</div>`:'';
+        h+=`<div class="dlab">交易標的</div>
+         <div class="target">${ICONS[SECTOR_ICON[c]]}<b>${STOCKS[c].name}</b><span class="vs"></span><span class="cur">現價<span>$${pr}</span></span></div>
+         <div class="toggle" role="tablist"><button data-mode="buy" class="${buy?'on':''}" role="tab" aria-selected="${buy}">買進</button><button data-mode="sell" class="${buy?'':'on'}" role="tab" aria-selected="${!buy}">賣出／放空</button></div>
+         <div class="qrow"><span>股數</span><div class="stepper"><button data-q="-1" aria-label="減少" ${UI.qty<=1?'disabled':''}>−</button><b>${UI.qty}</b><button data-q="1" aria-label="增加" ${UI.qty>=t.maxQ?'disabled':''}>+</button></div></div>
+         <dl class="est"><div><dt>${buy?'付出':'收到'}</dt><dd>$${t.amt}</dd></div><div><dt>下單後股價</dt><dd>${t.ok?`$${pr} → $${price(t.after,c)}`:'—'}</dd></div><div><dt>你的部位</dt><dd>${posTxt(p.pos[c])}${t.ok?' → '+posTxt(t.after.players[pi].pos[c]):''}</dd></div></dl>
+         ${t.why?`<div class="dnote warn">${t.why}</div>`:shortNote}
+         <button class="confirm" id="btnConfirm" ${t.ok?'':'disabled'}>確認${buy?'買進':'賣出'} ${ICONS.arrow}</button>
+         <div class="dlab">或是花 $${RUMOR_COST} 放話（公開，算一手）</div>
+         <div class="rumor"><button data-rumor="1" ${canRumor(S,pi)?'':'disabled'}>看好 ▲1</button><button data-rumor="-1" ${canRumor(S,pi)?'':'disabled'}>唱衰 ▼1</button></div>`;
+      }else h+=`<div class="empty"><b>選一檔股票</b>點左邊任一張股票卡，開始買進、賣出或放話。</div>`;
+      h+=`<button class="passbtn" id="btnPass">觀望不動</button>`;
+    }else{
+      const mine=pi===S.viewer&&UI.pending;
+      h+=`<div class="dhead"><h2>${mine?'送出中':NET.waitTitle(p)}</h2><span class="pill soft">第 ${k}/${APD} 手</span></div>
+        <div class="think">${avatar(pi)}<div><b>${esc(p.name)}</b><div>${mine?'等待房主確認<span class="dots"></span>':NET.waitSub(p,'正在盤算<span class="dots"></span>')}</div></div></div>`;
+    }
+    if(S.viewer!=null)h+=intelHTML(S.viewer);
+  }else if(S.phase==='close'){
+    h+=`<div class="dhead"><h2>收盤揭牌</h2><span class="pill">第 ${S.day} 天</span></div><div class="empty"><b>所有內線已翻開</b>看看誰在炒作、誰在唱衰。</div>`;
+    if(NET.role!=='client')h+=`<button class="confirm" id="btnNext">${S.day>=DAYS?'查看最終結算':'進入第 '+(S.day+1)+' 天'} ${ICONS.arrow}</button>`;
+  }else if(S.phase==='end'){
+    const w=S.players.map((p,i)=>({i,t:worthOf(S,i,true).total})).sort((a,b)=>b.t-a.t)[0];
+    h+=`<div class="dhead"><h2>遊戲結束</h2><span class="pill">股市大亨</span></div><div class="think">${avatar(w.i)}<div><b>${pnTxt(w.i)}</b><div>總身價 $${w.t}</div></div></div><button class="confirm" id="btnResult">查看結算 ${ICONS.arrow}</button><button class="passbtn" id="btnAgain">再來一局</button>`;
+  }else{
+    h+=`<div class="dhead"><h2>準備開局</h2></div><div class="empty"><b>設定玩家後開始</b>2 到 6 人，可以混搭 AI 對手。</div>`;
+  }
+  h+=NET.barHTML();
+  $('#desk').innerHTML=h;
+}
+const posTxt=n=>n>0?`多 ${n}`:n<0?`空 ${-n}`:'0';
+function renderPlayers(){
+  const cur=S.phase==='trade'?curP():-1;
+  $('#players').innerHTML=S.players.map((p,i)=>{const w=worthOf(S,i,S.phase==='end');
+    const st=S.phase==='plant'?(S.done.includes(i)?'<span class="tag">已埋</span>':'<span class="tag">佈局中</span>'):'';
+    return `<div class="pl ${i===cur?'cur':''}">${avatar(i)}<div style="min-width:0"><div class="nm">${esc(p.name)}${p.ai?'<span class="tag">AI</span>':''}${i===S.start&&S.phase!=='idle'?'<span class="tag">起始</span>':''}${st}</div>
+      <div class="fig"><span>現金<b>$${w.cash}</b></span><span>股票<b>$${w.stock}</b></span><span>身價<b>$${w.total}</b></span></div></div></div>`;}).join('');
+}
+
+/* ================= input ================= */
+$('#cards').addEventListener('click',e=>{
+  const card=e.target.closest('.co');if(!card)return;
+  const c=+card.dataset.c;
+  if(canPlantNow()){UI.sel=c;render();scrollDesk();return;}
+  if(!myTurn())return;
+  if(UI.sel!==c){UI.sel=c;UI.qty=1;const pi=curP(),me=S.players[pi];
+    UI.mode=me.tr[c]==='s'?'sell':me.tr[c]==='b'?'buy':(!canBuy(S,pi,c,1)&&me.pos[c]>0?'sell':'buy');render();scrollDesk();}
+});
+function scrollDesk(){if(innerWidth<=1040){const d=$('#desk');const r=d.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)d.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}
+$('#cards').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('co')){e.preventDefault();e.target.click();}});
+$('#desk').addEventListener('click',e=>{
+  if(e.target.closest('#btnAgain')){if(NET.role){NET.leave();showSetup();}else setupGame(S.cfg);return;}
+  if(e.target.closest('#btnResult')){endModal();return;}
+  if(e.target.closest('#btnNext')){if(NET.role!=='client')endDay();return;}
+  if(canPlantNow()){
+    const cd=e.target.closest('[data-card]');if(cd){UI.card=+cd.dataset.card;render();return;}
+    if(e.target.closest('#btnPlant')&&UI.card!=null&&UI.sel!=null)act({t:'plant',id:UI.card,c:UI.sel});
+    return;
+  }
+  if(!myTurn())return;
+  const pi=curP();
+  if(e.target.closest('#btnPass')){act({t:'pass'});return;}
+  const m=e.target.closest('[data-mode]');if(m){UI.mode=m.dataset.mode;UI.qty=1;render();return;}
+  const q=e.target.closest('[data-q]');if(q&&UI.sel!=null){const t=tradePreview(pi,UI.sel);UI.qty=Math.max(1,Math.min(t.maxQ,UI.qty+(+q.dataset.q)));render();return;}
+  const r=e.target.closest('[data-rumor]');if(r&&UI.sel!=null){act({t:'rumor',c:UI.sel,d:+r.dataset.rumor});return;}
+  if(e.target.closest('#btnConfirm')&&UI.sel!=null){const t=tradePreview(pi,UI.sel);if(t.ok)act({t:UI.mode,c:UI.sel,n:t.n});}
+});
+function act(a){
+  if(NET.role==='client'){UI.pending=true;render();NET.send(a);return;}
+  applyAct(a.t==='plant'?S.viewer:curP(),a);
+}
+function applyAct(seat,a){
+  if(a.t==='plant'){const id=+a.id,c=+a.c;if(S.phase==='plant'&&S.players[seat]&&S.players[seat].hand.includes(id)&&c>=0&&c<NS)doPlant(seat,id,c);return;}
+  if(S.phase!=='trade'||curP()!==seat)return;
+  const c=+a.c,n=+a.n;
+  if(a.t==='buy'&&c>=0&&c<NS&&canBuy(S,seat,c,n))doBuy(seat,c,n);
+  else if(a.t==='sell'&&c>=0&&c<NS&&canSell(S,seat,c,n))doSell(seat,c,n);
+  else if(a.t==='rumor'&&c>=0&&c<NS&&(a.d===1||a.d===-1)&&canRumor(S,seat))doRumor(seat,c,a.d);
+  else if(a.t==='pass')doPass(seat);
+}
+
+/* ================= online multiplayer =================
+   Shared engine in ../../assets/net.js. Hands, today's planted card and tycoon goals are private
+   (sent encrypted per seat); everything else is public. */
+const GAME={id:'stock-tycoon',name:'股市大亨',hostKey:'stocktycoon-net-host',clientKey:'stocktycoon-net-client',min:2,max:6,aiNames:AI_NAMES,
+  secretHint:'每個人的內線卡和大亨目標只會出現在自己的手機上。',
+  start(cfg){setupGame(cfg);S.online={code:NET.code};save();},
+  strip(pub){
+    delete pub.deck;delete pub.disc;delete pub.ndeck;delete pub.belief;delete pub.cfg;
+    pub.players.forEach(p=>{p.hc=Array.isArray(p.hand)?p.hand.length:0;delete p.hand;delete p.plant;if(pub.phase!=='end')delete p.goals;});
+    if(pub.phase==='plant'||pub.phase==='trade')pub.news={pub:pub.news.pub,hid:null};
+  },
+  secret(i){const p=S.players[i];return {day:S.day,gid:S.gid,hand:p.hand,plant:p.plant,goals:p.goals};},
+  applySecret(seat,sec){if(sec&&sec.day===S.day&&sec.gid===S.gid&&S.players[seat]){const p=S.players[seat];p.hand=sec.hand||[];p.plant=sec.plant;p.goals=sec.goals;}},
+  waiting(){
+    if(!S)return [];
+    if(S.phase==='plant')return S.players.map((_,i)=>i).filter(i=>!S.done.includes(i)&&!S.players[i].ai);
+    if(S.phase==='trade'){const pi=curP();return S.players[pi].ai?[]:[pi];}
+    return [];
+  },
+  action(seat,a){applyAct(seat,a);},
+  afterTakeover(){if(S.phase==='plant')proceedPlant();else if(S.phase==='trade')proceed();},
+  afterReclaim(){save();},
+  resumeUI(){resumeAfterModal();},
+  clientReset(prev){
+    if(!prev||prev.phase!==S.phase||prev.acts!==S.acts||prev.day!==S.day||(prev.done||[]).length!==(S.done||[]).length){UI.sel=null;UI.qty=1;UI.card=null;UI.pending=false;}
+  },
+  clientModal(){
+    if(S.phase==='close')return {key:'c'+S.gid+'-'+S.day,open:settleModal};
+    if(S.phase==='end')return {key:'end'+S.gid,open:endModal};
+    return null;
+  },
+};
+
+/* ================= boot ================= */
+window.__st={setupGame,setSpeed:v=>{SPEED=v;},get S(){return S;},GOALS,worthOf};
+(function boot(){
+  S={players:[{name:'—',ai:true,cash:START_CASH,pos:Array(NS).fill(0),fl:{},tr:{}}],st:STOCKS.map((_,i)=>{const idx=9+(i%3);return {idx,open:idx,hist:[TRACK[idx]],vol:0,rumor:0};}),day:0,start:0,acts:0,phase:'idle',news:{pub:null,hid:null},done:[],log:[],viewer:null};
+  render();showSetup();
+})();
+</script>
+<script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("../../sw.js",{scope:"../../"}).catch(()=>{}));</script>
+</body>
+</html>
