@@ -432,7 +432,11 @@ const GAMES=[
  {id:'stock-tycoon',name:'股市大亨',en:'Market Tycoon',tag:'埋內線、搶單、放空',kind:'交易・策略',cats:['策略','經營'],players:'2–6 人',time:'25 分鐘',online:1,
   bg:'#1F3A5F',ink:'#F3EBDC',acc:'#F5C443',desc:'每天偷偷把一張內線卡埋在一檔股票上，再輪流買進、賣出、放空。收盤一起翻牌，六天後身價最高的人當大亨。',
   artStyle:'align-items:flex-end;justify-content:center;gap:9px',
-  art:'<span style="width:9%;height:40%;border-radius:4px;background:#E2553F"></span><span style="width:9%;height:58%;border-radius:4px;background:#4FB477"></span><span style="width:9%;height:46%;border-radius:4px;background:#E2553F"></span><span style="width:9%;height:74%;border-radius:4px;background:#4FB477"></span><span style="width:9%;height:92%;border-radius:4px;background:#F5C443"></span>'}
+  art:'<span style="width:9%;height:40%;border-radius:4px;background:#E2553F"></span><span style="width:9%;height:58%;border-radius:4px;background:#4FB477"></span><span style="width:9%;height:46%;border-radius:4px;background:#E2553F"></span><span style="width:9%;height:74%;border-radius:4px;background:#4FB477"></span><span style="width:9%;height:92%;border-radius:4px;background:#F5C443"></span>'},
+ {id:'futures-warrior',name:'期貨戰士',en:'Futures Warrior',tag:'看 K 線、做多做空、停損保命',kind:'看盤・對戰',cats:['策略','派對'],players:'2–6 人',time:'20 分鐘',online:1,
+  bg:'#173F3B',ink:'#F3EBDC',acc:'#F5C443',desc:'K 線一根一根揭曉，大家同時決定做多做空、開幾口、停損放哪。每盤收盤後教你看懂頭肩頂、W 底、三角形和假突破。',
+  artStyle:'align-items:center;justify-content:center;gap:7px',
+  art:'<span style="width:7%;height:30%;border-radius:3px;background:#3FB97A"></span><span style="width:7%;height:22%;border-radius:3px;background:#E8573F"></span><span style="width:7%;height:34%;border-radius:3px;background:#3FB97A"></span><span style="width:7%;height:46%;border-radius:3px;background:#E8573F"></span><span style="width:7%;height:62%;border-radius:3px;background:#E8573F"></span><span style="width:7%;height:80%;border-radius:3px;background:#F5C443"></span>'}
 ];
 const zhNum=n=>{const d='零一二三四五六七八九';return n<10?d[n]:(n<20?'':d[Math.floor(n/10)])+'十'+(n%10?d[n%10]:'');};
 const CATS=['策略','推理','派對','經營','家庭','合作'];
@@ -534,8 +538,8 @@ function coords(g){const r=rng(hash(g.id+'@'));const la=21+r()*4.6,lo=119.3+r()*
 const isleNo=g=>String(GAMES.indexOf(g)+1).padStart(2,'0');
 
 const LAYOUTS={
-  wide:{W:1200,H:600,cols:6,rows:3,empty:['0,0','5,2'],R:[46,60],name:19,num:11,jx:34,jy:16},
-  tall:{W:390,H:780,cols:3,rows:6,empty:['0,0','2,5'],R:[32,39],name:14,num:9,jx:7,jy:8}
+  wide:{W:1400,H:600,cols:7,rows:3,empty:['0,0','6,2'],R:[46,60],name:19,num:11,jx:34,jy:16},
+  tall:{W:390,H:910,cols:3,rows:7,empty:['0,0','2,6'],R:[32,39],name:14,num:9,jx:7,jy:8}
 };
 const layoutKey=()=>matchMedia('(min-width:760px)').matches?'wide':'tall';
 
@@ -586,10 +590,10 @@ function atlasSVG(key){
       <text x="98" y="70" text-anchor="middle" font-size="26" font-weight="900" letter-spacing="3" fill="#1E1B18">遊戲群島</text>
       <path d="M40 82h116" stroke="${SEP}" stroke-width=".7"/>
       <text x="98" y="100" text-anchor="middle" font-size="12" letter-spacing="3" fill="#6B6258">全圖・${zhNum(GAMES.length)}島</text></g>`;
-    s+=compassRose(5.5*cw,2.5*ch-6,58);
-    s+=`<g transform="translate(${5*cw+40} ${L.H-14})" font-family="Georgia,serif" font-size="10" fill="${SEP}" aria-hidden="true"><path d="M0 0h120" stroke="${SEP}" stroke-width="1"/><path d="M0 0h30M60 0h30" stroke="${SEP}" stroke-width="4"/><path d="M0 -5v10M120 -5v10" stroke="${SEP}"/><text y="-9">0</text><text x="112" y="-9">100 浬</text></g>`;
+    s+=compassRose((L.cols-.5)*cw,(L.rows-.5)*ch-6,58);
+    s+=`<g transform="translate(${(L.cols-1)*cw+40} ${L.H-14})" font-family="Georgia,serif" font-size="10" fill="${SEP}" aria-hidden="true"><path d="M0 0h120" stroke="${SEP}" stroke-width="1"/><path d="M0 0h30M60 0h30" stroke="${SEP}" stroke-width="4"/><path d="M0 -5v10M120 -5v10" stroke="${SEP}"/><text y="-9">0</text><text x="112" y="-9">100 浬</text></g>`;
   }else{
-    s+=compassRose(2.5*cw,5.5*ch-4,40);
+    s+=compassRose((L.cols-.5)*cw,(L.rows-.5)*ch-4,40);
   }
   // 島
   isles.forEach(({g,R,rand,x,y})=>{
