@@ -8,4 +8,4 @@
 - `covers/hero.webp`（選用）：電腦版標語右側的遊戲盒主視覺，透明背景。有這張就取代程式畫的盒子
 - 如果封面圖本身已經印好標題，把 `index.html` 裡那款遊戲加上 `textInArt:1`，大廳就不會再疊字
 
-檔案名稱：proxy-war、blank-agents、unsigned、seven-days、wealth-road、red-envelope、office-mole、er-24、cat-cafe、influencer、pudu、taipei-rent、magic-exam、claw-master、time-pawn
+檔案名稱：proxy-war、blank-agents、unsigned、seven-days、wealth-road、red-envelope、office-mole、er-24、cat-cafe、influencer、pudu、taipei-rent、magic-exam、claw-master、time-pawn、stock-tycoon
